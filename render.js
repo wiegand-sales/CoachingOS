@@ -641,33 +641,55 @@ function renderTab(){
   // ── EMP SETTINGS TAB ──
   if(activeTab==='emp-settings'){
     var t=empTargets(emp);
-    var COLORS_LOCAL=COLORS;
-    var swatches=COLORS_LOCAL.map(function(col,i){
-      return '<div onclick="setEmpColor('+i+')" title="'+col.bg+'" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;transition:all .15s"></div>';
+    var swatches=COLORS.map(function(col,i){
+      return '<div onclick="setEmpColor('+i+')" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;margin-bottom:6px;transition:all .15s"></div>';
     }).join('');
-    var teamOpts=allTeams().map(function(tm){return '<option'+(tm===emp.team?' selected':'')+'>'+tm+'</option>';}).join('')+'<option value="__new__">+ New team...</option>';
-    html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Basic information</div>'
-      +'<div class="f2"><div><label>Full name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
-      +'<div><label>Role</label><select id="es-role">'+ROLES.map(function(ro){return '<option'+(ro===emp.role?' selected':'')+'>'+ro+'</option>';}).join('')+'</select></div></div>'
-      +'<div class="f3"><div><label>Phase</label><select id="es-phase"><option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option><option'+(emp.phase==='Aktiv'?' selected':'')+'>Active</option><option'+(emp.phase==='Entwicklung'?' selected':'')+'>Entwicklung</option></select></div>'
-      +'<div><label>Team</label><select id="es-team">'+teamOpts+'</select></div>'
-      +'<div><label>Start date</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div></div>'
-      +'<div class="f2"><div><label>Contract</label><select id="es-contract"><option value="full"'+(emp.contract==='full'?' selected':'')+'>Vollzeit</option><option value="part"'+(emp.contract==='part'?' selected':'')+'>Teilzeit</option></select></div>'
-      +'<div><label>Hours / week</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div></div>'
-      +'<div style="margin-bottom:14px"><label>Avatar color</label><div style="margin-top:8px">'+swatches+'</div></div>'
-      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Save changes</button></div>'
+    var teamOptionen=allTeams().map(function(tm){return '<option'+(tm===emp.team?' selected':'')+'>'+tm+'</option>';}).join('')+'<option value="__new__">+ Neues Team...</option>';
 
-      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individual KPI targets</div>'
-      +'<p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">These override global defaults for this staff member. Used in all alerts and the team overview.</p>'
-      +'<div class="g4"><div><label>CR OEM target %</label><input type="number" id="es-crOEM" value="'+t.crOEM+'" min="0" max="100"></div>'
-      +'<div><label>Super Yes target %</label><input type="number" id="es-crSY" value="'+t.crSuperYes+'" min="0" max="100"></div>'
-      +'<div><label>Mega Yes target %</label><input type="number" id="es-crMY" value="'+t.crMegaYes+'" min="0" max="100"></div>'
-      +'<div><label>Opt./Hour target</label><input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"></div></div>'
-      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpTargets()"><i class="ti ti-check"></i> Save targets</button></div>'
+    html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Stammdaten</div>'
+      +'<div class="f2"><div><label>Vollständiger Name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
+      +'<div><label>Position</label><select id="es-role">'+ROLES.map(function(ro){return '<option'+(ro===emp.role?' selected':'')+'>'+ro+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="f3">'
+      +'<div><label>Phase</label><select id="es-phase">'
+      +'<option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option>'
+      +'<option'+(emp.phase==='Aktiv'?' selected':'')+'>Aktiv</option>'
+      +'<option'+(emp.phase==='Entwicklung'?' selected':'')+'>Entwicklung</option>'
+      +'</select></div>'
+      +'<div><label>Team</label><select id="es-team">'+teamOptionen+'</select></div>'
+      +'<div><label>Standort</label><input type="text" id="es-location" value="'+(emp.location||emp.team||'')+'" placeholder="z.B. Valencia"></div>'
+      +'</div>'
+      +'<div class="f3">'
+      +'<div><label>Startdatum</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div>'
+      +'<div><label>Anstellung</label><select id="es-contract">'
+      +'<option value="Vollzeit"'+(emp.contract==='Vollzeit'?' selected':'')+'>Vollzeit</option>'
+      +'<option value="Teilzeit"'+(emp.contract==='Teilzeit'?' selected':'')+'>Teilzeit</option>'
+      +'</select></div>'
+      +'<div><label>Stunden / Woche</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div>'
+      +'</div>'
+      +'<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
+      +'</div>'
 
-      +'<div class="card" style="border-top:2px solid var(--amber)"><div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Deactivate staff member</div>'
-      +'<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Deactivated staff are hidden from the sidebar and team overview. All data is preserved and can be restored at any time.</p>'
-      +'<button class="btn btn-warn btn-sm" style="width:auto;background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="deactivateEmp()"><i class="ti ti-user-off"></i> Deactivate '+emp.name+'</button></div>';
+      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individuelle KPI-Ziele</div>'
+      +'<p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Diese Werte überschreiben die globalen Standards für diesen Mitarbeiter. Sie werden für Alerts und die Teamübersicht verwendet.</p>'
+      +'<div class="g4">'
+      +'<div><label>CR OEM Ziel %</label><input type="number" id="es-crOEM" value="'+t.crOEM+'" min="0" max="100"></div>'
+      +'<div><label>Super Yes Ziel %</label><input type="number" id="es-crSY" value="'+t.crSuperYes+'" min="0" max="100"></div>'
+      +'<div><label>Mega Yes Ziel %</label><input type="number" id="es-crMY" value="'+t.crMegaYes+'" min="0" max="100"></div>'
+      +'<div><label>Opt./Stunde Ziel</label><input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"></div>'
+      +'</div>'
+      +'<div style="margin-top:4px;padding:10px 12px;background:var(--bg2);border-radius:var(--r-md);font-size:12px;color:var(--text2);margin-bottom:14px">'
+      +'<i class="ti ti-info-circle" style="margin-right:4px;color:var(--purple)"></i>'
+      +'Globale Standards: CR OEM '+GLOBAL_TARGETS.crOEM+'% · Super Yes '+GLOBAL_TARGETS.crSuperYes+'% · Mega Yes '+GLOBAL_TARGETS.crMegaYes+'% · Opt./Std. '+GLOBAL_TARGETS.optPerH
+      +'</div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpZiele()"><i class="ti ti-check"></i> Ziele speichern</button>'
+      +'</div>'
+
+      +'<div class="card" style="border-top:2px solid var(--amber)">'
+      +'<div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Mitarbeiter deaktivieren</div>'
+      +'<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Deaktivierte Mitarbeiter werden in der Sidebar und Teamübersicht ausgeblendet. Alle Daten (Protokolle, Sessions, Aufgaben) bleiben vollständig erhalten und können jederzeit wiederhergestellt werden.</p>'
+      +'<button class="btn btn-sm" style="background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="mitarbeiterDeaktivieren()"><i class="ti ti-user-off"></i> '+emp.name+' deaktivieren</button>'
+      +'</div>';
   }
 
   tc2.innerHTML=html;
