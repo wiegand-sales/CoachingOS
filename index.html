@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
   --bg:#fff;--bg2:#f7f7f5;--bg3:#f0efec;
@@ -18,1183 +19,1362 @@
   --blue:#378ADD;--blue-bg:#E6F1FB;--blue-dark:#0C447C;
   --red:#E24B4A;--red-bg:#FCEBEB;
   --r-sm:6px;--r-md:8px;--r-lg:12px;
-  --sidebar:250px;
+  --sidebar:240px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Inter',sans-serif;background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5;display:flex;}
-
 /* SIDEBAR */
 .sidebar{width:var(--sidebar);background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;flex-shrink:0;}
-.sb-kopf{padding:16px 16px 12px;border-bottom:1px solid var(--border);}
+.sb-header{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
 .sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
-.sb-punkt{width:8px;height:8px;border-radius:50%;background:var(--purple);}
-.sb-titel{font-size:14px;font-weight:600;}
-.sb-unter{font-size:11px;color:var(--text2);padding-left:16px;}
-.sb-nav{padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.sb-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);}
+.sb-title{font-size:14px;font-weight:600;}
+.sb-sub{font-size:11px;color:var(--text2);padding-left:16px;}
+.sb-nav{padding:8px 0 4px;}
 .sb-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);border-left:3px solid transparent;transition:all .12s;}
 .sb-item:hover{background:var(--bg2);color:var(--text);}
-.sb-item.aktiv{background:var(--bg2);color:var(--purple);border-left-color:var(--purple);}
+.sb-item.active{background:var(--bg2);color:var(--purple);border-left-color:var(--purple);}
 .sb-item i{font-size:16px;}
-.sb-abschnitt{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);padding:8px 16px 4px;}
-.ma-liste{flex:1;overflow-y:auto;}
-.ma-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .12s;}
-.ma-item:hover{background:var(--bg2);}
-.ma-item.aktiv{background:var(--bg2);border-left-color:var(--purple);}
+.sb-divider{height:1px;background:var(--border);margin:4px 0;}
+.sb-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);padding:8px 16px 4px;}
+.emp-list{flex:1;overflow-y:auto;}
+.emp-item{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .12s;}
+.emp-item:hover{background:var(--bg2);}
+.emp-item.active{background:var(--bg2);border-left-color:var(--purple);}
 .av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;}
-.ma-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ma-rolle{font-size:11px;color:var(--text2);}
-.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
-.sb-hinzu{margin:6px 12px 10px;padding:7px 12px;border:1px dashed var(--border2);border-radius:var(--r-md);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;width:calc(100% - 24px);font-family:inherit;}
-.sb-hinzu:hover{color:var(--text);border-color:var(--purple);}
-
+.emp-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.emp-role{font-size:11px;color:var(--text2);}
+.emp-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:20px;flex-shrink:0;margin-left:auto;}
+.sb-add{margin:6px 12px 10px;padding:7px 12px;border:1px dashed var(--border2);border-radius:var(--r-md);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;width:calc(100% - 24px);font-family:inherit;}
+.sb-add:hover{color:var(--text);border-color:var(--purple);}
 /* MAIN */
-.hauptbereich-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-#hauptbereich{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.tb-links{display:flex;align-items:center;gap:14px;}
+.tb-left{display:flex;align-items:center;gap:14px;}
 .tb-name{font-size:16px;font-weight:600;}
 .tb-meta{font-size:12px;color:var(--text2);margin-top:1px;}
-.btn{padding:7px 13px;font-size:13px;font-weight:500;border-radius:var(--r-md);cursor:pointer;border:1px solid var(--border2);background:var(--bg);color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;}
+.btn{padding:7px 13px;font-size:13px;font-weight:500;border-radius:var(--r-md);cursor:pointer;border:1px solid var(--border2);background:var(--bg);color:var(--text);display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;}
 .btn:hover{background:var(--bg2);}
 .btn-primary{background:var(--purple);color:#fff;border-color:var(--purple);}
 .btn-primary:hover{background:var(--purple-dark);}
 .btn-sm{padding:5px 10px;font-size:12px;}
-
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:var(--red);}
 /* TABS */
-.tab-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;display:flex;flex-shrink:0;overflow-x:auto;}
-.tab-bar::-webkit-scrollbar{height:0;}
+.tab-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;display:flex;flex-shrink:0;}
 .tab{padding:10px 15px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);transition:all .12s;white-space:nowrap;}
-.tab.aktiv{color:var(--purple);border-bottom-color:var(--purple);}
-.tab:hover:not(.aktiv){color:var(--text);}
-
-/* INHALT */
-.inhalt{flex:1;overflow-y:auto;padding:22px 24px;}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple);}
+.tab:hover:not(.active){color:var(--text);}
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:22px 24px;}
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-
-/* KARTEN */
-.karte{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 17px;margin-bottom:14px;}
-.abschnitt-titel{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px;}
+/* CARDS */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 17px;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.sec-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px;}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+/* KPI GRIDS */
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
 .kpi{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 15px;border-top:3px solid transparent;}
 .kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
 .kpi-val{font-size:22px;font-weight:600;}
 .kpi-sub{font-size:11px;color:var(--text3);margin-top:2px;}
-
-/* SESSION KARTEN */
-.session-karte{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:10px;transition:all .15s;cursor:pointer;}
-.session-karte:hover{border-color:var(--border2);}
-.session-karte.heute{border-left:3px solid var(--purple);background:var(--purple-bg);}
-
-/* ALERTS */
-.alert{border-radius:var(--r-lg);padding:14px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;}
-.alert-rot{background:var(--red-bg);border:1px solid rgba(226,75,74,.2);}
-.alert-gelb{background:var(--amber-bg);border:1px solid rgba(186,117,23,.2);}
-.alert-gruen{background:var(--teal-bg);border:1px solid rgba(29,158,117,.2);}
-
-/* TABELLEN */
+/* FORMS */
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+.f5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px;}
+input,select,textarea{font-size:13px;padding:8px 11px;border-radius:var(--r-md);border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-family:inherit;width:100%;outline:none;transition:border-color .12s;}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);}
+textarea{resize:vertical;min-height:75px;line-height:1.5;}
+label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:4px;}
+/* TABLES */
+.tbl{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{background:var(--bg2);padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap;}
 td{padding:10px 14px;border-bottom:1px solid var(--border);}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--bg2);}
-
-/* FORMULARE */
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
-input,select,textarea{font-size:13px;padding:8px 11px;border-radius:var(--r-md);border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-family:inherit;width:100%;outline:none;transition:border-color .12s;}
-input:focus,select:focus,textarea:focus{border-color:var(--purple);}
-textarea{resize:vertical;min-height:70px;line-height:1.5;}
-label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:4px;}
-
+/* ALERTS */
+.alert{border-radius:var(--r-lg);padding:14px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;}
+.alert-warn{background:var(--amber-bg);border:1px solid rgba(186,117,23,.2);}
+.alert-danger{background:var(--red-bg);border:1px solid rgba(226,75,74,.2);}
+.alert-ok{background:var(--teal-bg);border:1px solid rgba(29,158,117,.2);}
+/* PROTOCOLS */
+.proto{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 17px;margin-bottom:10px;}
+.proto-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;}
+.proto-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);flex-wrap:wrap;}
+.crit-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+/* SKILLS */
+.skill-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.skill-label{font-size:13px;color:var(--text2);width:170px;flex-shrink:0;}
+.skill-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.skill-fill{height:100%;border-radius:3px;}
+.skill-pct{font-size:12px;color:var(--text2);width:34px;text-align:right;}
+.skill-delta{font-size:11px;width:38px;text-align:right;}
+/* SESS HIST */
+.sess-hist{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;}
+.sess-row{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid var(--border);}
+.sess-row:last-child{border-bottom:none;}
+/* ONBOARDING */
+.ob-day-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border-radius:var(--r-md);margin-bottom:8px;margin-top:14px;}
+.ob-day-label{font-size:13px;font-weight:600;color:var(--purple);flex:1;}
+.ob-step{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden;}
+.ob-hdr{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;}
+.ob-hdr:hover{background:var(--bg2);}
+.ob-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.ob-check.done{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ob-label{font-size:13px;font-weight:500;flex:1;}
+.ob-status{font-size:11px;color:var(--text3);}
+.ob-chev{font-size:14px;color:var(--text3);transition:transform .2s;}
+.ob-chev.open{transform:rotate(180deg);}
+.ob-detail{display:none;border-top:1px solid var(--border);background:var(--bg2);padding:12px 14px 14px 47px;}
+.ob-detail.open{display:block;}
+.ob-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px;}
+.ob-video-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;}
+.ob-video-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.ftp-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 7px;border-radius:20px;background:var(--teal-bg);color:var(--teal-dark);}
+/* SOLIDROAD */
+.sr-sim{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
+.sr-ring{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;border:3px solid;}
+.sr-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.sr-tag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2);}
+/* TASKS */
+.task-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:8px;overflow:hidden;}
+.task-item.overdue{border-left:3px solid var(--red);}
+.task-item.done-item{opacity:.6;}
+.task-row{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;cursor:pointer;}
+.task-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;margin-top:1px;}
+.task-check.done{background:var(--teal);border-color:var(--teal);color:#fff;}
+.task-title{font-size:13px;font-weight:500;flex:1;line-height:1.5;}
+.task-title.done{text-decoration:line-through;color:var(--text3);}
+.task-meta{font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+.task-prio{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;}
+.task-del{width:24px;height:24px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px;flex-shrink:0;transition:all .12s;}
+.task-del:hover{background:var(--red-bg);color:var(--red);}
+.task-detail{display:none;padding:12px 15px 13px 49px;border-top:1px solid var(--border);background:var(--bg2);font-size:13px;color:var(--text2);line-height:1.6;}
+.task-detail.open{display:block;}
+.task-actions{display:flex;gap:8px;margin-top:10px;}
+/* TEAM */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px;}
+.team-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 17px;cursor:pointer;transition:all .15s;}
+.team-card:hover{border-color:var(--purple);}
+.tc-hdr{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.tc-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.tc-kpi{background:var(--bg2);border-radius:var(--r-sm);padding:8px 10px;text-align:center;}
+.tc-kpi-val{font-size:15px;font-weight:600;}
+.tc-kpi-label{font-size:10px;color:var(--text3);margin-top:1px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.bar-label{font-size:11px;color:var(--text2);width:100px;flex-shrink:0;}
+.bar-track{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.bar-val{font-size:11px;color:var(--text2);width:30px;text-align:right;}
+.phase-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;}
+/* SETTINGS */
+.set-row{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 15px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.set-icon{width:34px;height:34px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.connected{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--teal-bg);color:var(--teal-dark);}
+.disconnected{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3);}
 /* MODAL */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;}
 .modal-ov.hidden{display:none;}
-.modal{background:var(--bg);border-radius:var(--r-lg);padding:24px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;}
-.modal-titel{font-size:16px;font-weight:600;margin-bottom:16px;}
-.modal-aktionen{display:flex;gap:10px;margin-top:16px;}
-
-/* SCORECARD MODAL */
-#scorecardModal .modal{width:760px;}
-
-.leer{text-align:center;padding:3rem 1rem;color:var(--text2);}
+.modal{background:var(--bg);border-radius:var(--r-lg);padding:24px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:16px;}
+.modal-actions{display:flex;gap:10px;margin-top:6px;}
+/* CHART */
+.chart-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:14px;}
+.chart-toggle{display:flex;border:1px solid var(--border2);border-radius:var(--r-md);overflow:hidden;}
+.chart-toggle button{padding:6px 13px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;}
+.chart-toggle button.active{background:var(--purple);color:#fff;}
+.empty{text-align:center;padding:3rem 1rem;color:var(--text2);}
 </style>
 </head>
 <body>
-
 <div class="sidebar">
-  <div class="sb-kopf">
-    <div class="sb-logo"><div class="sb-punkt"></div><span class="sb-titel">Coaching Dashboard</span></div>
-    <div class="sb-unter">Wiegand &amp; Partner</div>
+  <div class="sb-header">
+    <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">Coaching Dashboard</span></div>
+    <div class="sb-sub">Wiegand &amp; Partner</div>
   </div>
   <div class="sb-nav">
-    <div class="sb-item aktiv" id="nav-coach" onclick="zeigeAnsicht('coach')"><i class="ti ti-calendar-event"></i> Coach-Ansicht</div>
-    <div class="sb-item" id="nav-manager" onclick="zeigeAnsicht('manager')"><i class="ti ti-users"></i> Manager-Übersicht</div>
+    <div class="sb-item" id="nav-team" onclick="showView('team')"><i class="ti ti-layout-grid"></i> Team Overview</div>
+    <div class="sb-item" id="nav-settings" onclick="showView('settings')"><i class="ti ti-settings"></i> Settings</div>
   </div>
-  <div class="sb-abschnitt">Mitarbeiter</div>
-  <div class="ma-liste" id="mitarbeiterListe"></div>
-  <button class="sb-hinzu" onclick="openModal('neuerMitarbeiterModal')"><i class="ti ti-plus"></i> Mitarbeiter hinzufügen</button>
+  <div class="sb-divider"></div>
+  <div class="sb-section">Staff</div>
+  <div class="emp-list" id="empList"></div>
+  <button class="sb-add" onclick="openModal('addEmpModal')"><i class="ti ti-plus"></i> Add staff member</button>
 </div>
+<div class="main" id="mainArea"></div>
 
-<div class="hauptbereich-wrap">
-  <div id="hauptbereich"></div>
-</div>
-
-<!-- SESSION PLANEN MODAL -->
-<div class="modal-ov hidden" id="neueSessionModal"><div class="modal">
-  <div class="modal-titel"><i class="ti ti-calendar-plus" style="margin-right:8px;color:var(--purple)"></i>Session planen</div>
-  <div class="f2">
-    <div><label>Mitarbeiter</label><select id="ns-mitarbeiter"></select></div>
-    <div><label>Datum</label><input type="date" id="ns-datum"></div>
-  </div>
-  <div class="f2">
-    <div><label>Typ</label><select id="ns-typ">
-      <option>Onboarding-Session</option>
-      <option>Gesprächsbewertung</option>
-      <option>Anlassbezogene Session</option>
-      <option>Mindset-Coaching</option>
-      <option>Einwandbehandlung Training</option>
-      <option>Abschlusstechnik Training</option>
-    </select></div>
-    <div><label>Thema / Fokus</label><input type="text" id="ns-thema" placeholder="z.B. Einwandbehandlung, Loop-Technik..."></div>
-  </div>
-  <div style="margin-bottom:14px"><label>Anlass / Notiz für den Coach</label><textarea id="ns-notiz" placeholder="Warum wird diese Session eingeplant? Was soll der Coach besonders beachten..."></textarea></div>
-  <div class="modal-aktionen">
-    <button class="btn" onclick="closeModal('neueSessionModal')">Abbrechen</button>
-    <button class="btn btn-primary" onclick="neueSessionAnlegen()"><i class="ti ti-check"></i> Session planen</button>
-  </div>
+<!-- MODALS -->
+<div class="modal-ov hidden" id="addEmpModal"><div class="modal">
+  <div class="modal-title">Mitarbeiter hinzufügen</div>
+  <div class="f2"><div><label>Vollständiger Name</label><input type="text" id="newName" placeholder="Anna Bauer"></div><div><label>Position</label><input type="text" id="newPosition" placeholder="Inside Sales"></div></div>
+  <div class="f2"><div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Aktiv</option><option>Entwicklung</option></select></div><div><label>Startdatum</label><input type="date" id="newStart"></div></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('addEmpModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewEmp()"><i class="ti ti-check"></i> Add</button></div>
 </div></div>
 
-<!-- SCORECARD / SESSION BEWERTEN MODAL -->
-<div class="modal-ov hidden" id="scorecardModal"><div class="modal" style="width:760px">
-  <div class="modal-titel"><i class="ti ti-clipboard-check" style="margin-right:8px;color:var(--purple)"></i>Session bewerten</div>
-  <div id="scorecardInhalt"></div>
-  <div class="modal-aktionen">
-    <button class="btn" onclick="closeModal('scorecardModal')">Abbrechen</button>
-    <button class="btn btn-primary" onclick="sessionSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
-  </div>
+<div class="modal-ov hidden" id="addTaskModal"><div class="modal">
+  <div class="modal-title">Aufgabe hinzufügen</div>
+  <div style="margin-bottom:10px"><label>Aufgabentitel</label><input type="text" id="taskText" placeholder="z.B. Pitch-Skript lesen – pages 1 to 9"></div>
+  <div style="margin-bottom:10px"><label>Beschreibung</label><textarea id="taskDesc" placeholder="Was soll der Mitarbeiter tun..." style="min-height:80px"></textarea></div>
+  <div class="f3"><div><label>Priorität</label><select id="taskPrio"><option value="high">Hoch</option><option value="medium" selected>Mittel</option><option value="low">Niedrig</option></select></div><div><label>Fälligkeitsdatum</label><input type="date" id="taskDue"></div><div><label>Quelle</label><input type="text" id="taskQuelle" placeholder="Session 10.06"></div></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('addTaskModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewTask()"><i class="ti ti-check"></i> Aufgabe hinzufügen</button></div>
 </div></div>
 
-<!-- AUFGABE HINZUFÜGEN MODAL -->
-<div class="modal-ov hidden" id="neueAufgabeModal"><div class="modal">
-  <div class="modal-titel"><i class="ti ti-checkbox" style="margin-right:8px;color:var(--purple)"></i>Aufgabe hinzufügen</div>
-  <div style="margin-bottom:10px"><label>Aufgabentitel</label><input type="text" id="na-text" placeholder="z.B. SolidRoad Simulation wiederholen"></div>
-  <div style="margin-bottom:10px"><label>Beschreibung</label><textarea id="na-beschr" placeholder="Was genau soll der Mitarbeiter tun..."></textarea></div>
-  <div class="f3">
-    <div><label>Priorität</label><select id="na-prio"><option value="hoch">Hoch</option><option value="mittel" selected>Mittel</option><option value="niedrig">Niedrig</option></select></div>
-    <div><label>Fällig am</label><input type="date" id="na-faellig"></div>
-    <div><label>Quelle</label><input type="text" id="na-quelle" placeholder="z.B. Session 22.06"></div>
-  </div>
-  <div class="modal-aktionen">
-    <button class="btn" onclick="closeModal('neueAufgabeModal')">Abbrechen</button>
-    <button class="btn btn-primary" onclick="neueAufgabeSpeichern()"><i class="ti ti-check"></i> Aufgabe hinzufügen</button>
-  </div>
+<div class="modal-ov hidden" id="obModal"><div class="modal">
+  <div class="modal-title">Onboarding-Schritt hinzufügen</div>
+  <div style="margin-bottom:10px"><label>Schrittname</label><input type="text" id="obLabelInput" placeholder="z.B. Erweiterte Produktschulung"></div>
+  <div class="f2"><div><label>Tag</label><input type="number" id="obTagInput" placeholder="1" min="1" value="1"></div><div><label>Video-URL (FTP or https://)</label><input type="url" id="obVideoInput" placeholder="https://..."></div></div>
+  <div style="margin-bottom:14px"><label>Beschreibung for staff</label><textarea id="obDetailInput" placeholder="Was wird in diesem Schritt behandelt..."></textarea></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('obModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveOBStep()"><i class="ti ti-check"></i> Add Step</button></div>
 </div></div>
 
-<!-- NEUER MITARBEITER MODAL -->
-<div class="modal-ov hidden" id="neuerMitarbeiterModal"><div class="modal">
-  <div class="modal-titel">Mitarbeiter hinzufügen</div>
-  <div class="f2"><div><label>Vollständiger Name</label><input type="text" id="nm-name" placeholder="Anna Bauer"></div><div><label>Position</label><select id="nm-rolle"><option>Vertriebsmitarbeiter</option><option>Senior Vertriebsmitarbeiter</option><option>Sales Coach</option></select></div></div>
-  <div class="f3"><div><label>Phase</label><select id="nm-phase"><option>Onboarding</option><option>Aktiv</option><option>Entwicklung</option></select></div><div><label>Team</label><input type="text" id="nm-team" placeholder="z.B. Deutschland"></div><div><label>Startdatum</label><input type="date" id="nm-start"></div></div>
-  <div class="modal-aktionen"><button class="btn" onclick="closeModal('neuerMitarbeiterModal')">Abbrechen</button><button class="btn btn-primary" onclick="neuerMitarbeiterSpeichern()"><i class="ti ti-check"></i> Hinzufügen</button></div>
+<div class="modal-ov hidden" id="ratingModal"><div class="modal">
+  <div class="modal-title">Bewertungskriterium hinzufügen</div>
+  <div style="margin-bottom:10px"><label>Name</label><input type="text" id="rcName" placeholder="z.B. Kundenempathie"></div>
+  <div class="f3"><div><label>Kategorie</label><select id="rcCat"><option>Vertrieb</option><option>Kommunikation</option><option>Produktwissen</option><option>Sonstiges</option></select></div><div><label>Zielwert (%)</label><input type="number" id="rcTarget" value="80" min="0" max="100"></div><div></div></div>
+  <div style="margin-bottom:14px"><label>Beschreibung</label><textarea id="rcDesc" placeholder="Was misst dieses Kriterium..."></textarea></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('ratingModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveRatingCriterion()"><i class="ti ti-check"></i> Add</button></div>
 </div></div>
 
+<div class="modal-ov hidden" id="srModal"><div class="modal">
+  <div class="modal-title">SolidRoad verbinden</div>
+  <div style="margin-bottom:10px"><label>API-Schlüssel</label><input type="password" id="srKeyInput" placeholder="sr_live_..."></div>
+  <div style="margin-bottom:14px"><label>Organisations-ID</label><input type="text" id="srOrgInput" placeholder="Your SolidRoad org ID"></div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Find your API key in SolidRoad → Settings → Integrations → API-Schlüssels.</p>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('srModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveSRKey()"><i class="ti ti-plug"></i> Verbinden</button></div>
+</div></div>
 <script>
-// ══════════════════════════════════════════════
-// KONSTANTEN
-// ══════════════════════════════════════════════
-var FARBEN = [
-  {bg:'#EEEDFE',text:'#3C3489'},{bg:'#E1F5EE',text:'#085041'},
-  {bg:'#FAECE7',text:'#712B13'},{bg:'#FBEAF0',text:'#72243E'},
-  {bg:'#E6F1FB',text:'#0C447C'},{bg:'#EAF3DE',text:'#27500A'},
-  {bg:'#FEF3EE',text:'#7A2E0E'},{bg:'#F0F4FF',text:'#2D3A8C'},
+
+// ── CONSTANTS ──
+var COLORS=[{bg:'#EEEDFE',text:'#3C3489'},{bg:'#E1F5EE',text:'#085041'},{bg:'#FAECE7',text:'#712B13'},{bg:'#FBEAF0',text:'#72243E'},{bg:'#E6F1FB',text:'#0C447C'},{bg:'#EAF3DE',text:'#27500A'}];
+var RATINGS=['Mega Yes','Super Yes','Yes','Teilweise'];
+var RS={'Mega Yes':{bg:'#EAF3DE',color:'#27500A'},'Super Yes':{bg:'#EEEDFE',color:'#3C3489'},'Yes':{bg:'#E6F1FB',color:'#0C447C'},'Teilweise':{bg:'#FAEEDA',color:'#633806'}};
+var SKILLS=['Needs Analysis','Value Argumentation','Objection Handling','Trust Building','Closing Technique'];
+var SK_DE=['Bedarfsermittlung','Nutzenargumentation','Einwandbehandlung','Vertrauensaufbau','Abschlusstechnik'];
+var KPI_TARGETS={crOEM:55,crSuperYes:12,crMegaYes:8,optPerH:2.0};
+var CR_GOOD=55;
+
+// ── STATE ──
+var settings={srApiKey:'',srOrgId:'',ftpUrl:''};
+var view='team', selectedEmp=1, activeTab='performance';
+var perfMetric='optPerH', perfRange=7;
+var activeChart=null;
+
+// ── DATA ──
+var ratingCriteria=[
+  {id:1,name:'Needs Analysis Quality',cat:'Sales',target:80,desc:'How well the rep identifies customer needs'},
+  {id:2,name:'Own-Brand Argumentation',cat:'Sales',target:80,desc:'Quality of value proposition for own-brand'},
+  {id:3,name:'Objection Handling',cat:'Sales',target:75,desc:'Effectiveness in handling objections'},
+  {id:4,name:'Closing Initiative',cat:'Sales',target:75,desc:'Proactively guiding the conversation to a close'},
+  {id:5,name:'Customer Rapport',cat:'Communication',target:85,desc:'Building trust and a positive relationship'},
 ];
-var BEWERTUNGEN = ['Mega Yes','Super Yes','Yes','Teilweise'];
-var BW = {
-  'Mega Yes':  {bg:'#EAF3DE',color:'#27500A'},
-  'Super Yes': {bg:'#EEEDFE',color:'#3C3489'},
-  'Yes':       {bg:'#E6F1FB',color:'#0C447C'},
-  'Teilweise': {bg:'#FAEEDA',color:'#633806'},
+
+var ROLES=['Vertriebsmitarbeiter','Senior Vertriebsmitarbeiter','Sales Coach'];
+var GLOBAL_TARGETS={crOEM:55,crSuperYes:12,crMegaYes:8,optPerH:2.0};
+
+var employees=[
+  {id:1,name:'Anna Bauer',role:'Sales Representative',phase:'Aktiv',color:0,startDate:'2026-04-01',team:'Deutschland',contract:'Vollzeit',hours:40,active:true,targets:{crOEM:55,crSuperYes:12,crMegaYes:8,optPerH:2.0}},
+  {id:2,name:'Markus Fischer',role:'Sales Representative',phase:'Onboarding',color:1,startDate:'2026-06-01',team:'Deutschland',contract:'Vollzeit',hours:40,active:true,targets:{crOEM:50,crSuperYes:10,crMegaYes:6,optPerH:1.5}},
+  {id:3,name:'Sandra Klein',role:'Sales Executive',phase:'Aktiv',color:2,startDate:'2026-03-01',team:'Valencia',contract:'Vollzeit',hours:40,active:true,targets:{crOEM:60,crSuperYes:15,crMegaYes:10,optPerH:2.5}},
+  {id:4,name:'Thomas Müller',role:'Sales Executive',phase:'Aktiv',color:3,startDate:'2026-02-01',team:'Deutschland',contract:'Vollzeit',hours:40,active:true,targets:{crOEM:60,crSuperYes:15,crMegaYes:10,optPerH:2.5}},
+  {id:5,name:'Julia Schneider',role:'Sales Representative',phase:'Entwicklung',color:4,startDate:'2026-05-01',team:'Valencia',contract:'Teilzeit',hours:32,active:true,targets:{crOEM:55,crSuperYes:12,crMegaYes:8,optPerH:2.0}},
+];
+
+var protocols={
+  1:[
+    {id:1,date:'2026-06-10',rating:'Super Yes',note:'Anna hat die Bedarfsermittlung deutlich verbessert. Offene Fragen wurden gezielt eingesetzt.',focus:'Eigenmarken-Umstieg',skills:{Bedarfsermittlung:85,Nutzenargumentation:80,Einwandbehandlung:70,Vertrauensaufbau:90,Abschlusstechnik:75},criteria:{1:88,2:82,3:71,4:76,5:90}},
+    {id:2,date:'2026-05-22',rating:'Yes',note:'Gutes Gespräch. Abschluss könnte direkter initiiert werden.',focus:'Abschlussstärke',skills:{Bedarfsermittlung:80,Nutzenargumentation:75,Einwandbehandlung:68,Vertrauensaufbau:85,Abschlusstechnik:60},criteria:{1:80,2:75,3:68,4:61,5:85}},
+    {id:3,date:'2026-05-05',rating:'Teilweise',note:'Erster Anlauf mit neuem Gesprächsleitfaden. Struktur noch nicht verinnerlicht.',focus:'Gesprächsstruktur',skills:{Bedarfsermittlung:60,Nutzenargumentation:55,Einwandbehandlung:50,Vertrauensaufbau:70,Abschlusstechnik:45},criteria:{1:60,2:55,3:50,4:46,5:70}},
+  ],
+  2:[{id:4,date:'2026-06-08',rating:'Yes',note:'Onboarding läuft gut. Produktkenntnisse wachsen.',focus:'Produktwissen',skills:{Bedarfsermittlung:55,Nutzenargumentation:60,Einwandbehandlung:45,Vertrauensaufbau:65,Abschlusstechnik:40},criteria:{1:55,2:60,3:45,4:40,5:65}}],
+  3:[],
+  4:[{id:5,date:'2026-06-11',rating:'Mega Yes',note:'Thomas switched a long-term customer to own-brand. Best-practice example.',focus:'Eigenmarken-Umstieg',skills:{Bedarfsermittlung:92,Nutzenargumentation:95,Einwandbehandlung:88,Vertrauensaufbau:95,Abschlusstechnik:90},criteria:{1:92,2:95,3:88,4:90,5:95}}],
+  5:[{id:6,date:'2026-06-09',rating:'Teilweise',note:'Aktives Zuhören gut, aber Verbindung zum Nutzen der Eigenmarke fehlt noch.',focus:'Nutzenargumentation',skills:{Bedarfsermittlung:70,Nutzenargumentation:50,Einwandbehandlung:55,Vertrauensaufbau:72,Abschlusstechnik:45},criteria:{1:70,2:50,3:55,4:46,5:72}}],
 };
-var ROLLEN = ['Vertriebsmitarbeiter','Senior Vertriebsmitarbeiter','Sales Coach'];
-var PHASEN = ['Onboarding','Aktiv','Entwicklung'];
-
-// Globale KPI-Ziele (überschreibbar pro Mitarbeiter)
-var GLOBALE_ZIELE = {crOEM:55, crSuperYes:12, crMegaYes:8, optProStunde:2.0};
-
-// ══════════════════════════════════════════════
-// SCORECARD-KRITERIEN (aus eurer Excel)
-// ══════════════════════════════════════════════
-var SCORECARD = [
-  {
-    kategorie: 'Opener',
-    gewichtung: 5,
-    kriterien: [
-      {id:'op1', name:'Gesprächseinstieg', beschreibung:'Agent startet freundlich und professionell ins Gespräch',
-       stufen:['Kein klarer Start','Unsicher / abgelesen','Freundlich & klar','Sehr sicher, ruhig & professionell']},
-      {id:'op2', name:'Gesprächsöffnung', beschreibung:'Agent stellt Bezug zur Bestellung her und führt zur Einwandsfrage',
-       stufen:['Kein Bezug','Unklar / holprig','Verständlich erklärt','Natürlich & führt direkt zu Frage']},
-    ]
-  },
-  {
-    kategorie: 'Einwand',
-    gewichtung: 40,
-    kriterien: [
-      {id:'ew1', name:'Qualifizierung', beschreibung:'Agent arbeitet heraus, was konkret hinter dem Einwand steckt',
-       stufen:['Einwand nicht geklärt','Oberflächlich geklärt','Konkreter Einwand erkannt','Einwand klar und detailliert herausgearbeitet']},
-      {id:'ew2', name:'Solidarisierung', beschreibung:'Agent zeigt echtes Verständnis für die Situation des Kunden',
-       stufen:['Kein Verständnis','Oberflächlich / Floskel','Kunde fühlt sich verstanden','Kunde fühlt sich klar abgeholt']},
-      {id:'ew3', name:'Umgang', beschreibung:'Agent reagiert passend auf den Einwand statt Standardargumentation',
-       stufen:['Standardargumentation','Teilweise passend','Auf Einwand bezogen','Individuell und exakt passend']},
-      {id:'ew4', name:'Entkräftung', beschreibung:'Agent entkräftet den Einwand nachvollziehbar und passend',
-       stufen:['Einwand nicht oder falsch entkräftet','Teilweise passend, aber nicht überzeugend','Verständlich entkräftet','Klar, passend und überzeugend gelöst']},
-      {id:'ew5', name:'Testabschluss', beschreibung:'Agent prüft aktiv, ob der Einwand gelöst ist',
-       stufen:['Kein Check','Unsicher / indirekt','Klarer Check','Klare Zustimmung']},
-      {id:'ew6', name:'Vertrauen aufbauen', beschreibung:'Agent gibt Sicherheit, dass der Wechsel funktioniert',
-       stufen:['Keine Sicherheit','Allgemeine Aussagen','Glaubwürdige Sicherheit','Sehr konkrete & überzeugende Sicherheit']},
-    ]
-  },
-  {
-    kategorie: 'Loop',
-    gewichtung: 10,
-    kriterien: [
-      {id:'lo1', name:'Re-Opening', beschreibung:'Agent bleibt im Gespräch und behandelt weitere Einwände',
-       stufen:['Gibt auf oder verwendet ähnliche standard Floskeln','Behandelt Einwand, zöglicher Versuch einen Loop zu drehen','Behandelt mehrere Einwände','Bleibt dran und öffnet aktiv erneut']},
-    ]
-  },
-  {
-    kategorie: 'Bedarf',
-    gewichtung: 15,
-    kriterien: [
-      {id:'be1', name:'Erweitern', beschreibung:'Agent fragt nach Nutzung und Anwendung',
-       stufen:['Kein Bedarf erfragt','Oberflächlich gefragt','Bedarf angesprochen','Bedarf aktiv erweitert und genutzt']},
-      {id:'be2', name:'Quantifizieren', beschreibung:'Agent fragt nach Menge, Frequenz oder Zeitraum',
-       stufen:['Keine Zahlen erfragt','Allgemein gefragt','Teilweise konkret','Klar und vollständig quantifiziert']},
-      {id:'be3', name:'Gesprächssignale', beschreibung:'Agent erkennt Hinweise und nutzt sie für weiteres Gespräch',
-       stufen:['Hinweise nicht erkannt','Hinweise erkannt, aber nicht genutzt','Potenzial erkannt und angesprochen','Potenzial aktiv genutzt und verkauft']},
-    ]
-  },
-  {
-    kategorie: 'Abschluss / Mega Yes',
-    gewichtung: 20,
-    kriterien: [
-      {id:'ab1', name:'Abschlussversuch', beschreibung:'Agent führt aktiv zur Entscheidung',
-       stufen:['Kein Versuch','Zögerlich','Klarer Versuch','Sehr passend und umsatzsteigernd']},
-      {id:'ab2', name:'Angebotsqualität', beschreibung:'Angebot passt zum Bedarf und erweitert sinnvoll',
-       stufen:['Angebot passt nicht / Aktive Geld-Zurück angeboten','Teilweise passend','Passend','Aktive Angebotsgestaltung']},
-      {id:'ab3', name:'Kaufsignale nutzen', beschreibung:'Agent erkennt und nutzt Kaufbereitschaft',
-       stufen:['Ignoriert','Teilweise erkannt','Genutzt','Aktiv in Abschluss überführt']},
-    ]
-  },
-  {
-    kategorie: 'Gesprächsführung',
-    gewichtung: 5,
-    kriterien: [
-      {id:'gf1', name:'Struktur', beschreibung:'Gespräch folgt klarem Ablauf',
-       stufen:['Kein roter Faden','Teilweise Struktur','Klarer Ablauf','Sehr klar und flüssig']},
-      {id:'gf2', name:'Gesprächskontrolle', beschreibung:'Agent steuert das Gespräch aktiv',
-       stufen:['Kunde führt','Wechselhaft','Agent führt','Sehr souverän gesteuert']},
-    ]
-  },
-];
-
-// ══════════════════════════════════════════════
-// MITARBEITER
-// ══════════════════════════════════════════════
-var mitarbeiter = [
-  {id:1, name:'Anna Bauer',      rolle:'Vertriebsmitarbeiter',         phase:'Aktiv',      farbe:0, startDatum:'2026-04-01', team:'Deutschland', vertrag:'Vollzeit', stunden:40, aktiv:true, ziele:{crOEM:55,crSuperYes:12,crMegaYes:8,optProStunde:2.0}},
-  {id:2, name:'Markus Fischer',  rolle:'Vertriebsmitarbeiter',         phase:'Onboarding', farbe:1, startDatum:'2026-06-01', team:'Deutschland', vertrag:'Vollzeit', stunden:40, aktiv:true, ziele:{crOEM:50,crSuperYes:10,crMegaYes:6,optProStunde:1.5}},
-  {id:3, name:'Sandra Klein',    rolle:'Senior Vertriebsmitarbeiter',  phase:'Aktiv',      farbe:2, startDatum:'2026-03-01', team:'Valencia',     vertrag:'Vollzeit', stunden:40, aktiv:true, ziele:{crOEM:60,crSuperYes:15,crMegaYes:10,optProStunde:2.5}},
-  {id:4, name:'Thomas Müller',   rolle:'Senior Vertriebsmitarbeiter',  phase:'Aktiv',      farbe:3, startDatum:'2026-02-01', team:'Deutschland', vertrag:'Vollzeit', stunden:40, aktiv:true, ziele:{crOEM:60,crSuperYes:15,crMegaYes:10,optProStunde:2.5}},
-  {id:5, name:'Julia Schneider', rolle:'Vertriebsmitarbeiter',         phase:'Entwicklung',farbe:4, startDatum:'2026-05-01', team:'Valencia',     vertrag:'Teilzeit', stunden:32, aktiv:true, ziele:{crOEM:55,crSuperYes:12,crMegaYes:8,optProStunde:2.0}},
-];
-
-// ══════════════════════════════════════════════
-// COACHING SESSIONS
-// ══════════════════════════════════════════════
-var sessions = [
-  // Anna Bauer – 3 Sessions
-  {
-    id:101, mitarbeiterId:1, datum:'2026-06-10', typ:'Gesprächsbewertung',
-    thema:'Einwandbehandlung', status:'abgeschlossen',
-    notizen:'Anna zeigt deutliche Fortschritte bei der Solidarisierung. Testabschluss muss noch konsequenter eingesetzt werden.',
-    gesamtBewertung:'Super Yes',
-    scorecard:{op1:3,op2:3,ew1:3,ew2:4,ew3:3,ew4:3,ew5:2,ew6:3,lo1:3,be1:3,be2:3,be3:2,ab1:3,ab2:3,ab3:2,gf1:3,gf2:3},
-    naechsteSchritte:'Testabschluss täglich üben. SolidRoad Simulation "Einwand Preis" wiederholen.',
-    coach:'Sales Coach'
-  },
-  {
-    id:102, mitarbeiterId:1, datum:'2026-05-22', typ:'Gesprächsbewertung',
-    thema:'Abschlusstechnik', status:'abgeschlossen',
-    notizen:'Gesprächsführung solide. Kaufsignale werden erkannt aber nicht konsequent genutzt.',
-    gesamtBewertung:'Yes',
-    scorecard:{op1:3,op2:3,ew1:3,ew2:3,ew3:2,ew4:3,ew5:2,ew6:3,lo1:2,be1:3,be2:2,be3:2,ab1:2,ab2:3,ab3:2,gf1:3,gf2:3},
-    naechsteSchritte:'Fokus auf Kaufsignale. Nächste Session: Live-Mitschnitt analysieren.',
-    coach:'Sales Coach'
-  },
-  {
-    id:103, mitarbeiterId:1, datum:'2026-05-05', typ:'Onboarding-Session',
-    thema:'Gesprächseinstieg', status:'abgeschlossen',
-    notizen:'Erster echter Anlauf. Opener funktioniert gut, Einwandbehandlung noch sehr unsicher.',
-    gesamtBewertung:'Teilweise',
-    scorecard:{op1:3,op2:2,ew1:2,ew2:2,ew3:1,ew4:1,ew5:1,ew6:2,lo1:1,be1:2,be2:1,be3:1,ab1:1,ab2:2,ab3:1,gf1:2,gf2:2},
-    naechsteSchritte:'SolidRoad Einwand-Modul komplett durcharbeiten bevor nächstes echtes Gespräch.',
-    coach:'Sales Coach'
-  },
-  // Thomas Müller – 2 Sessions
-  {
-    id:201, mitarbeiterId:4, datum:'2026-06-11', typ:'Gesprächsbewertung',
-    thema:'Eigenmarken-Umstieg', status:'abgeschlossen',
-    notizen:'Absolutes Top-Gespräch. Thomas hat alle Einwände souverän behandelt, Mega Yes erzielt.',
-    gesamtBewertung:'Mega Yes',
-    scorecard:{op1:4,op2:4,ew1:4,ew2:4,ew3:4,ew4:4,ew5:4,ew6:4,lo1:4,be1:4,be2:3,be3:4,ab1:4,ab2:4,ab3:4,gf1:4,gf2:4},
-    naechsteSchritte:'Als Best-Practice für Team dokumentieren. Thomas als Mentor für neue Kollegen?',
-    coach:'Sales Coach'
-  },
-  {
-    id:202, mitarbeiterId:4, datum:'2026-05-15', typ:'Gesprächsbewertung',
-    thema:'Bedarfsermittlung', status:'abgeschlossen',
-    notizen:'Sehr gute Entwicklung. Quantifizierung könnte noch präziser sein.',
-    gesamtBewertung:'Super Yes',
-    scorecard:{op1:4,op2:3,ew1:3,ew2:4,ew3:4,ew4:3,ew5:3,ew6:3,lo1:3,be1:3,be2:3,be3:3,ab1:3,ab2:3,ab3:3,gf1:4,gf2:4},
-    naechsteSchritte:'Quantifizierung beim Bedarf gezielt ausbauen.',
-    coach:'Sales Coach'
-  },
-  // Julia Schneider – 1 Session
-  {
-    id:301, mitarbeiterId:5, datum:'2026-06-09', typ:'Anlassbezogene Session',
-    thema:'Nutzenargumentation', status:'abgeschlossen',
-    notizen:'Aktives Zuhören gut, aber Verbindung zum konkreten Nutzen fehlt noch. Re-Opening wird kaum eingesetzt.',
-    gesamtBewertung:'Teilweise',
-    scorecard:{op1:3,op2:2,ew1:2,ew2:3,ew3:2,ew4:2,ew5:1,ew6:2,lo1:1,be1:2,be2:2,be3:2,ab1:2,ab2:2,ab3:1,gf1:2,gf2:2},
-    naechsteSchritte:'Loop-Technik üben. Wöchentliche Session für nächste 4 Wochen einplanen.',
-    coach:'Sales Coach'
-  },
-  // Markus Fischer – geplante Sessions (Onboarding)
-  {
-    id:401, mitarbeiterId:2, datum:'2026-06-23', typ:'Onboarding-Session',
-    thema:'Gesprächsstruktur', status:'geplant',
-    notizen:'', gesamtBewertung:null, scorecard:{}, naechsteSchritte:'',
-    coach:'Sales Coach', geplantVon:'Sales Manager',
-    planungsNotiz:'Markus ist bereit für erste begleitete Gespräche. Fokus: Opener und Struktur.'
-  },
-  {
-    id:402, mitarbeiterId:2, datum:'2026-06-30', typ:'Onboarding-Session',
-    thema:'Einwandbehandlung', status:'geplant',
-    notizen:'', gesamtBewertung:null, scorecard:{}, naechsteSchritte:'',
-    coach:'Sales Coach', geplantVon:'Sales Coach',
-    planungsNotiz:'Erste Einwände live begleiten.'
-  },
-];
-
-// ══════════════════════════════════════════════
-// PERFORMANCE DATEN (aus FTP)
-// ══════════════════════════════════════════════
-function genPerf(basis, tage) {
-  var arr = [];
-  for (var i = 0; i < tage; i++) {
-    var d = new Date('2026-06-22T00:00:00');
-    d.setDate(d.getDate() - i);
-    if (d.getDay() === 0 || d.getDay() === 6) continue;
-    var gespraeche = Math.round(basis.gespraeche + Math.random() * 6 - 3);
-    var crOEM = Math.min(100, Math.max(0, Math.round(basis.crOEM + Math.random() * 14 - 7)));
+function genPerf(base,days){
+  var arr=[];
+  for(var i=0;i<days;i++){
+    var d=new Date('2026-06-13T00:00:00');
+    d.setDate(d.getDate()-i);
+    if(d.getDay()===0||d.getDay()===6) continue;
+    var calls=Math.round(base.calls+Math.random()*6-3);
+    var crOEM=Math.min(100,Math.max(0,Math.round(base.crOEM+Math.random()*14-7)));
+    var conv=Math.round(calls*crOEM/100);
     arr.push({
-      datum: d.toISOString().slice(0, 10),
-      gespraeche: gespraeche,
-      crOEM: crOEM,
-      crTeilweise: Math.min(100, Math.max(0, Math.round(basis.crTeilweise + Math.random() * 8 - 4))),
-      crYes: Math.min(100, Math.max(0, Math.round(basis.crYes + Math.random() * 8 - 4))),
-      crSuperYes: Math.min(100, Math.max(0, Math.round(basis.crSuperYes + Math.random() * 8 - 4))),
-      crMegaYes: Math.min(100, Math.max(0, Math.round(basis.crMegaYes + Math.random() * 6 - 3))),
-      optProStunde: Math.max(0, Math.round((basis.optProStunde + Math.random() * 0.8 - 0.4) * 10) / 10),
-      marge: Math.round(Math.round(gespraeche * crOEM / 100) * (basis.margeProConv + Math.random() * 4 - 2)),
+      id:i,date:d.toISOString().slice(0,10),calls:calls,
+      crOEM:crOEM,
+      crTeilweise:Math.min(100,Math.max(0,Math.round(base.crTeilweise+Math.random()*8-4))),
+      crYes:Math.min(100,Math.max(0,Math.round(base.crYes+Math.random()*8-4))),
+      crSuperYes:Math.min(100,Math.max(0,Math.round(base.crSuperYes+Math.random()*8-4))),
+      crMegaYes:Math.min(100,Math.max(0,Math.round(base.crMegaYes+Math.random()*6-3))),
+      optPerH:Math.max(0,Math.round((base.optPerH+Math.random()*.8-.4)*10)/10),
+      margin:Math.round(conv*(base.marginPerConv+Math.random()*4-2)),
+      note:''
     });
   }
   return arr;
 }
-var performance = {
-  1: genPerf({gespraeche:22,crOEM:63,crTeilweise:18,crYes:22,crSuperYes:14,crMegaYes:9,optProStunde:2.0,margeProConv:14}, 90),
-  2: genPerf({gespraeche:14,crOEM:41,crTeilweise:28,crYes:18,crSuperYes:8,crMegaYes:5,optProStunde:1.2,margeProConv:11}, 30),
-  3: genPerf({gespraeche:20,crOEM:58,crTeilweise:21,crYes:20,crSuperYes:11,crMegaYes:6,optProStunde:1.7,margeProConv:13}, 90),
-  4: genPerf({gespraeche:27,crOEM:78,crTeilweise:12,crYes:25,crSuperYes:24,crMegaYes:17,optProStunde:3.2,margeProConv:16}, 90),
-  5: genPerf({gespraeche:17,crOEM:47,crTeilweise:26,crYes:16,crSuperYes:9,crMegaYes:4,optProStunde:1.4,margeProConv:12}, 60),
+var performance={
+  1:genPerf({calls:22,crOEM:63,crTeilweise:18,crYes:22,crSuperYes:14,crMegaYes:9,optPerH:2.0,marginPerConv:14},90),
+  2:genPerf({calls:14,crOEM:41,crTeilweise:28,crYes:18,crSuperYes:8,crMegaYes:5,optPerH:1.2,marginPerConv:11},30),
+  3:genPerf({calls:20,crOEM:58,crTeilweise:21,crYes:20,crSuperYes:11,crMegaYes:6,optPerH:1.7,marginPerConv:13},90),
+  4:genPerf({calls:27,crOEM:78,crTeilweise:12,crYes:25,crSuperYes:24,crMegaYes:17,optPerH:3.2,marginPerConv:16},90),
+  5:genPerf({calls:17,crOEM:47,crTeilweise:26,crYes:16,crSuperYes:9,crMegaYes:4,optPerH:1.4,marginPerConv:12},60),
 };
 
-// ══════════════════════════════════════════════
-// SOLIDROAD DATEN
-// ══════════════════════════════════════════════
-var solidroad = {
-  1: {simulationen:[
-    {id:1,datum:'2026-06-09',name:'Einwand: Preis zu hoch',score:88,bestanden:true,tags:['Einwandbehandlung','Abschluss']},
-    {id:2,datum:'2026-06-03',name:'Eigenmarken-Pitch – Kaltakquise',score:74,bestanden:true,tags:['Nutzenargumentation']},
-    {id:3,datum:'2026-05-28',name:'Bedarfsermittlung – Neukunde',score:91,bestanden:true,tags:['Bedarfsermittlung']},
-  ]},
-  2: {simulationen:[
-    {id:4,datum:'2026-06-15',name:'Einwand: Habe bereits Lieferant',score:58,bestanden:false,tags:['Einwandbehandlung']},
-    {id:5,datum:'2026-06-10',name:'Opener & Gesprächseinstieg',score:72,bestanden:true,tags:['Opener']},
-  ]},
-  3: {simulationen:[
-    {id:6,datum:'2026-06-10',name:'Eigenmarken-Pitch – Bestandskunde',score:94,bestanden:true,tags:['Pitch','Abschluss']},
-  ]},
-  4: {simulationen:[
-    {id:7,datum:'2026-06-10',name:'Eigenmarken-Pitch – Bestandskunde',score:96,bestanden:true,tags:['Pitch','Abschluss']},
-    {id:8,datum:'2026-06-05',name:'Einwand: Qualitätsbedenken',score:89,bestanden:true,tags:['Einwandbehandlung']},
-  ]},
-  5: {simulationen:[
-    {id:9,datum:'2026-06-08',name:'Bedarfsermittlung – KMU Kunde',score:67,bestanden:true,tags:['Bedarfsermittlung']},
-  ]},
+var solidroadData={
+  1:{simulations:[{id:1,date:'2026-06-09',name:'Objection: Price too high',score:88,status:'passed',tags:['Objection Handling','Closing']},{id:2,date:'2026-06-03',name:'Own-brand pitch – cold call',score:74,status:'passed',tags:['Value Argumentation']},{id:3,date:'2026-05-28',name:'Needs analysis – new customer',score:91,status:'passed',tags:['Needs Analysis']}]},
+  2:{simulations:[{id:4,date:'2026-06-07',name:'Objection: Already have a supplier',score:61,status:'passed',tags:['Objection Handling']}]},
+  3:{simulations:[]},
+  4:{simulations:[{id:5,date:'2026-06-10',name:'Own-brand pitch – existing customer',score:96,status:'passed',tags:['Pitch','Closing']},{id:6,date:'2026-06-05',name:'Objection: Quality concerns',score:89,status:'passed',tags:['Objection Handling']}]},
+  5:{simulations:[{id:7,date:'2026-06-08',name:'Needs analysis – SME customer',score:67,status:'passed',tags:['Needs Analysis']}]},
 };
 
-// ══════════════════════════════════════════════
-// AUFGABEN
-// ══════════════════════════════════════════════
-var aufgaben = {
-  1: [
-    {id:1,text:'Pitch-Skript lesen – Seiten 1 bis 9',beschreibung:'Fokus auf Nutzenargumentation Seiten 4-6.',erledigt:false,quelle:'Session 10.06',prioritaet:'hoch',faelligAm:'2026-06-27'},
-    {id:2,text:'SolidRoad Simulation "Einwand Preis" wiederholen',beschreibung:'Ziel: über 85 Punkte erreichen.',erledigt:true,quelle:'Session 10.06',prioritaet:'mittel',faelligAm:'2026-06-24'},
+var onboarding={1:[true,true,true,true,true],2:[true,true,true,false,false],3:[true,false,false,false,false],4:[true,true,true,true,true],5:[true,true,true,false,false]};
+
+var obSteps=[
+  {label:'Einführungsgespräch',day:1,detail:'First meeting with the coach. Goals and development plan are discussed. Duration approx. 60 minutes.',videoUrl:''},
+  {label:'Product Training – Basics',day:1,detail:'Core knowledge of toner, ink and consumables. Differences between OEM and own-brand. Price-value arguments.',videoUrl:''},
+  {label:'Gesprächsleitfaden',day:2,detail:'The Wiegand & Partner framework: Needs Analysis → Value Presentation → Objection Handling → Closing. Includes role plays.',videoUrl:''},
+  {label:'Erste Kundengespräche',day:2,detail:'Accompanied practice phase. Coach listens in and gives immediate feedback after each call.',videoUrl:''},
+  {label:'Zielvereinbarung',day:3,detail:'Quarterly targets: CR OEM target, average rating target, Super Yes / Mega Yes per week.',videoUrl:''},
+];
+
+var tasks={
+  1:[
+    {id:1,text:'Read the pitch script – pages 1 to 9',description:'Take the own-brand pitch script and read pages 1 to 9. Pay special attention to the value argumentation on pages 4-6.',done:false,source:'Session 10.06.2026',priority:'high',dueDate:'2026-06-17'},
+    {id:2,text:'SolidRoad-Simulation abschließen: Eigenmarken-Pitch',description:'In SolidRoad einloggen und die Eigenmarken-Pitch-Simulation abschließen. Ziel: über 80 Punkte.',done:true,source:'Session 10.06.2026',priority:'medium',dueDate:'2026-06-14'},
+    {id:3,text:'Work through onboarding tool – tasks 1 to 5',description:'Das digitale Onboarding-Tool nutzen und Aufgaben 1 bis 5 abarbeiten. Geschätzte Zeit: 45 Minuten.',done:false,source:'Onboarding',priority:'high',dueDate:'2026-06-10'},
   ],
-  2: [
-    {id:3,text:'Onboarding-Video Tag 2 anschauen',beschreibung:'Toner-Kompatibilität und Eigenmarken-Unterschiede.',erledigt:false,quelle:'Onboarding',prioritaet:'hoch',faelligAm:'2026-06-25'},
-  ],
-  3: [], 4: [], 5: [
-    {id:4,text:'Loop-Technik täglich üben',beschreibung:'5 Minuten Rollenspiel pro Tag mit Kollegen.',erledigt:false,quelle:'Session 09.06',prioritaet:'hoch',faelligAm:'2026-06-28'},
-  ],
+  2:[{id:4,text:'Watch product training video – Day 2',description:'Den Onboarding-Bereich für Tag 2 öffnen und das Schulungsvideo zur Toner-Kompatibilität anschauen.',done:false,source:'Onboarding Tag 2',priority:'high',dueDate:'2026-06-20'}],
+  3:[],
+  4:[{id:5,text:'Best-Practice-Gespräch vom 11.06 dokumentieren',description:'Write a short summary of the customer call on 11.06 where you switched the customer to own-brand. Max. 1 page.',done:false,source:'Session 11.06.2026',priority:'high',dueDate:'2026-06-16'}],
+  5:[{id:6,text:'Practice needs analysis – print volume questions',description:'Prepare 5 open questions about print volume and cost per page. Practice saying them out loud.',done:false,source:'Session 09.06.2026',priority:'medium',dueDate:'2026-06-18'}],
+};
+// ── REVIEWS ──
+var reviews={
+  1:[{id:1,type:'Onboarding-Gespräch',date:'2026-07-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
+  2:[{id:2,type:'Onboarding-Gespräch',date:'2026-09-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
+  3:[{id:3,type:'Performance-Gespräch',date:'2026-06-01',status:'abgeschlossen',notes:'Starke Performance. CR OEM Ziel konstant übertroffen.',goals:'Super Yes Rate auf 18% steigern. Fokus auf Abschlusstechnik.',rating:'Super Yes',kpis:{crOEM:61,crSuperYes:14,crMegaYes:8,optPerH:2.1}},
+     {id:4,type:'Jahresgespräch',date:'2027-01-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
+  4:[{id:5,type:'Onboarding-Gespräch',date:'2026-05-01',status:'abgeschlossen',notes:'Exzellentes Onboarding. Best-Practice-Beispiel für Eigenmarken-Umstieg.',goals:'Mega Yes Rate halten. Best-Practice-Gespräche dokumentieren.',rating:'Mega Yes',kpis:{crOEM:76,crSuperYes:22,crMegaYes:15,optPerH:3.0}},
+     {id:6,type:'Performance-Gespräch',date:'2026-12-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
+  5:[{id:7,type:'Onboarding-Gespräch',date:'2026-08-01',status:'geplant',notes:'',goals:'',rating:null,kpis:{}}],
 };
 
 </script>
 <script>
-// ══════════════════════════════════════════════
-// HILFSFUNKTIONEN
-// ══════════════════════════════════════════════
-function kuerzel(n){return n.split(' ').map(function(x){return x[0];}).join('').toUpperCase().slice(0,2);}
-function datum(d){if(!d)return '';var p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
-function heute(){return new Date().toISOString().slice(0,10);}
-function wochentag(d){return ['So','Mo','Di','Mi','Do','Fr','Sa'][new Date(d+'T00:00:00').getDay()];}
-
-function mitarbeiterZiele(ma){return (ma&&ma.ziele)?ma.ziele:GLOBALE_ZIELE;}
-function aktiveMitarbeiter(){return mitarbeiter.filter(function(m){return m.aktiv!==false;});}
-function allTeams(){var ts={};mitarbeiter.forEach(function(m){if(m.team)ts[m.team]=1;});return Object.keys(ts).sort();}
-
-function getPerf(id, tage){
+// ── HELPERS ──
+function ini(n){return n.split(' ').map(function(x){return x[0];}).join('').toUpperCase().slice(0,2);}
+function fd(d){if(!d)return '';var p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+function today(){return new Date().toISOString().slice(0,10);}
+function avgSkill(id){var p=protocols[id];if(!p||!p.length||!p[0].skills)return null;var v=Object.values(p[0].skills);return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);}
+function lastRating(id){var p=protocols[id];return(p&&p.length)?p[0].rating:null;}
+function srAvg(id){var d=solidroadData[id];if(!d||!d.simulations.length)return null;var v=d.simulations.map(function(s){return s.score;});return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);}
+function scoreColor(s){return s>=85?'var(--teal)':s>=70?'var(--purple)':'var(--amber)';}
+function phaseBg(ph){return{Active:RS['Yes'].bg,Onboarding:RS['Teilweise'].bg,Development:RS['Super Yes'].bg}[ph]||'#f0efec';}
+function phaseCol(ph){return{Active:RS['Yes'].color,Onboarding:RS['Teilweise'].color,Development:RS['Super Yes'].color}[ph]||'#6b6b67';}
+function getPerf(id,days){
   var p=performance[id]||[];
-  var cutoff=new Date('2026-06-22T00:00:00');
-  cutoff.setDate(cutoff.getDate()-tage);
-  return p.filter(function(x){return new Date(x.datum)>=cutoff;}).sort(function(a,b){return new Date(a.datum)-new Date(b.datum);});
+  var cutoff=new Date('2026-06-13T00:00:00');
+  cutoff.setDate(cutoff.getDate()-days);
+  return p.filter(function(x){return new Date(x.date)>=cutoff;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
 }
-function perfSchnitt(id, schluessel, tage){
-  var p=getPerf(id,tage||7);
+function pavg(id,key,days){
+  var p=getPerf(id,days||7);
   if(!p.length)return null;
-  return p.reduce(function(a,x){return a+x[schluessel];},0)/p.length;
+  return p.reduce(function(a,x){return a+x[key];},0)/p.length;
 }
-
-function alertsPruefen(ma){
-  var z=mitarbeiterZiele(ma);
+function checkAlerts(id){
   var alerts=[];
-  var oem=perfSchnitt(ma.id,'crOEM',7),sy=perfSchnitt(ma.id,'crSuperYes',7),my=perfSchnitt(ma.id,'crMegaYes',7),opt=perfSchnitt(ma.id,'optProStunde',7);
-  if(oem!==null&&oem<z.crOEM)alerts.push({key:'CR OEM',wert:oem.toFixed(0)+'%',ziel:z.crOEM+'%'});
-  if(sy!==null&&sy<z.crSuperYes)alerts.push({key:'CR Super Yes',wert:sy.toFixed(0)+'%',ziel:z.crSuperYes+'%'});
-  if(my!==null&&my<z.crMegaYes)alerts.push({key:'CR Mega Yes',wert:my.toFixed(0)+'%',ziel:z.crMegaYes+'%'});
-  if(opt!==null&&opt<z.optProStunde)alerts.push({key:'Opt./Stunde',wert:opt.toFixed(1),ziel:z.optProStunde});
+  var oem=pavg(id,'crOEM',7),sy=pavg(id,'crSuperYes',7),opt=pavg(id,'optPerH',7);
+  if(oem!==null&&oem<CR_GOOD)alerts.push({key:'CR OEM',val:oem.toFixed(0)+'%',target:CR_GOOD+'%'});
+  if(sy!==null&&sy<KPI_TARGETS.crSuperYes)alerts.push({key:'CR Super Yes',val:sy.toFixed(0)+'%',target:KPI_TARGETS.crSuperYes+'%'});
+  if(opt!==null&&opt<KPI_TARGETS.optPerH)alerts.push({key:'Opt./Hour',val:opt.toFixed(1),target:KPI_TARGETS.optPerH});
   return alerts;
 }
-
-function sessionsFuerMitarbeiter(id){
-  return sessions.filter(function(s){return s.mitarbeiterId===id;})
-    .sort(function(a,b){return b.datum.localeCompare(a.datum);});
+function openTaskCount(id){return(tasks[id]||[]).filter(function(t){return!t.done;}).length;}
+function empTargets(emp){
+  return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;
 }
-function letzteSession(id){
-  var abg=sessions.filter(function(s){return s.mitarbeiterId===id&&s.status==='abgeschlossen';});
-  if(!abg.length)return null;
-  return abg.sort(function(a,b){return b.datum.localeCompare(a.datum);})[0];
+function allTeams(){
+  var ts={};
+  employees.forEach(function(e){if(e.team)ts[e.team]=1;});
+  return Object.keys(ts).sort();
 }
-function geplanteSessionsHeute(){
-  var h=heute();
-  return sessions.filter(function(s){return s.datum===h&&s.status==='geplant';});
+function activeEmployees(){
+  return employees.filter(function(e){return e.active!==false;});
 }
-function geplanteSessionsDemnächst(tage){
-  var h=heute();
-  var bis=new Date(h+'T00:00:00');bis.setDate(bis.getDate()+(tage||7));
-  var bisStr=bis.toISOString().slice(0,10);
-  return sessions.filter(function(s){return s.status==='geplant'&&s.datum>=h&&s.datum<=bisStr;})
-    .sort(function(a,b){return a.datum.localeCompare(b.datum);});
-}
-
-// Scorecard-Gesamtpunktzahl berechnen (gewichtet)
-function scorecardGesamtpunkte(scorecard){
-  if(!scorecard||!Object.keys(scorecard).length)return null;
-  var gesamt=0;var maxPunkte=0;
-  SCORECARD.forEach(function(kat){
-    var katPunkte=0;var katMax=0;
-    kat.kriterien.forEach(function(k){
-      var val=scorecard[k.id];
-      if(val!==undefined){katPunkte+=val;katMax+=4;}
-    });
-    if(katMax>0){gesamt+=((katPunkte/katMax)*kat.gewichtung);maxPunkte+=kat.gewichtung;}
-  });
-  if(!maxPunkte)return null;
-  return Math.round((gesamt/maxPunkte)*100);
-}
-
-// Stärken & Schwächen aus allen Sessions eines Mitarbeiters
-function staerkenSchwaechen(maId){
-  var abg=sessions.filter(function(s){return s.mitarbeiterId===maId&&s.status==='abgeschlossen'&&s.scorecard&&Object.keys(s.scorecard).length>0;});
-  if(!abg.length)return null;
-  var summen={};var anzahl={};
-  abg.forEach(function(s){
-    Object.keys(s.scorecard).forEach(function(kid){
-      summen[kid]=(summen[kid]||0)+s.scorecard[kid];
-      anzahl[kid]=(anzahl[kid]||0)+1;
-    });
-  });
-  var ergebnisse=[];
-  SCORECARD.forEach(function(kat){
-    kat.kriterien.forEach(function(k){
-      if(summen[k.id]!==undefined){
-        ergebnisse.push({id:k.id,name:k.name,kategorie:kat.kategorie,schnitt:summen[k.id]/anzahl[k.id],anzahl:anzahl[k.id]});
-      }
-    });
-  });
-  ergebnisse.sort(function(a,b){return b.schnitt-a.schnitt;});
-  return {staerken:ergebnisse.slice(0,3),schwaechen:ergebnisse.slice(-3).reverse(),alle:ergebnisse};
-}
-
-function scorefarbe(wert,max){
-  max=max||4;var pct=wert/max;
-  return pct>=0.875?'var(--teal)':pct>=0.625?'var(--purple)':pct>=0.375?'var(--amber)':'var(--red)';
-}
-function phaseBg(ph){return{Aktiv:BW['Yes'].bg,Onboarding:BW['Teilweise'].bg,Entwicklung:BW['Super Yes'].bg}[ph]||'#f0efec';}
-function phaseCol(ph){return{Aktiv:BW['Yes'].color,Onboarding:BW['Teilweise'].color,Entwicklung:BW['Super Yes'].color}[ph]||'#6b6b67';}
-function srSchnitt(id){var d=solidroad[id];if(!d||!d.simulationen.length)return null;var v=d.simulationen.map(function(s){return s.score;});return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);}
-function offeneAufgaben(id){return(aufgaben[id]||[]).filter(function(t){return !t.erledigt;}).length;}
-
-function openModal(id){document.getElementById(id).classList.remove('hidden');}
-function closeModal(id){document.getElementById(id).classList.add('hidden');}
 
 </script>
 <script>
-// ══════════════════════════════════════════════
-// APP STATE
-// ══════════════════════════════════════════════
-var ansicht = 'coach'; // 'coach' | 'manager' | 'uebersicht'
-var ausgewaehlterId = 1;
-var aktiverTab = 'profil';
-var aktivesScorecardId = null; // session ID die gerade bewertet wird
 
-// ══════════════════════════════════════════════
-// SIDEBAR
-// ══════════════════════════════════════════════
+function empTargets(emp){return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;}
+function allTeams(){var ts={};activeEmployees().forEach(function(e){if(e.team)ts[e.team]=1;});return Object.keys(ts).sort();}
+function activeEmployees(){return employees.filter(function(e){return e.active!==false;});}
+
+// ── SIDEBAR ──
 function renderSidebar(){
-  var el=document.getElementById('mitarbeiterListe');
-  if(!el)return;
+  var el=document.getElementById('empList');
   el.innerHTML='';
-  document.querySelectorAll('.sb-item').forEach(function(x){x.classList.remove('aktiv');});
-  var navCoach=document.getElementById('nav-coach');
-  var navManager=document.getElementById('nav-manager');
-  if(ansicht==='coach'&&navCoach)navCoach.classList.add('aktiv');
-  if(ansicht==='manager'&&navManager)navManager.classList.add('aktiv');
-
-  aktiveMitarbeiter().forEach(function(ma){
-    var f=FARBEN[ma.farbe%FARBEN.length];
-    var ls=letzteSession(ma.id);
-    var lsBw=ls?BW[ls.gesamtBewertung]:null;
-    var al=alertsPruefen(ma);
+  document.querySelectorAll('.sb-item').forEach(function(x){x.classList.remove('active');});
+  if(view==='team')document.getElementById('nav-team').classList.add('active');
+  if(view==='settings')document.getElementById('nav-settings').classList.add('active');
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);
+    var rs=r?RS[r]:null;
+    var al=checkAlerts(e.id);
     var d=document.createElement('div');
-    d.className='ma-item'+(ausgewaehlterId===ma.id?' aktiv':'');
-    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(ma.name)+'</div>'
-      +'<div style="flex:1;min-width:0"><div class="ma-name">'+ma.name+'</div><div class="ma-rolle">'+ma.team+'</div></div>'
-      +(al.length?'<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>':'')
-      +(lsBw?'<span class="badge" style="background:'+lsBw.bg+';color:'+lsBw.color+';font-size:10px;padding:2px 5px">'+( ls.gesamtBewertung==='Teilweise'?'T':ls.gesamtBewertung==='Yes'?'Y':ls.gesamtBewertung==='Super Yes'?'SY':'MY')+'</span>':'');
-    d.onclick=(function(id){return function(){ausgewaehlterId=id;aktiverTab='profil';renderSidebar();renderHauptbereich();};})(ma.id);
+    d.className='emp-item'+(view==='emp'&&e.id===selectedEmp?' active':'');
+    var badge=rs?('<span class="emp-badge" style="background:'+rs.bg+';color:'+rs.color+'">'+(r==='Teilweise'?'T':r==='Yes'?'Y':r==='Super Yes'?'SY':'MY')+'</span>'):'';
+    var alrt=al.length?('<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>'):'';
+    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="emp-name">'+e.name+'</div><div class="emp-role">'+e.role+'</div></div>'
+      +alrt+badge;
+    d.onclick=(function(eid){return function(){selectedEmp=eid;view='emp';activeTab='performance';renderSidebar();renderMain();};})(e.id);
     el.appendChild(d);
   });
 }
 
-function zeigeAnsicht(a){ansicht=a;renderSidebar();renderHauptbereich();}
-function renderHauptbereich(){
-  if(ansicht==='coach')renderCoachAnsicht();
-  else if(ansicht==='manager')renderManagerAnsicht();
-  else renderCoachAnsicht();
-}
+function showView(v){view=v;renderSidebar();renderMain();}
+function renderMain(){if(view==='team')renderTeam();else if(view==='settings')renderEinstellungen();else renderEmpDetail();}
 
-// ══════════════════════════════════════════════
-// COACH ANSICHT – TAGESÜBERSICHT
-// ══════════════════════════════════════════════
-function renderCoachAnsicht(){
-  var ma=document.getElementById('hauptbereich');
-  if(!ma)return;
-  var demnächst=geplanteSessionsDemnächst(7);
-  var ausgewaehlt=mitarbeiter.find(function(m){return m.id===ausgewaehlterId;});
-  var f=ausgewaehlt?FARBEN[ausgewaehlt.farbe%FARBEN.length]:{bg:'var(--purple-bg)',text:'var(--purple)'};
+// ── TEAM VIEW ──
+function renderTeam(){
+  var ma=document.getElementById('mainArea');
+  var allP=activeEmployees().map(function(e){return getPerf(e.id,7);}).reduce(function(a,b){return a.concat(b);},[]);
+  function tAvg(key){if(!allP.length)return null;return allP.reduce(function(a,x){return a+x[key];},0)/allP.length;}
+  var totalAlerts=activeEmployees().reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
+  var totalMargin=activeEmployees().reduce(function(a,e){return a+getPerf(e.id,7).reduce(function(b,x){return b+(x.margin||0);},0);},0);
 
-  var sessionListe='';
-  if(!demnächst.length){
-    sessionListe='<div class="leer">Keine geplanten Sessions in den nächsten 7 Tagen.</div>';
-  } else {
-    demnächst.forEach(function(s){
-      var maMa=mitarbeiter.find(function(m){return m.id===s.mitarbeiterId;});
-      if(!maMa)return;
-      var mf=FARBEN[maMa.farbe%FARBEN.length];
-      var isHeute=s.datum===heute();
-      sessionListe+='<div class="session-karte'+(isHeute?' heute':'')+'" onclick="ausgewaehlterId='+maMa.id+';aktiverTab=\'profil\';renderSidebar();renderMitarbeiterDetail()">'
-        +'<div style="display:flex;align-items:center;gap:10px">'
-        +'<div style="text-align:center;min-width:42px"><div style="font-size:10px;font-weight:600;color:'+(isHeute?'var(--purple)':'var(--text2)')+'">'+wochentag(s.datum)+'</div><div style="font-size:18px;font-weight:600;color:'+(isHeute?'var(--purple)':'var(--text)')+'">'+s.datum.split('-')[2]+'</div></div>'
-        +'<div class="av" style="width:36px;height:36px;font-size:13px;background:'+mf.bg+';color:'+mf.text+'">'+kuerzel(maMa.name)+'</div>'
-        +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+maMa.name+'</div>'
-        +'<div style="font-size:12px;color:var(--text2)">'+s.typ+' · '+s.thema+'</div>'
-        +(s.planungsNotiz?'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+s.planungsNotiz+'</div>':'')
-        +'</div>'
-        +(isHeute?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();sessionStarten('+s.id+')"><i class="ti ti-play"></i> Starten</button>':'')
-        +'</div></div>';
-    });
+  function crCell(val,target){
+    if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border)">—</td>';
+    var v=Math.round(val);
+    var col=v>=CR_GOOD?'var(--teal)':v>=45?'var(--amber)':'var(--red)';
+    var hitMark=target?(v>=target?'✓':'↓'+target+'%'):'';
+    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);min-width:100px">'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+      +'<span style="font-size:13px;font-weight:600;color:'+col+'">'+v+'%</span>'
+      +(target?'<span style="font-size:10px;color:'+(v>=target?'var(--teal)':'var(--red)')+'">'+hitMark+'</span>':'')
+      +'</div>'
+      +'<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative">'
+      +'<div style="height:100%;width:'+Math.min(v,100)+'%;background:'+col+';border-radius:3px"></div>'
+      +(target?'<div style="position:absolute;top:0;left:'+target+'%;height:100%;width:2px;background:rgba(0,0,0,.15)"></div>':'')
+      +'</div></td>';
   }
 
-  ma.innerHTML='<div class="topbar">'
-    +'<div class="tb-links"><div style="width:40px;height:40px;border-radius:50%;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple)"><i class="ti ti-calendar-event"></i></div>'
-    +'<div><div class="tb-name">Coach-Dashboard</div><div class="tb-meta">'+datum(heute())+' · '+demnächst.filter(function(s){return s.datum===heute();}).length+' Sessions heute</div></div></div>'
-    +'<div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button></div>'
-    +'</div>'
-    +'<div class="inhalt">'
-    // Nächste Sessions
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'
-    +'<div>'
-    +'<div class="abschnitt-titel">Geplante Sessions – nächste 7 Tage</div>'
-    +sessionListe
-    +'</div>'
-    // Ausgewählter Mitarbeiter Schnellübersicht
-    +'<div>'
-    +'<div class="abschnitt-titel">Schnellübersicht: '+( ausgewaehlt?ausgewaehlt.name:'Mitarbeiter auswählen')+'</div>'
-    +(ausgewaehlt?renderSchnellprofil(ausgewaehlt):'<div class="leer">Links einen Mitarbeiter auswählen.</div>')
-    +'</div></div>'
-    +'</div>';
-}
+  var ta=tAvg('crOEM'),tb=tAvg('crSuperYes'),tc=tAvg('crMegaYes'),td2=tAvg('optPerH');
+  var rows='';
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);var rs=r?RS[r]:null;
+    var av=avgSkill(e.id);var sr=srAvg(e.id);
+    var al=checkAlerts(e.id);
+    var ep=getPerf(e.id,7);
+    function ea(key){return ep.length?ep.reduce(function(a,x){return a+x[key];},0)/ep.length:null;}
+    var em=ep.reduce(function(a,x){return a+(x.margin||0);},0);
+    rows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;align-items:center;gap:9px">'
+      +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div><div style="font-weight:500">'+e.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
+      +'<div style="font-size:11px;color:var(--text2)">'+e.phase+'</div></div></div></td>'
+      +crCell(ea('crOEM'),CR_GOOD)
+      +crCell(ea('crTeilweise'),null)
+      +crCell(ea('crYes'),null)
+      +crCell(ea('crSuperYes'),KPI_TARGETS.crSuperYes)
+      +crCell(ea('crMegaYes'),KPI_TARGETS.crMegaYes)
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--blue)">€'+em.toLocaleString('de-DE')+'</div><div style="font-size:11px;color:var(--text3)">7d total</div></td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(ea('optPerH')!==null?ea('optPerH').toFixed(1):'—')+'</td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(sr!==null?sr+'%':'—')+'</td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(rs?'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span>':'—')+'</td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+      +'</tr>';
+  });
 
-function renderSchnellprofil(ma){
-  var f=FARBEN[ma.farbe%FARBEN.length];
-  var ls=letzteSession(ma.id);
-  var sw=staerkenSchwaechen(ma.id);
-  var al=alertsPruefen(ma);
-  var sr=srSchnitt(ma.id);
-  var masSessions=sessionsFuerMitarbeiter(ma.id);
-  var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-  var geplant=masSessions.filter(function(s){return s.status==='geplant';});
-
-  var html='<div class="karte" style="cursor:pointer" onclick="aktiverTab=\'profil\';renderMitarbeiterDetail()">'
-    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
-    +'<div class="av" style="width:44px;height:44px;font-size:15px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(ma.name)+'</div>'
-    +'<div><div style="font-size:15px;font-weight:600">'+ma.name+'</div>'
-    +'<div style="font-size:12px;color:var(--text2)">'+ma.rolle+' · <span style="background:'+phaseBg(ma.phase)+';color:'+phaseCol(ma.phase)+';padding:1px 7px;border-radius:20px;font-size:11px;font-weight:600">'+ma.phase+'</span></div></div>'
-    +'</div>';
-
-  // KPI Schnellzahlen
-  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'
-    +'<div style="background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:600;color:var(--amber)">'+(perfSchnitt(ma.id,'crOEM',7)!==null?Math.round(perfSchnitt(ma.id,'crOEM',7))+'%':'-')+'</div><div style="font-size:10px;color:var(--text3)">CR OEM</div></div>'
-    +'<div style="background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:600;color:var(--purple)">'+(perfSchnitt(ma.id,'crSuperYes',7)!==null?Math.round(perfSchnitt(ma.id,'crSuperYes',7))+'%':'-')+'</div><div style="font-size:10px;color:var(--text3)">Super Yes</div></div>'
-    +'<div style="background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:600;color:var(--blue)">'+abg.length+'</div><div style="font-size:10px;color:var(--text3)">Sessions</div></div>'
-    +'</div>';
-
-  // Alerts
-  if(al.length){
-    html+='<div style="background:var(--red-bg);border:1px solid rgba(226,75,74,.2);border-radius:var(--r-md);padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--red)">'
-      +'<i class="ti ti-alert-circle" style="margin-right:4px"></i>'+al.map(function(a){return a.key+' unter Ziel ('+a.wert+')';}).join(' · ')+'</div>';
-  }
-
-  // Stärken & Schwächen
-  if(sw){
-    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-      +'<div><div style="font-size:10px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Stärken</div>'
-      +sw.staerken.map(function(s){return '<div style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="ti ti-circle-check" style="color:var(--teal);font-size:13px"></i>'+s.name+'</div>';}).join('')+'</div>'
-      +'<div><div style="font-size:10px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Entwicklungsfelder</div>'
-      +sw.schwaechen.map(function(s){return '<div style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="ti ti-alert-triangle" style="color:var(--amber);font-size:13px"></i>'+s.name+'</div>';}).join('')+'</div>'
+  var cards='';
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);var rs=r?RS[r]:null;
+    var av=avgSkill(e.id);var sr=srAvg(e.id);
+    var ob=onboarding[e.id]||[];var obD=ob.filter(Boolean).length;
+    var ep=getPerf(e.id,7);
+    function ea(key){return ep.length?Math.round(ep.reduce(function(a,x){return a+x[key];},0)/ep.length):null;}
+    var em=ep.reduce(function(a,x){return a+(x.margin||0);},0);
+    var al=checkAlerts(e.id);
+    var oem=ea('crOEM');
+    var oemColor=oem!==null?(oem>=CR_GOOD?'var(--teal)':oem>=45?'var(--amber)':'var(--red)'):'var(--text3)';
+    cards+='<div class="team-card" onclick="selectEmp('+e.id+')">'
+      +'<div class="tc-hdr"><div class="av" style="width:42px;height:42px;font-size:14px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div style="flex:1"><div style="font-size:14px;font-weight:600">'+e.name+'</div><div style="font-size:12px;color:var(--text2)">'+e.role+'</div></div>'
+      +'<span class="phase-badge" style="background:'+phaseBg(e.phase)+';color:'+phaseCol(e.phase)+'">'+e.phase+'</span></div>'
+      +'<div style="margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;color:var(--text2)">CR OEM</span><span style="font-size:13px;font-weight:600;color:'+oemColor+'">'+(oem!==null?oem+'%':'—')+'</span></div>'
+      +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative">'
+      +(oem!==null?'<div style="height:100%;width:'+Math.min(oem,100)+'%;background:'+oemColor+';border-radius:4px"></div>':'')
+      +'<div style="position:absolute;top:0;left:'+CR_GOOD+'%;height:100%;width:2px;background:rgba(0,0,0,.15)"></div></div>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:2px">Target ≥ '+CR_GOOD+'% · '+(oem!==null&&oem>=CR_GOOD?'✓ On target':'↓ Below target')+'</div></div>'
+      +'<div class="tc-kpis">'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--amber);font-size:13px">'+(ea('crTeilweise')!==null?ea('crTeilweise')+'%':'—')+'</div><div class="tc-kpi-label">Teilweise</div></div>'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--blue);font-size:13px">'+(ea('crYes')!==null?ea('crYes')+'%':'—')+'</div><div class="tc-kpi-label">Yes</div></div>'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--purple);font-size:13px">'+(ea('crSuperYes')!==null?ea('crSuperYes')+'%':'—')+'</div><div class="tc-kpi-label">Super Yes</div></div>'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--teal);font-size:13px">'+(ea('crMegaYes')!==null?ea('crMegaYes')+'%':'—')+'</div><div class="tc-kpi-label">Mega Yes</div></div></div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--blue-bg);border-radius:var(--r-sm);margin-bottom:8px"><span style="font-size:11px;font-weight:500;color:var(--blue-dark)">Additional margin (7d)</span><span style="font-size:14px;font-weight:600;color:var(--blue-dark)">€'+em.toLocaleString('de-DE')+'</span></div>'
+      +(av!==null?'<div class="bar-row"><span class="bar-label">Avg. Skill</span><div class="bar-track"><div class="bar-fill" style="width:'+av+'%;background:'+(av>=80?'var(--teal)':av>=60?'var(--purple)':'var(--amber)')+'"></div></div><span class="bar-val">'+av+'%</span></div>':'')
+      +(sr!==null?'<div class="bar-row"><span class="bar-label">SolidRoad</span><div class="bar-track"><div class="bar-fill" style="width:'+sr+'%;background:'+scoreColor(sr)+'"></div></div><span class="bar-val">'+sr+'%</span></div>':'')
+      +(al.length?'<div style="margin-top:8px;padding:6px 10px;background:var(--amber-bg);border-radius:var(--r-sm);font-size:11px;color:var(--amber-dark)">⚠ '+al.map(function(a){return a.key;}).join(', ')+' below target</div>':'')
+      +(rs?'<div style="margin-top:8px;font-size:12px;color:var(--text2)">Last Session: <span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span></div>':'')
       +'</div>';
-  }
+  });
 
-  // Letzte Session
-  if(ls){
-    var lsBw=BW[ls.gesamtBewertung];
-    html+='<div style="font-size:11px;color:var(--text2)">Letzte Session: '+datum(ls.datum)+' <span class="badge" style="background:'+lsBw.bg+';color:'+lsBw.color+'">'+ls.gesamtBewertung+'</span> · '+ls.thema+'</div>';
-  }
-
-  html+='<div style="margin-top:10px"><button class="btn btn-sm btn-primary" style="width:100%;justify-content:center" onclick="aktiverTab=\'profil\';renderMitarbeiterDetail()"><i class="ti ti-arrow-right"></i> Vollprofil öffnen</button></div>';
-  html+='</div>';
-  return html;
+  var oem7=ta!==null?Math.round(ta):null;
+  var sy7=tb!==null?Math.round(tb):null;
+  var my7=tc!==null?Math.round(tc):null;
+  ma.innerHTML='<div class="topbar">'
+    +'<div class="tb-left"><div class="av" style="width:40px;height:40px;font-size:17px;background:var(--purple-bg);color:var(--purple-dark)"><i class="ti ti-layout-grid"></i></div>'
+    +'<div><div class="tb-name">Teamübersicht</div><div class="tb-meta">'+employees.length+' staff · 7-day average · <span class="ftp-badge"><i class="ti ti-refresh" style="font-size:11px"></i> FTP sync active</span></div></div></div>'
+    +'</div>'
+    +'<div class="content">'
+    +'<div class="g5" style="margin-bottom:20px">'
+    +'<div class="kpi" style="border-top-color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'"><div class="kpi-label" style="color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'">Team CR OEM</div><div class="kpi-val" style="color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'">'+(oem7!==null?oem7+'%':'—')+'</div><div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:5px"><div style="height:100%;width:'+(oem7||0)+'%;background:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'"></div></div><div class="kpi-sub">Target ≥ '+CR_GOOD+'%</div></div>'
+    +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Team Super Yes</div><div class="kpi-val" style="color:var(--purple)">'+(sy7!==null?sy7+'%':'—')+'</div><div class="kpi-sub">of all calls</div></div>'
+    +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Team Mega Yes</div><div class="kpi-val" style="color:var(--teal)">'+(my7!==null?my7+'%':'—')+'</div><div class="kpi-sub">of all calls</div></div>'
+    +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Additional Margin</div><div class="kpi-val" style="color:var(--blue)">€'+totalMargin.toLocaleString('de-DE')+'</div><div class="kpi-sub">7-day team total</div></div>'
+    +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+(totalAlerts>0?'Offene Alerts':'Alles im grünen Bereich')+'</div><div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div><div class="kpi-sub">'+(totalAlerts>0?'staff below target':'keine Alerts')+'</div></div>'
+    +'</div>'
+    +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' alert'+(totalAlerts!==1?'s':'')+' across the team</div><div style="font-size:12px;color:var(--amber-dark)">'+employees.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
+    +'<div class="sec-title" style="margin-bottom:10px">Conversion rates &amp; margin <span style="font-weight:400;color:var(--text3)">· CR as % of all calls · Good CR ≥ '+CR_GOOD+'%</span></div>'
+    +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr><th style="min-width:150px">Mitarbeiter</th><th style="min-width:100px">CR OEM</th><th style="min-width:100px">Teilweise</th><th style="min-width:100px">Yes</th><th style="min-width:100px">Super Yes</th><th style="min-width:100px">Mega Yes</th><th>Margin</th><th>Opt./h</th><th>SolidRoad</th><th>Last rating</th><th>Alerts</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="sec-title" style="margin-bottom:12px">Mitarbeiter cards</div>'
+    +'<div class="team-grid">'+cards+'</div>'
+    +'</div>';
 }
 
-// ══════════════════════════════════════════════
-// MITARBEITER DETAILANSICHT
-// ══════════════════════════════════════════════
-function renderMitarbeiterDetail(){
-  var ma=mitarbeiter.find(function(m){return m.id===ausgewaehlterId;});
-  if(!ma)return;
-  var hauptbereich=document.getElementById('hauptbereich');
-  if(!hauptbereich)return;
-  var f=FARBEN[ma.farbe%FARBEN.length];
-  var masSessions=sessionsFuerMitarbeiter(ma.id);
-  var offAufg=offeneAufgaben(ma.id);
+function selectEmp(id){selectedEmp=id;view='emp';activeTab='performance';renderSidebar();renderMain();}
 
-  hauptbereich.innerHTML='<div class="topbar"><div class="tb-links">'
-    +'<button class="btn btn-sm" onclick="renderCoachAnsicht()"><i class="ti ti-arrow-left"></i> Zurück</button>'
-    +'<div class="av" style="width:42px;height:42px;font-size:14px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(ma.name)+'</div>'
-    +'<div><div class="tb-name">'+ma.name+'</div><div class="tb-meta">'+ma.rolle+' · '+ma.team+' · '+ma.phase+(ma.startDatum?' · Start: '+datum(ma.startDatum):'')+'</div></div>'
-    +'</div><div style="display:flex;gap:8px">'
-    +'<button class="btn btn-primary" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button>'
-    +'</div></div>'
-    +'<div class="tab-bar" id="maTabBar">'
-    +'<div class="tab" data-tab="profil" onclick="switchTab(\'profil\')">Profil & Stärken</div>'
-    +'<div class="tab" data-tab="sessions" onclick="switchTab(\'sessions\')">Sessions ('+(masSessions.length)+')</div>'
+// ── EMP DETAIL ──
+function renderEmpDetail(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var c=COLORS[emp.color%COLORS.length];
+  var p=protocols[emp.id]||[];
+  var tc=openTaskCount(emp.id);
+  document.getElementById('mainArea').innerHTML=
+    '<div class="topbar"><div class="tb-left">'
+    +'<div class="av" style="width:42px;height:42px;font-size:14px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'
+    +'<div><div class="tb-name">'+emp.name+'</div><div class="tb-meta">'+emp.role+' · '+emp.phase+(emp.startDate?' · Start '+fd(emp.startDate):'')+' · '+p.length+' Session'+(p.length!==1?'s':'')+'</div></div>'
+    +'</div><div style="display:flex;gap:8px"><button class="btn" onclick="window.print()"><i class="ti ti-printer"></i> Print</button></div></div>'
+    +'<div class="tab-bar" id="empTabBar">'
     +'<div class="tab" data-tab="performance" onclick="switchTab(\'performance\')">Performance</div>'
+    +'<div class="tab" data-tab="protocols" onclick="switchTab(\'protocols\')">Protokolle</div>'
+    +'<div class="tab" data-tab="progress" onclick="switchTab(\'progress\')">Fortschritt</div>'
     +'<div class="tab" data-tab="solidroad" onclick="switchTab(\'solidroad\')">SolidRoad</div>'
-    +'<div class="tab" data-tab="aufgaben" onclick="switchTab(\'aufgaben\')" id="aufgabenTabBtn">Aufgaben'+(offAufg>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+offAufg+'</span>':'')+'</div>'
+    +'<div class="tab" data-tab="onboarding" onclick="switchTab(\'onboarding\')">Onboarding</div>'
+    +'<div class="tab" data-tab="review" onclick="switchTab(\'review\')">Gespräche</div>'
+    +'<div class="tab" data-tab="emp-settings" onclick="switchTab(\'emp-settings\')">Einstellungen</div>'
+    +'<div class="tab" data-tab="tasks" onclick="switchTab(\'tasks\')" id="tasksTabBtn">Tasks'+(tc>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+tc+'</span>':'')+'</div>'
     +'</div>'
-    +'<div class="inhalt" id="tabInhalt"></div>';
-
+    +'<div class="content" id="tabContent"></div>';
   renderTabBar();
   renderTab();
 }
 
 function renderTabBar(){
-  var bar=document.getElementById('maTabBar');
+  var bar=document.getElementById('empTabBar');
   if(!bar)return;
-  bar.querySelectorAll('.tab').forEach(function(el){el.classList.toggle('aktiv',el.dataset.tab===aktiverTab);});
+  bar.querySelectorAll('.tab').forEach(function(el){
+    el.classList.toggle('active',el.dataset.tab===activeTab);
+  });
 }
-function switchTab(t){aktiverTab=t;renderTabBar();renderTab();}
 
-// ══════════════════════════════════════════════
-// TAB INHALTE
-// ══════════════════════════════════════════════
+function switchTab(t){activeTab=t;renderTabBar();renderTab();}
+
+// ── RENDER TAB ──
 function renderTab(){
-  var ma=mitarbeiter.find(function(m){return m.id===ausgewaehlterId;});
-  if(!ma)return;
-  var el=document.getElementById('tabInhalt');
-  if(!el)return;
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var tc2=document.getElementById('tabContent');
+  if(!tc2)return;
+  var p=protocols[emp.id]||[];
+  var ob=onboarding[emp.id]||obSteps.map(function(){return false;});
+  var obD=ob.filter(Boolean).length;
+  var sr=solidroadData[emp.id]||{simulations:[]};
+  var alerts=checkAlerts(emp.id);
   var html='';
 
-  // ── PROFIL & STÄRKEN ──
-  if(aktiverTab==='profil'){
-    var sw=staerkenSchwaechen(ma.id);
-    var al=alertsPruefen(ma);
-    var abgSessions=sessions.filter(function(s){return s.mitarbeiterId===ma.id&&s.status==='abgeschlossen'&&Object.keys(s.scorecard||{}).length>0;});
-
-    // Alert-Box
-    if(al.length){
-      html+='<div class="alert alert-rot"><i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
-        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">'+al.length+' KPI'+(al.length>1?'s':'')+' unter Zielwert – Coaching empfohlen</div>'
-        +'<div style="font-size:12px;color:var(--red);margin-top:2px">'+al.map(function(a){return a.key+': '+a.wert+' (Ziel: '+a.ziel+')';}).join(' · ')+'</div>'
-        +'<div style="margin-top:8px"><button class="btn btn-sm" style="background:var(--red-bg);color:var(--red);border-color:var(--red)" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-calendar-plus"></i> Session einplanen</button></div>'
-        +'</div></div>';
-    }
-
-    if(!sw){
-      html+='<div class="leer">Noch keine abgeschlossenen Bewertungen vorhanden.<br>Session starten um erste Scorecard auszufüllen.</div>';
-    } else {
-      // Stärken & Schwächen Übersicht
-      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">';
-      // Stärken
-      html+='<div><div class="abschnitt-titel" style="color:var(--teal)"><i class="ti ti-thumb-up" style="margin-right:6px"></i>Top Stärken</div>';
-      sw.staerken.forEach(function(s){
-        var pct=s.schnitt/4*100;
-        html+='<div style="margin-bottom:10px">'
-          +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:13px;font-weight:500">'+s.name+'</span><span style="font-size:12px;color:var(--text2)">'+s.schnitt.toFixed(1)+'/4</span></div>'
-          +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+scorefarbe(s.schnitt,4)+';border-radius:4px"></div></div>'
-          +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+s.kategorie+' · '+s.anzahl+' Bewertung'+(s.anzahl>1?'en':'')+'</div>'
-          +'</div>';
-      });
-      html+='</div>';
-      // Schwächen
-      html+='<div><div class="abschnitt-titel" style="color:var(--amber)"><i class="ti ti-target" style="margin-right:6px"></i>Entwicklungsfelder</div>';
-      sw.schwaechen.forEach(function(s){
-        var pct=s.schnitt/4*100;
-        html+='<div style="margin-bottom:10px">'
-          +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:13px;font-weight:500">'+s.name+'</span><span style="font-size:12px;color:var(--text2)">'+s.schnitt.toFixed(1)+'/4</span></div>'
-          +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+scorefarbe(s.schnitt,4)+';border-radius:4px"></div></div>'
-          +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+s.kategorie+' · '+s.anzahl+' Bewertung'+(s.anzahl>1?'en':'')+'</div>'
-          +'</div>';
-      });
-      html+='</div></div>';
-
-      // Alle Kriterien
-      html+='<div class="abschnitt-titel">Alle Kriterien im Überblick</div>';
-      SCORECARD.forEach(function(kat){
-        html+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;gap:6px">'
-          +'<span>'+kat.kategorie+'</span><span style="font-size:10px;color:var(--text3);font-weight:400">Gewichtung: '+kat.gewichtung+'%</span></div>';
-        kat.kriterien.forEach(function(k){
-          var eintrag=sw.alle.find(function(e){return e.id===k.id;});
-          if(!eintrag)return;
-          var pct=eintrag.schnitt/4*100;
-          var col=scorefarbe(eintrag.schnitt,4);
-          html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
-            +'<span style="font-size:13px;color:var(--text2);width:160px;flex-shrink:0">'+k.name+'</span>'
-            +'<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px"></div></div>'
-            +'<span style="font-size:12px;color:var(--text2);width:34px;text-align:right">'+eintrag.schnitt.toFixed(1)+'</span>'
-            +'</div>';
-        });
-        html+='</div>';
-      });
-    }
-  }
-
-  // ── SESSIONS ──
-  if(aktiverTab==='sessions'){
-    var masSessions=sessionsFuerMitarbeiter(ma.id);
-    var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-    var geplant=masSessions.filter(function(s){return s.status==='geplant';});
-
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
-      +'<div style="display:flex;gap:10px">'
-      +'<div class="kpi" style="border-top-color:var(--purple);flex:1"><div class="kpi-label" style="color:var(--purple)">Gesamt</div><div class="kpi-val" style="color:var(--purple)">'+masSessions.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--teal);flex:1"><div class="kpi-label" style="color:var(--teal)">Abgeschlossen</div><div class="kpi-val" style="color:var(--teal)">'+abg.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--blue);flex:1"><div class="kpi-label" style="color:var(--blue)">Geplant</div><div class="kpi-val" style="color:var(--blue)">'+geplant.length+'</div></div>'
-      +'</div>'
-      +'<button class="btn btn-primary btn-sm" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button>'
-      +'</div>';
-
-    if(geplant.length){
-      html+='<div class="abschnitt-titel">Geplante Sessions</div>';
-      geplant.forEach(function(s){
-        var isHeute=s.datum===heute();
-        html+='<div class="session-karte'+(isHeute?' heute':'')+'">'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-          +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<span style="font-size:12px;font-weight:600;color:'+(isHeute?'var(--purple)':'var(--text2)')+'">'+datum(s.datum)+'</span>'
-          +'<span style="font-size:12px;color:var(--text2)">'+s.typ+'</span>'
-          +'<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--blue-bg);color:var(--blue-dark)">'+s.thema+'</span>'
-          +'</div>'
-          +(isHeute?'<button class="btn btn-primary btn-sm" onclick="sessionStarten('+s.id+')"><i class="ti ti-play"></i> Bewerten</button>':'')
-          +'</div>'
-          +(s.planungsNotiz?'<div style="font-size:12px;color:var(--text2)"><i class="ti ti-note" style="margin-right:4px"></i>'+s.planungsNotiz+'</div>':'')
-          +'</div>';
-      });
-    }
-
-    if(abg.length){
-      html+='<div class="abschnitt-titel" style="margin-top:16px">Abgeschlossene Sessions</div>';
-      abg.forEach(function(s){
-        var bw=BW[s.gesamtBewertung]||{bg:'var(--bg2)',color:'var(--text2)'};
-        var punkte=scorecardGesamtpunkte(s.scorecard);
-        html+='<div class="session-karte" onclick="sessionOeffnen('+s.id+')">'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-          +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<span style="font-size:12px;font-weight:600;color:var(--text2)">'+datum(s.datum)+'</span>'
-          +'<span style="font-size:12px;color:var(--text2)">'+s.typ+'</span>'
-          +'<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2)">'+s.thema+'</span>'
-          +'</div>'
-          +'<div style="display:flex;align-items:center;gap:8px">'
-          +(punkte!==null?'<span style="font-size:12px;font-weight:600;color:'+scorefarbe(punkte,100)+'">'+punkte+' Pkt.</span>':'')
-          +'<span class="badge" style="background:'+bw.bg+';color:'+bw.color+'">'+s.gesamtBewertung+'</span>'
-          +'</div></div>'
-          +(s.notizen?'<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:6px">'+s.notizen+'</div>':'')
-          +(s.naechsteSchritte?'<div style="font-size:12px;color:var(--text3)"><i class="ti ti-arrow-right" style="margin-right:3px"></i>'+s.naechsteSchritte+'</div>':'')
-          +'</div>';
-      });
-    }
-    if(!masSessions.length){html+='<div class="leer">Noch keine Sessions vorhanden.</div>';}
-  }
-
-  // ── PERFORMANCE ──
-  if(aktiverTab==='performance'){
-    var z=mitarbeiterZiele(ma);
-    var perf7=getPerf(ma.id,7);
-    function p7(k){return perf7.length?(perf7.reduce(function(a,x){return a+x[k];},0)/perf7.length).toFixed(1):'—';}
-    html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">';
-    [{k:'crOEM',l:'CR OEM',c:'var(--amber)',z:z.crOEM,pct:true},{k:'crTeilweise',l:'CR Teilweise',c:'var(--text2)',z:null,pct:true},{k:'crSuperYes',l:'CR Super Yes',c:'var(--purple)',z:z.crSuperYes,pct:true},{k:'crMegaYes',l:'CR Mega Yes',c:'var(--teal)',z:z.crMegaYes,pct:true},{k:'optProStunde',l:'Opt./Stunde',c:'var(--blue)',z:z.optProStunde,pct:false}].forEach(function(kd){
-      var v=p7(kd.k);var hit=kd.z?(parseFloat(v)>=kd.z):true;
-      html+='<div class="kpi" style="border-top-color:'+kd.c+'"><div class="kpi-label" style="color:'+kd.c+'">'+kd.l+'</div><div class="kpi-val" style="color:'+kd.c+'">'+v+(kd.pct&&v!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(kd.z?(hit?'var(--teal)':'var(--red)'):'var(--text3)')+'">'+(kd.z?'Ziel: '+kd.z+(kd.pct?'%':'')+' '+(hit?'✓':'↓'):'7-Tage-Ø')+'</div></div>';
+  // ── PERFORMANCE TAB ──
+  if(activeTab==='performance'){
+    var perf7=getPerf(emp.id,7);
+    function a7(key){return perf7.length?(perf7.reduce(function(a,x){return a+x[key];},0)/perf7.length).toFixed(1):'—';}
+    var kpis=[
+      {label:'CR OEM',key:'crOEM',color:'var(--amber)',target:KPI_TARGETS.crOEM,pct:true},
+      {label:'CR Teilweise',key:'crTeilweise',color:'var(--text2)',target:null,pct:true},
+      {label:'CR Super Yes',key:'crSuperYes',color:'var(--purple)',target:KPI_TARGETS.crSuperYes,pct:true},
+      {label:'CR Mega Yes',key:'crMegaYes',color:'var(--teal)',target:KPI_TARGETS.crMegaYes,pct:true},
+      {label:'Opt./Hour',key:'optPerH',color:'var(--blue)',target:KPI_TARGETS.optPerH,pct:false},
+    ];
+    html+='<div class="g5">';
+    kpis.forEach(function(k){
+      var v=a7(k.key);
+      var hit=k.target?(parseFloat(v)>=k.target):true;
+      html+='<div class="kpi" style="border-top-color:'+k.color+'">'
+        +'<div class="kpi-label" style="color:'+k.color+'">'+k.label+'</div>'
+        +'<div class="kpi-val" style="color:'+k.color+'">'+v+(k.pct&&v!=='—'?'%':'')+'</div>'
+        +'<div class="kpi-sub" style="color:'+(k.target?(hit?'var(--teal)':'var(--red)'):'var(--text3)')+'">'+(k.target?'Target: '+k.target+(k.pct?'% ':' ')+(hit?'✓':'↓'):'7-Tage-Ø')+'</div>'
+        +'</div>';
     });
     html+='</div>';
-    // Tabelle
-    var perf=performance[ma.id]||[];
-    if(perf.length){
-      html+='<div class="abschnitt-titel">Tagesprotokoll</div><div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden"><table><thead><tr><th>Datum</th><th>CR OEM</th><th>Teilw.</th><th>Yes</th><th>Super Yes</th><th>Mega Yes</th><th>Opt./h</th><th>Marge</th></tr></thead><tbody>';
-      perf.slice(0,15).forEach(function(row){
-        html+='<tr><td>'+datum(row.datum)+'</td><td style="color:var(--amber);font-weight:600">'+row.crOEM+'%</td><td>'+row.crTeilweise+'%</td><td>'+row.crYes+'%</td><td style="color:var(--purple);font-weight:600">'+row.crSuperYes+'%</td><td style="color:var(--teal);font-weight:600">'+row.crMegaYes+'%</td><td>'+row.optProStunde.toFixed(1)+'</td><td style="color:var(--blue)">€'+(row.marge||0)+'</td></tr>';
+    if(alerts.length){
+      html+='<div class="alert alert-danger" style="margin-bottom:16px">'
+        +'<i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">Below target in '+alerts.length+' Bereich'+(alerts.length!==1?'s':'')+'</div>'
+        +'<div style="font-size:12px;color:var(--red)">'+alerts.map(function(a){return a.key+': '+a.val+' (target: '+a.target+')';}).join(' · ')+'</div>'
+        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching Session – calendar integration coming soon.\')"><i class="ti ti-calendar"></i> Book coaching Session</button></div>'
+        +'</div></div>';
+    } else {
+      html+='<div class="alert alert-ok" style="margin-bottom:16px">'
+        +'<i class="ti ti-circle-check" style="font-size:18px;color:var(--teal);flex-shrink:0"></i>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--teal-dark)">All KPIs on target</div></div></div>';
+    }
+    // Chart
+    html+='<div class="chart-wrap">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em">Performance trend</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<div class="chart-toggle">'
+      +'<button class="'+(perfMetric==='optPerH'?'active':'')+'" onclick="setMetric(\'optPerH\')">Opt./h</button>'
+      +'<button class="'+(perfMetric==='crOEM'?'active':'')+'" onclick="setMetric(\'crOEM\')">CR OEM</button>'
+      +'<button class="'+(perfMetric==='crSuperYes'?'active':'')+'" onclick="setMetric(\'crSuperYes\')">Super Yes</button>'
+      +'<button class="'+(perfMetric==='crMegaYes'?'active':'')+'" onclick="setMetric(\'crMegaYes\')">Mega Yes</button>'
+      +'</div>'
+      +'<div class="chart-toggle">'
+      +'<button class="'+(perfRange===7?'active':'')+'" onclick="setRange(7)">7d</button>'
+      +'<button class="'+(perfRange===30?'active':'')+'" onclick="setRange(30)">30d</button>'
+      +'<button class="'+(perfRange===90?'active':'')+'" onclick="setRange(90)">90d</button>'
+      +'</div></div></div>'
+      +'<canvas id="perfChart" height="80"></canvas></div>';
+    // Manual entry form
+    html+='<div class="card">'
+      +'<div class="card-title"><i class="ti ti-plus"></i> Log Daily Performance</div>'
+      +'<div class="f5"><div><label>Date</label><input type="date" id="pd" value="'+today()+'"></div>'
+      +'<div><label>CR OEM %</label><input type="number" id="po" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>CR Super Yes %</label><input type="number" id="psy" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>CR Mega Yes %</label><input type="number" id="pmy" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>Opt./Hour</label><input type="number" id="pop" placeholder="0.0" step="0.1" min="0"></div></div>'
+      +'<div class="f2"><div><label>CR Teilweise %</label><input type="number" id="pt" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>CR Yes %</label><input type="number" id="pyes" placeholder="0-100" min="0" max="100"></div></div>'
+      +'<div style="margin-bottom:12px"><label>Note</label><input type="text" id="pn" placeholder="Optional..."></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="savePerf()"><i class="ti ti-check"></i> Save Entry</button>'
+      +'</div>';
+    // Log table
+    var perf=performance[emp.id]||[];
+    if(perf.length>0){
+      html+='<div class="sec-title">Daily log</div><div class="tbl"><table><thead><tr><th>Date</th><th>CR OEM</th><th>Teilw.</th><th>Yes</th><th>Super Yes</th><th>Mega Yes</th><th>Opt./h</th><th>Margin</th></tr></thead><tbody>';
+      perf.slice(0,20).forEach(function(row){
+        html+='<tr><td>'+fd(row.date)+'</td>'
+          +'<td style="color:var(--amber);font-weight:600">'+row.crOEM+'%</td>'
+          +'<td>'+row.crTeilweise+'%</td>'
+          +'<td>'+row.crYes+'%</td>'
+          +'<td style="color:var(--purple);font-weight:600">'+row.crSuperYes+'%</td>'
+          +'<td style="color:var(--teal);font-weight:600">'+row.crMegaYes+'%</td>'
+          +'<td>'+row.optPerH.toFixed(1)+'</td>'
+          +'<td style="color:var(--blue)">€'+(row.margin||0)+'</td></tr>';
       });
       html+='</tbody></table></div>';
     }
   }
 
-  // ── SOLIDROAD ──
-  if(aktiverTab==='solidroad'){
-    var srDaten=solidroad[ma.id]||{simulationen:[]};
-    var sims=srDaten.simulationen;
-    var srS=srSchnitt(ma.id);
-    if(srS!==null){
-      html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
-        +'<div class="kpi" style="border-top-color:'+scorefarbe(srS,100)+'"><div class="kpi-label" style="color:'+scorefarbe(srS,100)+'">Ø Ergebnis</div><div class="kpi-val" style="color:'+scorefarbe(srS,100)+'">'+srS+'%</div><div class="kpi-sub">alle Simulationen</div></div>'
-        +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Simulationen</div><div class="kpi-val" style="color:var(--blue)">'+sims.length+'</div><div class="kpi-sub">abgeschlossen</div></div>'
-        +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Bestanden</div><div class="kpi-val" style="color:var(--teal)">'+sims.filter(function(s){return s.bestanden;}).length+'</div><div class="kpi-sub">von '+sims.length+'</div></div>'
-        +'<div class="kpi" style="border-top-color:var(--red)"><div class="kpi-label" style="color:var(--red)">Nicht bestanden</div><div class="kpi-val" style="color:var(--red)">'+sims.filter(function(s){return !s.bestanden;}).length+'</div><div class="kpi-sub">wiederholen</div></div>'
+  // ── PROTOCOLS TAB ──
+  if(activeTab==='protocols'){
+    html+='<div class="card"><div class="card-title"><i class="ti ti-edit"></i> New Protocol</div>'
+      +'<div class="f3"><div><label>Date</label><input type="date" id="nd" value="'+today()+'"></div>'
+      +'<div><label>Rating</label><select id="nr">'+RATINGS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>'
+      +'<div><label>Focus topic</label><input type="text" id="nf" placeholder="Topic of this Session"></div></div>'
+      +'<div style="margin-bottom:10px"><label>Notes</label><textarea id="nt" placeholder="What stood out..."></textarea></div>'
+      +'<div style="margin-bottom:12px"><label>Rate criteria (0–100)</label>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:6px">';
+    ratingCriteria.forEach(function(rc){
+      html+='<div><label style="font-size:11px">'+rc.name+'</label><input type="number" id="rc-'+rc.id+'" placeholder="'+rc.target+'" min="0" max="100"></div>';
+    });
+    html+='</div></div>'
+      +'<div style="display:flex;gap:10px">'
+      +'<button class="btn btn-primary btn-sm" onclick="saveNote()"><i class="ti ti-check"></i> Save Protocol</button>'
+      +'<button class="btn btn-sm" onclick="openModal(\'ratingModal\')"><i class="ti ti-plus"></i> Add criterion</button>'
+      +'<button class="btn btn-sm" style="color:var(--purple);border-color:var(--purple)" onclick="addTaskFromCurrentProtocol()"><i class="ti ti-checkbox"></i> Add as task</button>'
+      +'</div></div>';
+    if(p.length===0){html+='<div class="empty">No protocols yet.</div>';}
+    else{
+      html+='<div class="sec-title">Previous Sessions</div>';
+      p.forEach(function(pr){
+        var rs=RS[pr.rating];
+        html+='<div class="proto"><div class="proto-hdr">'
+          +'<div class="proto-meta"><i class="ti ti-calendar" style="font-size:12px"></i>'+fd(pr.date)+(pr.focus?' · '+pr.focus:'')+'</div>'
+          +'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+pr.rating+'</span></div>'
+          +'<div style="font-size:13px;line-height:1.6">'+pr.note+'</div>';
+        if(pr.criteria&&Object.keys(pr.criteria).length){
+          html+='<div class="crit-tags">';
+          ratingCriteria.forEach(function(rc){
+            if(pr.criteria[rc.id]===undefined)return;
+            var v=pr.criteria[rc.id];
+            var col=v>=rc.target?'var(--teal-bg)':v>=rc.target*.8?'var(--amber-bg)':'var(--red-bg)';
+            var tc=v>=rc.target?'var(--teal-dark)':v>=rc.target*.8?'var(--amber-dark)':'var(--red)';
+            html+='<span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;background:'+col+';color:'+tc+'">'+rc.name+': '+v+'%</span>';
+          });
+          html+='</div>';
+        }
+        html+='</div>';
+      });
+    }
+    html+='<div class="sec-title" style="margin-top:20px">Rating criteria</div>'
+      +'<div class="tbl"><table><thead><tr><th>Criterion</th><th>Category</th><th>Target</th><th>Description</th></tr></thead><tbody>';
+    ratingCriteria.forEach(function(rc){
+      html+='<tr><td style="font-weight:500">'+rc.name+'</td><td><span class="badge" style="background:var(--bg2);color:var(--text2)">'+rc.cat+'</span></td><td>'+rc.target+'%</td><td style="color:var(--text2)">'+rc.desc+'</td></tr>';
+    });
+    html+='</tbody></table></div><button class="btn btn-sm" onclick="openModal(\'ratingModal\')"><i class="ti ti-plus"></i> Add criterion</button>';
+  }
+
+  // ── PROGRESS TAB ──
+  if(activeTab==='progress'){
+    var perf7b=getPerf(emp.id,7);
+    function avb(key){return perf7b.length?(perf7b.reduce(function(a,x){return a+x[key];},0)/perf7b.length).toFixed(1):'—';}
+    if(alerts.length){
+      html+='<div class="alert alert-danger" style="margin-bottom:16px">'
+        +'<i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">KPIs below target – coaching Session recommended</div>'
+        +'<div style="font-size:12px;color:var(--red)">'+alerts.map(function(a){return a.key+': '+a.val+' vs target '+a.target;}).join(' · ')+'</div>'
+        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching Session.\')"><i class="ti ti-calendar"></i> Book a Session</button></div>'
+        +'</div></div>';
+    }
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">'
+      +'<div><div class="sec-title">Skill profile (latest Session)</div>';
+    if(p.length===0){html+='<div class="empty" style="padding:1.5rem">No data yet.</div>';}
+    else{
+      var latest=p[0];var skills=latest.skills||{};var first=p[p.length-1].skills||{};
+      SKILLS.forEach(function(s,i){
+        var key=SK_DE[i];var val=skills[key]||0;var prev=first[key]||0;var delta=val-prev;
+        var col=val>=80?'var(--teal)':val>=60?'var(--purple)':'var(--amber)';
+        html+='<div class="skill-row"><span class="skill-label">'+s+'</span>'
+          +'<div class="skill-track"><div class="skill-fill" style="width:'+val+'%;background:'+col+'"></div></div>'
+          +'<span class="skill-pct">'+val+'%</span>'
+          +'<span class="skill-delta" style="color:'+(delta>=0?'var(--teal)':'var(--red)')+'">'+(delta>=0?'+':'')+delta+'</span></div>';
+      });
+    }
+    html+='</div><div><div class="sec-title">Performance (7-day avg)</div><div class="g2">'
+      +'<div class="kpi" style="border-top-color:var(--amber)"><div class="kpi-label" style="color:var(--amber)">CR OEM</div><div class="kpi-val" style="color:var(--amber)">'+avb('crOEM')+(avb('crOEM')!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('crOEM'))>=KPI_TARGETS.crOEM?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.crOEM+'%</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Super Yes</div><div class="kpi-val" style="color:var(--purple)">'+avb('crSuperYes')+(avb('crSuperYes')!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('crSuperYes'))>=KPI_TARGETS.crSuperYes?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.crSuperYes+'%</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Mega Yes</div><div class="kpi-val" style="color:var(--teal)">'+avb('crMegaYes')+(avb('crMegaYes')!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('crMegaYes'))>=KPI_TARGETS.crMegaYes?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.crMegaYes+'%</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Opt./Hour</div><div class="kpi-val" style="color:var(--blue)">'+avb('optPerH')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('optPerH'))>=KPI_TARGETS.optPerH?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.optPerH+'</div></div>'
+      +'</div></div></div>';
+    if(p.length>0){
+      html+='<div class="sec-title">Session history</div><div class="sess-hist">';
+      p.forEach(function(pr,i){
+        var rs=RS[pr.rating];
+        var sa=pr.skills?Math.round(Object.values(pr.skills).reduce(function(a,b){return a+b;},0)/Object.values(pr.skills).length):null;
+        var bc=pr.rating==='Mega Yes'?'var(--teal)':pr.rating==='Super Yes'?'var(--purple)':pr.rating==='Yes'?'var(--blue)':'var(--amber)';
+        html+='<div class="sess-row">'
+          +'<span style="font-size:11px;color:var(--text3);width:18px;text-align:right">'+(p.length-i)+'</span>'
+          +'<span style="font-size:12px;color:var(--text2);width:74px">'+fd(pr.date)+'</span>'
+          +'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+pr.rating+'</span>'
+          +(sa!==null?'<div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+sa+'%;background:'+bc+';border-radius:3px"></div></div><span style="font-size:12px;color:var(--text2);width:32px;text-align:right">'+sa+'%</span>':'<div style="flex:1"></div>')
+          +'<span style="font-size:12px;color:var(--text2);width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(pr.focus||'')+'</span></div>';
+      });
+      html+='</div>';
+    }
+  }
+
+  // ── SOLIDROAD TAB ──
+  if(activeTab==='solidroad'){
+    var sims=sr.simulations;
+    var srScore=sims.length?Math.round(sims.reduce(function(a,s){return a+s.score;},0)/sims.length):null;
+    if(!settings.srApiKey){
+      html+='<div style="background:var(--purple-bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;margin-bottom:14px">'
+        +'<div style="font-size:36px;color:var(--purple);margin-bottom:10px"><i class="ti ti-robot"></i></div>'
+        +'<div style="font-size:16px;font-weight:600;margin-bottom:6px">Connect SolidRoad</div>'
+        +'<div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Add your API key in Einstellungen to sync simulation scores automatically.</div>'
+        +'<button class="btn btn-primary btn-sm" style="width:auto;margin:0 auto" onclick="showView(\'settings\')"><i class="ti ti-settings"></i> Go to Einstellungen</button></div>';
+    }
+    if(srScore!==null){
+      html+='<div class="g4">'
+        +'<div class="kpi" style="border-top-color:'+scoreColor(srScore)+'"><div class="kpi-label" style="color:'+scoreColor(srScore)+'">Avg. Score</div><div class="kpi-val" style="color:'+scoreColor(srScore)+'">'+srScore+'%</div><div class="kpi-sub">all simulations</div></div>'
+        +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Simulations</div><div class="kpi-val" style="color:var(--blue)">'+sims.length+'</div><div class="kpi-sub">completed</div></div>'
+        +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Best Score</div><div class="kpi-val" style="color:var(--teal)">'+Math.max.apply(null,sims.map(function(s){return s.score;}))+'%</div><div class="kpi-sub">highest simulation</div></div>'
+        +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Passed</div><div class="kpi-val" style="color:var(--purple)">'+sims.filter(function(s){return s.status==='passed';}).length+'</div><div class="kpi-sub">of '+sims.length+'</div></div>'
         +'</div>';
     }
-    html+='<div class="abschnitt-titel">Simulationen</div>';
-    if(!sims.length){html+='<div class="leer">Noch keine Simulationen abgeschlossen.</div>';}
-    sims.forEach(function(s){
-      var col=s.score>=85?'var(--teal)':s.score>=70?'var(--purple)':'var(--red)';
-      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px">'
-        +'<div style="width:50px;height:50px;border-radius:50%;border:3px solid '+col+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:'+col+';flex-shrink:0">'+s.score+'%</div>'
-        +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+s.name+'</div><div style="font-size:12px;color:var(--text2);margin-top:2px">'+datum(s.datum)+' · '+(s.bestanden?'<span style="color:var(--teal)">✓ Bestanden</span>':'<span style="color:var(--red)">✗ Nicht bestanden</span>')+'</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+s.tags.map(function(t){return '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2)">'+t+'</span>';}).join('')+'</div>'
-        +'</div></div>';
-    });
-  }
-
-  // ── AUFGABEN ──
-  if(aktiverTab==='aufgaben'){
-    var empAufg=aufgaben[ma.id]||[];
-    var todayStr=heute();
-    function istUeberfaellig(a){return !a.erledigt&&a.faelligAm&&a.faelligAm<todayStr;}
-    var offen=empAufg.filter(function(a){return !a.erledigt&&!istUeberfaellig(a);});
-    var ueberfaellig=empAufg.filter(function(a){return istUeberfaellig(a);});
-    var erledigt=empAufg.filter(function(a){return a.erledigt;});
-    var prioFarbe={hoch:{bg:'var(--red-bg)',col:'var(--red)'},mittel:{bg:'var(--amber-bg)',col:'var(--amber-dark)'},niedrig:{bg:'var(--bg2)',col:'var(--text2)'}};
-
-    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">'
-      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Offen</div><div class="kpi-val" style="color:var(--purple)">'+offen.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:'+(ueberfaellig.length?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(ueberfaellig.length?'var(--red)':'var(--teal)')+'">Überfällig</div><div class="kpi-val" style="color:'+(ueberfaellig.length?'var(--red)':'var(--teal)')+'">'+ueberfaellig.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Erledigt</div><div class="kpi-val" style="color:var(--teal)">'+erledigt.length+'</div></div>'
-      +'</div>';
-
-    html+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary btn-sm" onclick="openModal(\'neueAufgabeModal\')"><i class="ti ti-plus"></i> Aufgabe hinzufügen</button></div>';
-
-    function aufgabeKarte(a){
-      var pf=prioFarbe[a.prioritaet]||prioFarbe.niedrig;
-      var ue=istUeberfaellig(a);
-      var tage=a.faelligAm&&!a.erledigt?Math.ceil((new Date(a.faelligAm)-new Date(todayStr))/86400000):null;
-      var faelligText=a.faelligAm?(a.erledigt?'Erledigt':tage<0?'Überfällig seit '+Math.abs(tage)+'d':tage===0?'Heute fällig':tage===1?'Morgen fällig':'Fällig in '+tage+'d'):'';
-      var faelligFarbe=a.erledigt?'var(--text3)':tage!==null&&tage<0?'var(--red)':tage===0?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg);border:1px solid var(--border);'+(ue?'border-left:3px solid var(--red);':'')+( a.erledigt?'opacity:.6;':'')+' border-radius:var(--r-lg);margin-bottom:8px;overflow:hidden">'
-        +'<div style="display:flex;align-items:flex-start;gap:12px;padding:13px 15px;cursor:pointer" onclick="toggleAufgabeDetail('+a.id+')">'
-        +'<div onclick="event.stopPropagation();aufgabeErledigen('+a.id+')" style="width:22px;height:22px;border-radius:50%;border:2px solid '+(a.erledigt?'var(--teal)':'var(--border2)')+';background:'+(a.erledigt?'var(--teal)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;margin-top:1px;transition:all .15s">'
-        +(a.erledigt?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':'')+'</div>'
-        +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;'+(a.erledigt?'text-decoration:line-through;color:var(--text3)':'')+'">'+a.text+'</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px">'
-        +(a.quelle?'<span>'+a.quelle+'</span>':'')
-        +(faelligText?'<span style="color:'+faelligFarbe+'">'+faelligText+'</span>':'')
-        +'</div></div>'
-        +'<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:'+pf.bg+';color:'+pf.col+';flex-shrink:0">'+a.prioritaet+'</span>'
-        +'</div>'
-        +'<div id="aufg-detail-'+a.id+'" style="display:none;padding:0 15px 13px 49px;border-top:1px solid var(--border);background:var(--bg2);font-size:13px;color:var(--text2);line-height:1.6">'
-        +(a.beschreibung||'Keine Beschreibung.')
-        +'<div style="display:flex;gap:8px;margin-top:10px">'
-        +(!a.erledigt?'<button class="btn btn-sm btn-primary" onclick="aufgabeErledigen('+a.id+')"><i class="ti ti-check"></i> Als erledigt markieren</button>':'<button class="btn btn-sm" onclick="aufgabeErledigen('+a.id+')"><i class="ti ti-rotate-left"></i> Wieder öffnen</button>')
-        +'<button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="aufgabeLoeschen('+a.id+')"><i class="ti ti-trash"></i> Löschen</button>'
-        +'</div></div></div>';
+    if(sims.length>0){
+      html+='<div class="sec-title">Simulations</div>';
+      sims.forEach(function(s){
+        var col=scoreColor(s.score);
+        html+='<div class="sr-sim"><div class="sr-ring" style="border-color:'+col+';color:'+col+'">'+s.score+'%</div>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+s.name+'</div><div style="font-size:12px;color:var(--text2);margin-top:2px">'+fd(s.date)+'</div>'
+          +'<div class="sr-tags">'+s.tags.map(function(t){return '<span class="sr-tag">'+t+'</span>';}).join('')+'</div></div></div>';
+      });
+    } else if(settings.srApiKey){html+='<div class="empty">No simulations completed yet.</div>';}
+    if(settings.srApiKey){
+      html+='<div class="card"><div class="card-title"><i class="ti ti-plus"></i> Log Simulation Manually</div>'
+        +'<div class="f3"><div><label>Name</label><input type="text" id="srName" placeholder="e.g. Objection: Price too high"></div>'
+        +'<div><label>Date</label><input type="date" id="srDate" value="'+today()+'"></div>'
+        +'<div><label>Score (%)</label><input type="number" id="srScore" placeholder="0-100" min="0" max="100"></div></div>'
+        +'<div style="margin-bottom:12px"><label>Tags (comma separated)</label><input type="text" id="srTags" placeholder="e.g. Objection Handling, Closing"></div>'
+        +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveSRSim()"><i class="ti ti-check"></i> Save</button></div>';
     }
-
-    if(empAufg.length===0){html+='<div class="leer">Noch keine Aufgaben vorhanden.</div>';}
-    if(ueberfaellig.length){html+='<div class="abschnitt-titel" style="color:var(--red)">Überfällig ('+ueberfaellig.length+')</div>';ueberfaellig.forEach(function(a){html+=aufgabeKarte(a);});}
-    if(offen.length){html+='<div class="abschnitt-titel" style="margin-top:'+(ueberfaellig.length?'16px':'0')+'">Offen ('+offen.length+')</div>';offen.forEach(function(a){html+=aufgabeKarte(a);});}
-    if(erledigt.length){html+='<div class="abschnitt-titel" style="margin-top:16px">Erledigt ('+erledigt.length+')</div>';erledigt.forEach(function(a){html+=aufgabeKarte(a);});}
   }
 
-  el.innerHTML=html;
-}
-
-// ── Session Scorecard bewerten ──
-function sessionStarten(sessionId){
-  aktivesScorecardId=sessionId;
-  var s=sessions.find(function(x){return x.id===sessionId;});
-  if(!s)return;
-  var ma=mitarbeiter.find(function(m){return m.id===s.mitarbeiterId;});
-  ausgewaehlterId=s.mitarbeiterId;
-  renderScorecardModal(s,ma);
-}
-function sessionOeffnen(sessionId){
-  var s=sessions.find(function(x){return x.id===sessionId;});
-  if(!s)return;
-  aktivesScorecardId=sessionId;
-  var ma=mitarbeiter.find(function(m){return m.id===s.mitarbeiterId;});
-  renderScorecardModal(s,ma);
-}
-
-function renderScorecardModal(s,ma){
-  var modal=document.getElementById('scorecardModal');
-  var inhalt=document.getElementById('scorecardInhalt');
-  if(!modal||!inhalt)return;
-
-  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
-    +'<div><label>Session-Datum</label><input type="date" id="sc-datum" value="'+s.datum+'"></div>'
-    +'<div><label>Typ</label><select id="sc-typ"><option'+(s.typ==='Onboarding-Session'?' selected':'')+'>Onboarding-Session</option><option'+(s.typ==='Gesprächsbewertung'?' selected':'')+'>Gesprächsbewertung</option><option'+(s.typ==='Anlassbezogene Session'?' selected':'')+'>Anlassbezogene Session</option></select></div>'
-    +'<div><label>Thema</label><input type="text" id="sc-thema" value="'+s.thema+'" placeholder="z.B. Einwandbehandlung"></div>'
-    +'<div><label>Gesamtbewertung</label><select id="sc-bewertung"><option value="">Bewertung wählen...</option>'+BEWERTUNGEN.map(function(b){return '<option'+(s.gesamtBewertung===b?' selected':'')+'>'+b+'</option>';}).join('')+'</select></div>'
-    +'</div>';
-
-  // Scorecard Kriterien
-  SCORECARD.forEach(function(kat){
-    html+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">'+kat.kategorie+' <span style="font-weight:400;color:var(--text3)">('+kat.gewichtung+'%)</span></div>';
-    kat.kriterien.forEach(function(k){
-      var aktuell=s.scorecard?s.scorecard[k.id]:null;
-      html+='<div style="margin-bottom:14px">'
-        +'<div style="font-size:13px;font-weight:500;margin-bottom:3px">'+k.name+'</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-bottom:8px">'+k.beschreibung+'</div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">';
-      k.stufen.forEach(function(stufe,idx){
-        var wert=idx+1;
-        var gewaehlt=aktuell===wert;
-        var farbe=wert===1?'var(--red)':wert===2?'var(--amber)':wert===3?'var(--purple)':'var(--teal)';
-        html+='<div onclick="scorecardWaehlen(\''+k.id+'\','+wert+')" id="sc-'+k.id+'-'+wert+'" style="padding:8px;border-radius:var(--r-md);border:2px solid '+(gewaehlt?farbe:'var(--border2)')+';background:'+(gewaehlt?farbe+'22':'transparent')+';cursor:pointer;text-align:center;transition:all .15s">'
-          +'<div style="font-size:13px;font-weight:700;color:'+farbe+'">'+wert+'</div>'
-          +'<div style="font-size:10px;color:var(--text2);line-height:1.3;margin-top:2px">'+stufe+'</div>'
-          +'</div>';
+  // ── ONBOARDING TAB ──
+  if(activeTab==='onboarding'){
+    var startDate=emp.startDate?new Date(emp.startDate+'T00:00:00'):null;
+    var days=[...new Set(obSteps.map(function(s){return s.day;}))].sort(function(a,b){return a-b;});
+    var totalSteps=obSteps.length;
+    var completedSteps=ob.filter(Boolean).length;
+    var pct=totalSteps?Math.round(completedSteps/totalSteps*100):0;
+    var currentDay=days.find(function(day){return obSteps.filter(function(s){return s.day===day;}).some(function(s){return !ob[obSteps.indexOf(s)];});})||days[days.length-1];
+    var level=pct>=100?'Experte':pct>=75?'Sehr gut':pct>=50?'Fortgeschritten':pct>=25?'Entwicklung':'Einsteiger';
+    var levelColor=pct>=100?'var(--teal)':pct>=75?'var(--purple)':pct>=50?'var(--blue)':pct>=25?'var(--amber)':'var(--text2)';
+    var levelBg=pct>=100?'var(--teal-bg)':pct>=75?'var(--purple-bg)':pct>=50?'var(--blue-bg)':pct>=25?'var(--amber-bg)':'var(--bg2)';
+    var daysSince=startDate?Math.floor((new Date()-startDate)/86400000)+1:null;
+    // Summary cards
+    html+='<div class="g4" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:'+levelColor+'"><div class="kpi-label" style="color:'+levelColor+'">Level</div><div class="kpi-val" style="color:'+levelColor+';font-size:17px">'+level+'</div><div class="kpi-sub">'+pct+'% complete</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Steps done</div><div class="kpi-val" style="color:var(--teal)">'+completedSteps+'<span style="font-size:13px;color:var(--text3)"> / '+totalSteps+'</span></div><div class="kpi-sub">'+(totalSteps-completedSteps)+' remaining</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Active day</div><div class="kpi-val" style="color:var(--purple)">Day '+currentDay+'</div><div class="kpi-sub">'+(pct>=100?'Alles erledigt':'Aktueller Fokus')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Days since start</div><div class="kpi-val" style="color:var(--blue)">'+(daysSince!==null?daysSince:'—')+'</div><div class="kpi-sub">'+(emp.startDate?'Since '+fd(emp.startDate):'Kein Startdatum')+'</div></div>'
+      +'</div>';
+    // Donut + Level ladder
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">'
+      +'<div class="card" style="margin-bottom:0"><div class="card-title"><i class="ti ti-chart-donut"></i> Overall progress</div>'
+      +'<div style="display:flex;align-items:center;gap:20px">'
+      +'<div style="position:relative;width:96px;height:96px;flex-shrink:0">'
+      +'<svg viewBox="0 0 36 36" style="width:96px;height:96px;transform:rotate(-90deg)">'
+      +'<circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--bg3)" stroke-width="3.2"/>'
+      +'<circle cx="18" cy="18" r="15.9" fill="none" stroke="'+levelColor+'" stroke-width="3.2" stroke-dasharray="'+pct+' '+(100-pct)+'" stroke-linecap="round"/>'
+      +'</svg>'
+      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="font-size:17px;font-weight:600;color:'+levelColor+'">'+pct+'%</span></div></div>'
+      +'<div style="flex:1">';
+    days.forEach(function(day){
+      var ds=obSteps.filter(function(s){return s.day===day;});
+      var done=ds.filter(function(s){return ob[obSteps.indexOf(s)];}).length;
+      var dp=Math.round(done/ds.length*100);
+      var dc=dp===100?'var(--teal)':dp>=50?'var(--purple)':'var(--amber)';
+      html+='<div style="margin-bottom:9px">'
+        +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+        +'<span style="font-size:12px;color:var(--text2)">Day '+day+'</span>'
+        +'<span style="font-size:12px;font-weight:600;color:'+(dp===100?'var(--teal)':'var(--text2)')+'">'+done+'/'+ds.length+(dp===100?' ✓':'')+'</span></div>'
+        +'<div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+dp+'%;background:'+dc+';border-radius:3px"></div></div></div>';
+    });
+    html+='</div></div></div>'
+      +'<div class="card" style="margin-bottom:0"><div class="card-title"><i class="ti ti-trophy"></i> Onboarding level</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">';
+    [['Einsteiger','0–24%',0],['Entwicklung','25–49%',25],['Fortgeschritten','50–74%',50],['Sehr gut','75–99%',75],['Experte','100%',100]].forEach(function(entry){
+      var lv=entry[0],range=entry[1],threshold=entry[2];
+      var active=level===lv,reached=pct>=threshold;
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-md);background:'+(active?levelBg:'var(--bg2)')+';border:1px solid '+(active?levelColor:'transparent')+'">'
+        +'<div style="width:26px;height:26px;border-radius:50%;background:'+(reached?(active?levelColor:'var(--teal)'):'var(--bg3)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        +'<i class="ti ti-'+(reached?'check':'lock')+'" style="font-size:12px;color:'+(reached?'#fff':'var(--text3)')+'"></i></div>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:'+(active?'600':'400')+';color:'+(active?levelColor:'var(--text2)')+'">'+lv+'</div>'
+        +'<div style="font-size:11px;color:var(--text3)">'+range+'</div></div>'
+        +(active?'<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:'+levelColor+';color:#fff">Current</span>':'')
+        +'</div>';
+    });
+    html+='</div></div></div>';
+    // Steps by day
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+      +'<div class="sec-title" style="margin-bottom:0">Steps by day</div>'
+      +'<button class="btn btn-sm" onclick="openModal(\'obModal\')"><i class="ti ti-plus"></i> Add step</button></div>';
+    days.forEach(function(day){
+      var daySteps=obSteps.filter(function(s){return s.day===day;});
+      var dayDone=daySteps.filter(function(s){return ob[obSteps.indexOf(s)];}).length;
+      var dayPct=Math.round(dayDone/daySteps.length*100);
+      var dateLabel='';
+      if(startDate){
+        var dd=new Date(startDate.getTime()+(day-1)*86400000);
+        dateLabel=' · '+fd(dd.toISOString().slice(0,10));
+      }
+      html+='<div style="margin-bottom:10px"><div class="ob-day-hdr">'
+        +'<i class="ti ti-calendar-event" style="color:var(--purple);font-size:16px"></i>'
+        +'<span class="ob-day-label">Day '+day+dateLabel+'</span>'
+        +'<span style="font-size:12px;color:var(--text2)">'+dayDone+'/'+daySteps.length+'</span>'
+        +'<div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;max-width:120px;margin:0 10px">'
+        +'<div style="height:100%;width:'+dayPct+'%;background:'+(dayPct===100?'var(--teal)':'var(--purple)')+';border-radius:3px"></div></div>'
+        +'<span style="font-size:11px;font-weight:600;color:'+(dayPct===100?'var(--teal)':'var(--text3)')+'">'+(dayPct===100?'✓ Done':dayPct+'%')+'</span></div><div>';
+      daySteps.forEach(function(step){
+        var i=obSteps.indexOf(step);
+        html+='<div class="ob-step">'
+          +'<div class="ob-hdr" onclick="toggleOBDetail('+i+')">'
+          +'<div class="ob-check'+(ob[i]?' done':'')+'" onclick="event.stopPropagation();toggleOB('+i+')">'+(ob[i]?'<i class="ti ti-check" style="font-size:11px"></i>':'')+'</div>'
+          +'<span class="ob-label">'+step.label+'</span>'
+          +'<span class="ob-status">'+(ob[i]?'Abgeschlossen':'Ausstehend')+'</span>'
+          +'<i class="ti ti-chevron-down ob-chev" id="chev-'+i+'"></i></div>'
+          +'<div class="ob-detail" id="ob-d-'+i+'">'
+          +'<div class="ob-desc">'+step.detail+'</div>'
+          +'<div class="ob-video-wrap">'
+          +'<div class="ob-video-label"><span><i class="ti ti-video" style="font-size:13px;margin-right:4px"></i>Training video</span>'+(step.videoUrl?'<span class="ftp-badge"><i class="ti ti-cloud" style="font-size:11px"></i> FTP</span>':'')+'</div>'
+          +(step.videoUrl?'<video controls preload="metadata" style="width:100%;max-height:280px;border-radius:var(--r-sm);background:#000"><source src="'+step.videoUrl+'"><p style="font-size:12px;color:var(--text2);padding:8px">Cannot play. <a href="'+step.videoUrl+'" target="_blank">Open directly</a></p></video>':'<div style="font-size:12px;color:var(--text3);margin-bottom:8px">No video linked yet.</div>')
+          +'<div style="display:flex;gap:8px;margin-top:8px"><input type="url" id="vid-'+i+'" placeholder="FTP path or https://" value="'+(step.videoUrl||'')+'" style="font-size:12px"><button class="btn btn-sm" onclick="saveVideoUrl('+i+')"><i class="ti ti-check"></i> Save</button></div>'
+          +'</div></div></div>';
       });
       html+='</div></div>';
     });
-    html+='</div>';
-  });
+  }
 
-  html+='<div><label>Notizen zur Session</label><textarea id="sc-notizen" style="min-height:80px" placeholder="Was ist aufgefallen? Stärken, Schwächen, Beobachtungen...">'+( s.notizen||'')+'</textarea></div>'
-    +'<div style="margin-top:10px"><label>Nächste Schritte / Aufgaben für Mitarbeiter</label><textarea id="sc-naechste" style="min-height:60px" placeholder="Was soll der Mitarbeiter bis zur nächsten Session tun...">'+( s.naechsteSchritte||'')+'</textarea></div>';
+  // ── TASKS TAB ──
+  if(activeTab==='tasks'){
+    var empTasks=tasks[emp.id]||[];
+    var todayStr=today();
+    function isOD(t){return !t.done&&t.dueDate&&t.dueDate<todayStr;}
+    var openTasks=empTasks.filter(function(t){return !t.done&&!isOD(t);});
+    var overdueTasks=empTasks.filter(function(t){return isOD(t);});
+    var doneTasks=empTasks.filter(function(t){return t.done;});
+    var prioStyle={high:{bg:'var(--red-bg)',color:'var(--red)'},medium:{bg:'var(--amber-bg)',color:'var(--amber-dark)'},low:{bg:'var(--bg2)',color:'var(--text2)'}};
+    // Summary
+    html+='<div class="g3" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Open</div><div class="kpi-val" style="color:var(--purple)">'+openTasks.length+'</div><div class="kpi-sub">'+(openTasks.length===0?'All clear':'task'+(openTasks.length!==1?'s':'')+' to do')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">Overdue</div><div class="kpi-val" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">'+overdueTasks.length+'</div><div class="kpi-sub">'+(overdueTasks.length>0?'Frist überschritten':'no overdue tasks')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+doneTasks.length+'</div><div class="kpi-sub">'+(empTasks.length>0?Math.round(doneTasks.length/empTasks.length*100)+'% completion':'noch keine Aufgaben')+'</div></div>'
+      +'</div>';
+    html+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary btn-sm" onclick="openModal(\'addTaskModal\')"><i class="ti ti-plus"></i> Add task</button></div>';
+    if(empTasks.length===0){html+='<div class="empty">No tasks yet. Add tasks manually or from a protocol.</div>';}
+    function taskCard(t){
+      var ps=prioStyle[t.priority]||prioStyle.low;
+      var od=isOD(t);
+      var dueDays=t.dueDate&&!t.done?Math.ceil((new Date(t.dueDate)-new Date(todayStr))/86400000):null;
+      var dueLabel='',dueColor='var(--text3)';
+      if(t.dueDate){
+        if(t.done){dueLabel='Abgeschlossen';}
+        else if(dueDays<0){dueLabel='Überfällig seit '+Math.abs(dueDays)+'d';dueColor='var(--red)';}
+        else if(dueDays===0){dueLabel='Heute fällig';dueColor='var(--amber)';}
+        else if(dueDays===1){dueLabel='Morgen fällig';}
+        else{dueLabel='Fällig in '+dueDays+'d';}
+      }
+      return '<div class="task-item'+(od?' overdue':'')+(t.done?' done-item':'')+'" id="task-'+t.id+'">'
+        +'<div class="task-row" onclick="toggleTaskDetail('+t.id+')">'
+        +'<div class="task-check'+(t.done?' done':'')+'" onclick="event.stopPropagation();toggleTask('+t.id+')">'+(t.done?'<i class="ti ti-check" style="font-size:11px"></i>':'')+'</div>'
+        +'<div style="flex:1;min-width:0"><div class="task-title'+(t.done?' done':'')+'">'+(od?'<i class="ti ti-alert-circle" style="font-size:13px;color:var(--red);margin-right:4px"></i>':'')+t.text+'</div>'
+        +'<div class="task-meta">'+(t.source?'<span>'+t.source+'</span>':'')+( dueLabel?'<span style="color:'+dueColor+'">'+dueLabel+'</span>':'')+'</div></div>'
+        +'<span class="task-prio" style="background:'+ps.bg+';color:'+ps.color+'">'+t.priority+'</span>'
+        +'<button class="task-del" onclick="event.stopPropagation();deleteTask('+t.id+')"><i class="ti ti-x"></i></button>'
+        +'</div>'
+        +'<div class="task-detail" id="td-'+t.id+'">'+(t.description||'No description added.')
+        +'<div class="task-actions">'
+        +(!t.done?'<button class="btn btn-sm btn-primary" onclick="toggleTask('+t.id+')"><i class="ti ti-check"></i> Mark as done</button>':'<button class="btn btn-sm" onclick="toggleTask('+t.id+')"><i class="ti ti-rotate-left"></i> Reopen</button>')
+        +'<button class="btn btn-sm btn-danger" onclick="deleteTask('+t.id+')"><i class="ti ti-trash"></i> Delete</button>'
+        +'</div></div></div>';
+    }
+    if(overdueTasks.length>0){
+      html+='<div class="sec-title" style="color:var(--red)">Overdue ('+overdueTasks.length+')</div>';
+      overdueTasks.forEach(function(t){html+=taskCard(t);});
+    }
+    if(openTasks.length>0){
+      html+='<div class="sec-title" style="margin-top:'+(overdueTasks.length?'16px':'0')+'">Open ('+openTasks.length+')</div>';
+      openTasks.forEach(function(t){html+=taskCard(t);});
+    }
+    if(doneTasks.length>0){
+      html+='<div class="sec-title" style="margin-top:16px">Completed ('+doneTasks.length+')</div>';
+      doneTasks.forEach(function(t){html+=taskCard(t);});
+    }
+  }
 
-  inhalt.innerHTML=html;
-  modal.classList.remove('hidden');
-}
 
-function scorecardWaehlen(kriteriumId, wert){
-  var s=sessions.find(function(x){return x.id===aktivesScorecardId;});
-  if(!s){s={scorecard:{}};} if(!s.scorecard)s.scorecard={};
-  s.scorecard[kriteriumId]=wert;
-  // Update visual
-  for(var i=1;i<=4;i++){
-    var el=document.getElementById('sc-'+kriteriumId+'-'+i);
-    if(!el)continue;
-    var farbe=i===1?'var(--red)':i===2?'var(--amber)':i===3?'var(--purple)':'var(--teal)';
-    el.style.borderColor=i===wert?farbe:'var(--border2)';
-    el.style.background=i===wert?farbe+'22':'transparent';
+  // ── REVIEW TAB ──
+  if(activeTab==='review'){
+    var empReviews=reviews[emp.id]||[];
+    // Auto-schedule from start date if not already present
+    if(emp.startDate){
+      var sd=new Date(emp.startDate+'T00:00:00');
+      var autoTypes=[['Onboarding Review',3],['Performance Review',11],['Annual Review',12]];
+      autoTypes.forEach(function(pair){
+        var type=pair[0],mo=pair[1];
+        if(!empReviews.find(function(r){return r.type===type;})){
+          var dd=new Date(sd.getTime());dd.setMonth(dd.getMonth()+mo);
+          empReviews.push({id:Date.now()+mo,type:type,date:dd.toISOString().slice(0,10),status:dd.toISOString().slice(0,10)<today()?'overdue':'upcoming',notes:'',goals:'',rating:null,kpis:{},auto:true});
+        }
+      });
+      empReviews.sort(function(a,b){return a.date.localeCompare(b.date);});
+    }
+    var typeRS={'Onboarding Review':RS['Yes'],'Performance Review':RS['Super Yes'],'Annual Review':RS['Mega Yes']};
+    html+='<div class="g3" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Total</div><div class="kpi-val" style="color:var(--purple)">'+empReviews.length+'</div><div class="kpi-sub">reviews scheduled</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+empReviews.filter(function(r){return r.status==='abgeschlossen';}).length+'</div><div class="kpi-sub">done</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Upcoming</div><div class="kpi-val" style="color:var(--blue)">'+empReviews.filter(function(r){return r.status==='upcoming';}).length+'</div><div class="kpi-sub">scheduled</div></div>'
+      +'</div>';
+    html+='<div class="sec-title" style="margin-bottom:12px">Review timeline</div>';
+    if(empReviews.length===0){html+='<div class="empty">No reviews yet. Set a start date in Einstellungen to auto-schedule.</div>';}
+    empReviews.forEach(function(rev){
+      var tc2=typeRS[rev.type]||{bg:'var(--bg2)',color:'var(--text2)'};
+      var sc=rev.status==='abgeschlossen'?'var(--teal)':rev.status==='overdue'?'var(--red)':'var(--blue)';
+      var scBg=rev.status==='abgeschlossen'?'var(--teal-bg)':rev.status==='overdue'?'var(--red-bg)':'var(--blue-bg)';
+      html+='<div class="card">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px">'
+        +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:'+tc2.bg+';color:'+tc2.color+'">'+rev.type+'</span>'
+        +'<span style="font-size:11px;padding:3px 9px;border-radius:20px;background:'+scBg+';color:'+sc+'">'+rev.status+'</span>'
+        +(rev.auto?'<span style="font-size:10px;color:var(--text3)">auto-scheduled</span>':'')
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--text2)"><i class="ti ti-calendar" style="font-size:12px"></i> '+fd(rev.date)+'</div>'
+        +'</div>'
+        +(rev.rating?'<span class="badge" style="background:'+RS[rev.rating].bg+';color:'+RS[rev.rating].color+'">'+rev.rating+'</span>':'')
+        +'</div>';
+      // Completed review – show notes, goals, KPIs
+      if(rev.status==='abgeschlossen'){
+        if(rev.notes)html+='<div style="font-size:13px;line-height:1.6;margin-bottom:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--r-md)">'+rev.notes+'</div>';
+        if(rev.goals)html+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px)"><strong>Goals agreed:</strong> '+rev.goals+'</div>';
+        if(rev.kpis&&Object.keys(rev.kpis).length){
+          html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">';
+          var kpiDefs=[{k:'crOEM',l:'CR OEM',c:'var(--amber)'},{k:'crSuperYes',l:'Super Yes',c:'var(--purple)'},{k:'crMegaYes',l:'Mega Yes',c:'var(--teal)'},{k:'optPerH',l:'Opt./h',c:'var(--blue)'}];
+          kpiDefs.forEach(function(kd){if(rev.kpis[kd.k]!==undefined)html+='<div class="kpi" style="border-top-color:'+kd.c+'"><div class="kpi-label" style="color:'+kd.c+'">'+kd.l+'</div><div class="kpi-val" style="color:'+kd.c+'">'+rev.kpis[kd.k]+(kd.k!=='optPerH'?'%':'')+'</div></div>';});
+          html+='</div>';
+        }
+      } else {
+        // Upcoming/overdue – show form to complete
+        html+='<div style="display:flex;flex-direction:column;gap:9px;margin-top:4px">'
+          +'<div><label>Session notes</label><textarea id="rnotes-'+rev.id+'" style="min-height:80px" placeholder="Key observations, strengths, areas to improve..."></textarea></div>'
+          +'<div><label>Goals agreed</label><input type="text" id="rgoals-'+rev.id+'" placeholder="What was agreed for the next period..."></div>'
+          +'<div class="f2">'
+          +'<div><label>Rating</label><select id="rrating-'+rev.id+'"><option value="">Select rating...</option>'+RATINGS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>'
+          +'<div><label>Review date</label><input type="date" id="rdate-'+rev.id+'" value="'+rev.date+'"></div></div>'
+          +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
+          +'<div><label>CR OEM %</label><input type="number" id="rkpi-crOEM-'+rev.id+'" placeholder="e.g. 62" min="0" max="100"></div>'
+          +'<div><label>Super Yes %</label><input type="number" id="rkpi-crSuperYes-'+rev.id+'" placeholder="e.g. 14" min="0" max="100"></div>'
+          +'<div><label>Mega Yes %</label><input type="number" id="rkpi-crMegaYes-'+rev.id+'" placeholder="e.g. 9" min="0" max="100"></div>'
+          +'<div><label>Opt./Hour</label><input type="number" id="rkpi-optPerH-'+rev.id+'" placeholder="e.g. 2.1" step="0.1" min="0"></div>'
+          +'</div>'
+          +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="completeReview('+rev.id+')"><i class="ti ti-check"></i> Complete review</button>'
+          +'</div>';
+      }
+      html+='</div>';
+    });
+    html+='<div style="margin-top:16px">'
+      +'<button class="btn btn-sm" onclick="addReview()"><i class="ti ti-plus"></i> Add review</button>'
+      +'</div>';
+  }
+
+  // ── EMP SETTINGS TAB ──
+  if(activeTab==='emp-settings'){
+    var t=empTargets(emp);
+    var COLORS_LOCAL=COLORS;
+    var swatches=COLORS_LOCAL.map(function(col,i){
+      return '<div onclick="setEmpColor('+i+')" title="'+col.bg+'" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;transition:all .15s"></div>';
+    }).join('');
+    var teamOpts=allTeams().map(function(tm){return '<option'+(tm===emp.team?' selected':'')+'>'+tm+'</option>';}).join('')+'<option value="__new__">+ New team...</option>';
+    html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Basic information</div>'
+      +'<div class="f2"><div><label>Full name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
+      +'<div><label>Role</label><select id="es-role">'+ROLES.map(function(ro){return '<option'+(ro===emp.role?' selected':'')+'>'+ro+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="f3"><div><label>Phase</label><select id="es-phase"><option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option><option'+(emp.phase==='Aktiv'?' selected':'')+'>Active</option><option'+(emp.phase==='Entwicklung'?' selected':'')+'>Entwicklung</option></select></div>'
+      +'<div><label>Team</label><select id="es-team">'+teamOpts+'</select></div>'
+      +'<div><label>Start date</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div></div>'
+      +'<div class="f2"><div><label>Contract</label><select id="es-contract"><option value="full"'+(emp.contract==='full'?' selected':'')+'>Vollzeit</option><option value="part"'+(emp.contract==='part'?' selected':'')+'>Teilzeit</option></select></div>'
+      +'<div><label>Hours / week</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div></div>'
+      +'<div style="margin-bottom:14px"><label>Avatar color</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Save changes</button></div>'
+
+      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individual KPI targets</div>'
+      +'<p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">These override global defaults for this staff member. Used in all alerts and the team overview.</p>'
+      +'<div class="g4"><div><label>CR OEM target %</label><input type="number" id="es-crOEM" value="'+t.crOEM+'" min="0" max="100"></div>'
+      +'<div><label>Super Yes target %</label><input type="number" id="es-crSY" value="'+t.crSuperYes+'" min="0" max="100"></div>'
+      +'<div><label>Mega Yes target %</label><input type="number" id="es-crMY" value="'+t.crMegaYes+'" min="0" max="100"></div>'
+      +'<div><label>Opt./Hour target</label><input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"></div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpTargets()"><i class="ti ti-check"></i> Save targets</button></div>'
+
+      +'<div class="card" style="border-top:2px solid var(--amber)"><div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Deactivate staff member</div>'
+      +'<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Deactivated staff are hidden from the sidebar and team overview. All data is preserved and can be restored at any time.</p>'
+      +'<button class="btn btn-warn btn-sm" style="width:auto;background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="deactivateEmp()"><i class="ti ti-user-off"></i> Deactivate '+emp.name+'</button></div>';
+  }
+
+  tc2.innerHTML=html;
+
+  // Render chart
+  if(activeTab==='performance'){
+    setTimeout(function(){
+      var canvas=document.getElementById('perfChart');
+      if(!canvas)return;
+      if(activeChart){activeChart.destroy();activeChart=null;}
+      var data=getPerf(selectedEmp,perfRange);
+      var labels=data.map(function(d){return fd(d.date);});
+      var vals=data.map(function(d){return d[perfMetric];});
+      var target=KPI_TARGETS[perfMetric];
+      var colors={optPerH:'#378ADD',crOEM:'#BA7517',crSuperYes:'#534AB7',crMegaYes:'#1D9E75',crTeilweise:'#888780',crYes:'#639922'};
+      var col=colors[perfMetric]||'#534AB7';
+      var mLabels={optPerH:'Opt./Hour',crOEM:'CR OEM %',crSuperYes:'CR Super Yes %',crMegaYes:'CR Mega Yes %',crTeilweise:'CR Teilweise %',crYes:'CR Yes %'};
+      var datasets=[{label:mLabels[perfMetric]||perfMetric,data:vals,borderColor:col,backgroundColor:col+'22',fill:true,tension:0.35,pointRadius:perfRange<=7?4:2,pointBackgroundColor:col}];
+      if(target)datasets.push({label:'Target ('+target+')',data:data.map(function(){return target;}),borderColor:'#E24B4A',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false});
+      activeChart=new Chart(canvas,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11},maxTicksLimit:10},grid:{display:false}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+    },50);
   }
 }
 
-// ══════════════════════════════════════════════
-// MANAGER ANSICHT
-// ══════════════════════════════════════════════
-function renderManagerAnsicht(){
-  var ma=document.getElementById('hauptbereich');
-  if(!ma)return;
-  var liste=aktiveMitarbeiter();
-  var heute30=getPerf;
-
-  var rows='';
-  liste.forEach(function(m){
-    var f=FARBEN[m.farbe%FARBEN.length];
-    var masSessions=sessionsFuerMitarbeiter(m.id);
-    var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-    var ls=letzteSession(m.id);
-    var al=alertsPruefen(m);
-    var tageSeitLetzter=ls?Math.floor((new Date()-new Date(ls.datum+'T00:00:00'))/86400000):null;
-    var aufmerksamkeitFarbe=tageSeitLetzter===null?'var(--text3)':tageSeitLetzter>14?'var(--red)':tageSeitLetzter>7?'var(--amber)':'var(--teal)';
-    var sw=staerkenSchwaechen(m.id);
-    rows+='<tr style="cursor:pointer" onclick="ausgewaehlterId='+m.id+';aktiverTab=\'profil\';ansicht=\'coach\';renderSidebar();renderMitarbeiterDetail()">'
-      +'<td><div style="display:flex;align-items:center;gap:9px"><div class="av" style="width:30px;height:30px;font-size:11px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(m.name)+'</div><div><div style="font-weight:500">'+m.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div><div style="font-size:11px;color:var(--text2)">'+m.phase+' · '+m.team+'</div></div></div></td>'
-      +'<td style="font-weight:600">'+abg.length+'</td>'
-      +'<td style="color:'+aufmerksamkeitFarbe+';font-weight:600">'+(tageSeitLetzter===null?'Keine':tageSeitLetzter===0?'Heute':tageSeitLetzter+'d')+'</td>'
-      +'<td>'+(ls?'<span class="badge" style="background:'+BW[ls.gesamtBewertung].bg+';color:'+BW[ls.gesamtBewertung].color+'">'+ls.gesamtBewertung+'</span>':'-')+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+(sw&&sw.schwaechen.length?sw.schwaechen.map(function(s){return s.name;}).join(', '):'-')+'</td>'
-      +'<td>'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
-      +'<td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();ausgewaehlterId='+m.id+';openModal(\'neueSessionModal\')"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
-      +'</tr>';
-  });
-
-  ma.innerHTML='<div class="topbar"><div class="tb-links">'
-    +'<div style="width:40px;height:40px;border-radius:50%;background:var(--teal-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--teal)"><i class="ti ti-users"></i></div>'
-    +'<div><div class="tb-name">Manager-Übersicht</div><div class="tb-meta">'+liste.length+' aktive Mitarbeiter · Coaching-Status</div></div>'
-    +'</div><div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button></div></div>'
-    +'<div class="inhalt">'
-    +'<div class="abschnitt-titel">Coaching-Aufmerksamkeit <span style="font-weight:400;color:var(--text3)">· Rot = über 14 Tage keine Session · Gelb = über 7 Tage</span></div>'
-    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px">'
-    +'<table><thead><tr><th>Mitarbeiter</th><th>Sessions gesamt</th><th>Letzte Session</th><th>Letzte Bewertung</th><th>Entwicklungsfelder</th><th>KPI-Alerts</th><th>Aktion</th></tr></thead><tbody>'+rows+'</tbody></table>'
-    +'</div></div>';
+// ── SETTINGS ──
+function renderEinstellungen(){
+  document.getElementById('mainArea').innerHTML=
+    '<div class="topbar"><div class="tb-left"><div class="av" style="width:40px;height:40px;font-size:17px;background:var(--bg2);color:var(--text2)"><i class="ti ti-settings"></i></div>'
+    +'<div><div class="tb-name">Einstellungen</div><div class="tb-meta">Integrations &amp; configuration</div></div></div></div>'
+    +'<div class="content" style="max-width:600px">'
+    +'<div class="sec-title" style="margin-bottom:12px">Integrations</div>'
+    +'<div class="set-row" style="cursor:pointer" onclick="openModal(\'srModal\')">'
+    +'<div class="set-icon" style="background:var(--purple-bg);color:var(--purple)"><i class="ti ti-robot"></i></div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:500">SolidRoad</div><div style="font-size:12px;color:var(--text2)">AI-powered sales simulations</div></div>'
+    +(settings.srApiKey?'<span class="connected">Connected</span>':'<span class="disconnected">Not connected</span>')
+    +'</div>'
+    +'<div class="set-row"><div class="set-icon" style="background:var(--teal-bg);color:var(--teal)"><i class="ti ti-refresh"></i></div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:500">FTP Data Sync</div><div style="font-size:12px;color:var(--text2)">Performance CSV auto-import</div>'
+    +'<div style="margin-top:8px"><input type="url" id="ftpInput" placeholder="ftp://yourserver.com/performance/" value="'+settings.ftpUrl+'" style="font-size:12px"></div></div>'
+    +'<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span class="connected">Active</span><button class="btn btn-sm btn-primary" onclick="saveFTP()">Save</button></div></div>'
+    +'<div class="set-row"><div class="set-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-brand-github"></i></div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:500">GitHub Pages</div><div style="font-size:12px;color:var(--text2)">wiegand-sales.github.io/coaching-dashboard</div></div>'
+    +'<span class="disconnected">Pending</span></div>'
+    +'<div class="sec-title" style="margin-top:24px;margin-bottom:12px">KPI Targets</div>'
+    +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Performance targets (used for alerts)</div>'
+    +'<div class="g4"><div><label>CR OEM target %</label><input type="number" id="tOEM" value="'+KPI_TARGETS.crOEM+'"></div>'
+    +'<div><label>Super Yes target %</label><input type="number" id="tSY" value="'+KPI_TARGETS.crSuperYes+'"></div>'
+    +'<div><label>Mega Yes target %</label><input type="number" id="tMY" value="'+KPI_TARGETS.crMegaYes+'"></div>'
+    +'<div><label>Opt./Hour target</label><input type="number" id="tOpt" value="'+KPI_TARGETS.optPerH+'"></div></div>'
+    +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveTargets()"><i class="ti ti-check"></i> Save targets</button></div>'
+    +'<div class="sec-title" style="margin-top:4px;margin-bottom:12px">About</div>'
+    +'<div class="set-row"><div class="set-icon" style="background:var(--bg2);color:var(--text2)"><i class="ti ti-info-circle"></i></div>'
+    +'<div><div style="font-size:13px;font-weight:500">Sales Coaching Dashboard</div><div style="font-size:12px;color:var(--text2)">Wiegand &amp; Partner · v3.0 · Built for Peter Rode</div></div></div>'
+    +'</div>';
 }
-
 </script>
 <script>
-// ══════════════════════════════════════════════
-// SESSION AKTIONEN
-// ══════════════════════════════════════════════
-function sessionSpeichern(){
-  var s=sessions.find(function(x){return x.id===aktivesScorecardId;});
-  if(!s)return;
-  var datumEl=document.getElementById('sc-datum');
-  var typEl=document.getElementById('sc-typ');
-  var themaEl=document.getElementById('sc-thema');
-  var bewEl=document.getElementById('sc-bewertung');
-  var notEl=document.getElementById('sc-notizen');
-  var naEl=document.getElementById('sc-naechste');
-  if(datumEl)s.datum=datumEl.value;
-  if(typEl)s.typ=typEl.value;
-  if(themaEl)s.thema=themaEl.value.trim();
-  if(bewEl&&bewEl.value)s.gesamtBewertung=bewEl.value;
-  if(notEl)s.notizen=notEl.value.trim();
-  if(naEl)s.naechsteSchritte=naEl.value.trim();
-  s.status='abgeschlossen';
-  // Nächste Schritte als Aufgabe anlegen
-  if(s.naechsteSchritte&&s.naechsteSchritte.trim()){
-    if(!aufgaben[s.mitarbeiterId])aufgaben[s.mitarbeiterId]=[];
-    aufgaben[s.mitarbeiterId].unshift({id:Date.now(),text:s.naechsteSchritte.trim(),beschreibung:'Aus Session vom '+datum(s.datum),erledigt:false,quelle:'Session '+datum(s.datum),prioritaet:'mittel',faelligAm:''});
-  }
-  closeModal('scorecardModal');
-  renderSidebar();
-  aktiverTab='sessions';
-  renderMitarbeiterDetail();
-}
+// ── ACTIONS ──
+function setMetric(m){perfMetric=m;renderTab();}
+function setRange(r){perfRange=r;renderTab();}
 
-function neueSessionAnlegen(){
-  var maId=parseInt(document.getElementById('ns-mitarbeiter').value);
-  var sessionDatum=document.getElementById('ns-datum').value;
-  var typ=document.getElementById('ns-typ').value;
-  var thema=document.getElementById('ns-thema').value.trim();
-  var notiz=document.getElementById('ns-notiz').value.trim();
-  if(!maId||!sessionDatum||!thema)return alert('Bitte Mitarbeiter, Datum und Thema ausfüllen.');
-  sessions.push({
-    id:Date.now(),mitarbeiterId:maId,datum:sessionDatum,typ:typ,thema:thema,
-    status:'geplant',notizen:'',gesamtBewertung:null,scorecard:{},naechsteSchritte:'',
-    coach:'Sales Coach',geplantVon:'Manager',planungsNotiz:notiz
-  });
-  closeModal('neueSessionModal');
-  renderSidebar();
-  ausgewaehlterId=maId;
-  if(ansicht==='coach'){renderCoachAnsicht();}
-  else{renderManagerAnsicht();}
-}
-
-// ══════════════════════════════════════════════
-// AUFGABEN AKTIONEN
-// ══════════════════════════════════════════════
-function aufgabeErledigen(id){
-  var ma=aufgaben[ausgewaehlterId]||[];
-  var a=ma.find(function(x){return x.id===id;});
-  if(a){a.erledigt=!a.erledigt;renderTab();}
-}
-function aufgabeLoeschen(id){
-  if(!confirm('Aufgabe löschen?'))return;
-  aufgaben[ausgewaehlterId]=(aufgaben[ausgewaehlterId]||[]).filter(function(x){return x.id!==id;});
-  renderTab();
-}
-function toggleAufgabeDetail(id){
-  var el=document.getElementById('aufg-detail-'+id);
-  if(el){el.style.display=el.style.display==='none'?'block':'none';}
-}
-function neueAufgabeSpeichern(){
-  var text=document.getElementById('na-text').value.trim();
-  var beschr=document.getElementById('na-beschr').value.trim();
-  var prio=document.getElementById('na-prio').value;
-  var faellig=document.getElementById('na-faellig').value;
-  var quelle=document.getElementById('na-quelle').value.trim();
+function saveNote(){
+  var date=document.getElementById('nd').value;
+  var rating=document.getElementById('nr').value;
+  var focus=document.getElementById('nf').value.trim();
+  var text=document.getElementById('nt').value.trim();
   if(!text)return;
-  if(!aufgaben[ausgewaehlterId])aufgaben[ausgewaehlterId]=[];
-  aufgaben[ausgewaehlterId].unshift({id:Date.now(),text:text,beschreibung:beschr,erledigt:false,quelle:quelle,prioritaet:prio,faelligAm:faellig});
-  document.getElementById('na-text').value='';
-  document.getElementById('na-beschr').value='';
-  document.getElementById('na-faellig').value='';
-  document.getElementById('na-quelle').value='';
-  closeModal('neueAufgabeModal');
+  var criteria={};
+  ratingCriteria.forEach(function(rc){var el=document.getElementById('rc-'+rc.id);if(el&&el.value)criteria[rc.id]=parseInt(el.value);});
+  if(!protocols[selectedEmp])protocols[selectedEmp]=[];
+  protocols[selectedEmp].unshift({id:Date.now(),date:date,rating:rating,note:text,focus:focus,criteria:criteria});
+  renderSidebar();renderTab();
+}
+
+function savePerf(){
+  var date=document.getElementById('pd').value;
+  var crOEM=parseInt(document.getElementById('po').value)||0;
+  var crTeilweise=parseInt(document.getElementById('pt').value)||0;
+  var crYes=parseInt(document.getElementById('pyes').value)||0;
+  var crSuperYes=parseInt(document.getElementById('psy').value)||0;
+  var crMegaYes=parseInt(document.getElementById('pmy').value)||0;
+  var optPerH=parseFloat(document.getElementById('pop').value)||0;
+  var note=document.getElementById('pn').value.trim();
+  var calls=20;
+  var margin=Math.round(calls*(crOEM/100)*13);
+  if(!performance[selectedEmp])performance[selectedEmp]=[];
+  performance[selectedEmp].unshift({id:Date.now(),date:date,calls:calls,crOEM:crOEM,crTeilweise:crTeilweise,crYes:crYes,crSuperYes:crSuperYes,crMegaYes:crMegaYes,optPerH:optPerH,margin:margin,note:note});
   renderTab();
 }
 
-// ══════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════
+function saveSRSim(){
+  var name=document.getElementById('srName').value.trim();
+  var date=document.getElementById('srDate').value;
+  var score=parseInt(document.getElementById('srScore').value)||0;
+  var tags=(document.getElementById('srTags').value||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+  if(!name||!score)return;
+  if(!solidroadData[selectedEmp])solidroadData[selectedEmp]={simulations:[]};
+  solidroadData[selectedEmp].simulations.unshift({id:Date.now(),date:date,name:name,score:score,status:'passed',tags:tags});
+  renderTab();
+}
+
+function toggleOB(i){
+  if(!onboarding[selectedEmp])onboarding[selectedEmp]=obSteps.map(function(){return false;});
+  onboarding[selectedEmp][i]=!onboarding[selectedEmp][i];
+  renderTab();
+}
+function toggleOBDetail(i){
+  var d=document.getElementById('ob-d-'+i);
+  var ch=document.getElementById('chev-'+i);
+  if(!d)return;
+  var open=d.classList.toggle('open');
+  if(ch)ch.classList.toggle('open',open);
+}
+function saveVideoUrl(i){
+  var url=document.getElementById('vid-'+i).value.trim();
+  obSteps[i].videoUrl=url;
+  renderTab();
+}
+function saveOBStep(){
+  var label=document.getElementById('obLabelInput').value.trim();
+  var day=parseInt(document.getElementById('obDayInput').value)||1;
+  var video=document.getElementById('obVideoInput').value.trim();
+  var detail=document.getElementById('obDetailInput').value.trim();
+  if(!label)return;
+  obSteps.push({label:label,day:day,detail:detail||'No description.',videoUrl:video});
+  employees.forEach(function(e){if(!onboarding[e.id])onboarding[e.id]=[];onboarding[e.id].push(false);});
+  closeModal('obModal');
+  renderTab();
+}
+function saveRatingCriterion(){
+  var name=document.getElementById('rcName').value.trim();
+  var cat=document.getElementById('rcCat').value;
+  var target=parseInt(document.getElementById('rcTarget').value)||80;
+  var desc=document.getElementById('rcDesc').value.trim();
+  if(!name)return;
+  ratingCriteria.push({id:Date.now(),name:name,cat:cat,target:target,desc:desc});
+  closeModal('ratingModal');
+  renderTab();
+}
+function toggleTask(id){
+  var t=(tasks[selectedEmp]||[]).find(function(x){return x.id===id;});
+  if(t){t.done=!t.done;renderTab();}
+}
+function toggleTaskDetail(id){
+  var el=document.getElementById('td-'+id);
+  if(el)el.classList.toggle('open');
+}
+function deleteTask(id){
+  if(!confirm('Delete this task?'))return;
+  tasks[selectedEmp]=(tasks[selectedEmp]||[]).filter(function(x){return x.id!==id;});
+  renderTab();
+}
+function saveNewTask(){
+  var text=document.getElementById('taskText').value.trim();
+  var desc=document.getElementById('taskDesc').value.trim();
+  var prio=document.getElementById('taskPrio').value;
+  var due=document.getElementById('taskDue').value;
+  var source=document.getElementById('taskSource').value.trim();
+  if(!text)return;
+  if(!tasks[selectedEmp])tasks[selectedEmp]=[];
+  tasks[selectedEmp].unshift({id:Date.now(),text:text,description:desc,done:false,priority:prio,dueDate:due,source:source});
+  document.getElementById('taskText').value='';
+  document.getElementById('taskDesc').value='';
+  document.getElementById('taskDue').value='';
+  document.getElementById('taskSource').value='';
+  closeModal('addTaskModal');
+  renderTab();
+}
+function addTaskFromCurrentProtocol(){
+  var focus=document.getElementById('nf');
+  var date=document.getElementById('nd');
+  var text=(focus&&focus.value.trim())?focus.value.trim():'Nachbereitung Session';
+  var src='Session '+(date?fd(date.value):'');
+  if(!tasks[selectedEmp])tasks[selectedEmp]=[];
+  tasks[selectedEmp].unshift({id:Date.now(),text:text,description:'',done:false,priority:'medium',dueDate:'',source:src});
+  alert('Aufgabe hinzugefügt. Zum Aufgaben-Tab wechseln.');
+}
+function saveNewEmp(){
+  var name=document.getElementById('newName').value.trim();
+  var role=document.getElementById('newRole').value.trim();
+  var phase=document.getElementById('newPhase').value;
+  var startDate=document.getElementById('newStart').value;
+  if(!name)return;
+  var ne={id:Date.now(),name:name,role:role||'Sales',phase:phase,color:employees.length%COLORS.length,startDate:startDate};
+  employees.push(ne);
+  protocols[ne.id]=[];performance[ne.id]=[];solidroadData[ne.id]={simulations:[]};
+  onboarding[ne.id]=obSteps.map(function(){return false;});
+  tasks[ne.id]=[];
+  closeModal('addEmpModal');
+  renderSidebar();renderMain();
+}
+function saveFTP(){settings.ftpUrl=document.getElementById('ftpInput').value.trim();alert('FTP-URL gespeichert.');}
+function saveTargets(){
+  KPI_TARGETS.crOEM=parseFloat(document.getElementById('tOEM').value)||55;
+  KPI_TARGETS.crSuperYes=parseFloat(document.getElementById('tSY').value)||12;
+  KPI_TARGETS.crMegaYes=parseFloat(document.getElementById('tMY').value)||8;
+  KPI_TARGETS.optPerH=parseFloat(document.getElementById('tOpt').value)||2;
+  renderSettings();
+}
+function saveSRKey(){
+  var key=document.getElementById('srKeyInput').value.trim();
+  var org=document.getElementById('srOrgInput').value.trim();
+  if(!key)return;
+  settings.srApiKey=key;settings.srOrgId=org;
+  closeModal('srModal');renderSettings();
+}
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.modal-ov').forEach(function(m){
   m.addEventListener('click',function(e){if(e.target===m)m.classList.add('hidden');});
 });
-renderSidebar();
-renderCoachAnsicht();
+renderSidebar();showView('team');
+
+// ── REVIEW ACTIONS ──
+function completeReview(id){
+  if(!reviews[selectedEmp])reviews[selectedEmp]=[];
+  var rev=reviews[selectedEmp].find(function(r){return r.id===id;});
+  if(!rev)return;
+  var ne=document.getElementById('rnotes-'+id);
+  var ge=document.getElementById('rgoals-'+id);
+  var re=document.getElementById('rrating-'+id);
+  var rdate=document.getElementById('rdate-'+id);
+  rev.notes=ne?ne.value.trim():'';
+  rev.goals=ge?ge.value.trim():'';
+  rev.rating=re&&re.value?re.value:null;
+  rev.date=rdate?rdate.value:rev.date;
+  rev.status='completed';
+  rev.auto=false;
+  rev.kpis={};
+  ['crOEM','crSuperYes','crMegaYes','optPerH'].forEach(function(k){
+    var el=document.getElementById('rkpi-'+k+'-'+id);
+    if(el&&el.value)rev.kpis[k]=parseFloat(el.value);
+  });
+  renderTab();
+}
+
+function addReview(){
+  var type=prompt('Gesprächstyp:\nOnboarding-Gespräch / Performance-Gespräch / Jahresgespräch','Performance-Gespräch');
+  if(!type||!type.trim())return;
+  var date=prompt('Geplantes Datum (JJJJ-MM-TT):',today());
+  if(!date)return;
+  if(!reviews[selectedEmp])reviews[selectedEmp]=[];
+  reviews[selectedEmp].push({id:Date.now(),type:type.trim(),date:date,status:date<today()?'overdue':'upcoming',notes:'',goals:'',rating:null,kpis:{}});
+  renderTab();
+}
+
+// ── EMP SETTINGS ACTIONS ──
+function saveEmpSettings(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var teamEl=document.getElementById('es-team');
+  var teamVal=teamEl?teamEl.value:'';
+  if(teamVal==='__new__'){teamVal=prompt('Neuer Team-Name:','')||emp.team;}
+  emp.name=document.getElementById('es-name').value.trim()||emp.name;
+  emp.role=document.getElementById('es-role').value;
+  emp.phase=document.getElementById('es-phase').value;
+  emp.team=teamVal||emp.team;
+  emp.startDate=document.getElementById('es-start').value;
+  emp.contract=document.getElementById('es-contract').value;
+  emp.hours=parseInt(document.getElementById('es-hours').value)||40;
+  renderSidebar();
+  renderEmpDetail();
+}
+
+function setEmpColor(colorIdx){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  emp.color=colorIdx;
+  renderTab();
+}
+
+function saveEmpTargets(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  if(!emp.targets)emp.targets={};
+  emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
+  emp.targets.crSuperYes=parseFloat(document.getElementById('es-crSY').value)||12;
+  emp.targets.crMegaYes=parseFloat(document.getElementById('es-crMY').value)||8;
+  emp.targets.optPerH=parseFloat(document.getElementById('es-opt').value)||2.0;
+  alert('Ziele gespeichert für '+emp.name+'. Die Teamübersicht verwendet ab jetzt die individuellen Zielwerte.');
+  renderTab();
+}
+
+function deactivateEmp(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  if(!confirm('Mitarbeiter deaktivieren: '+emp.name+'\nMitarbeiter wird ausgeblendet. Alle Daten bleiben erhalten.'))return;
+  emp.active=false;
+  view='team';
+  renderSidebar();
+  renderTeam();
+}
 
 </script>
 </body>
