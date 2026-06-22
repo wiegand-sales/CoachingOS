@@ -153,3 +153,83 @@ document.querySelectorAll('.modal-ov').forEach(function(m){
   m.addEventListener('click',function(e){if(e.target===m)m.classList.add('hidden');});
 });
 renderSidebar();showView('team');
+
+// ── REVIEW ACTIONS ──
+function completeReview(id){
+  if(!reviews[selectedEmp])reviews[selectedEmp]=[];
+  var rev=reviews[selectedEmp].find(function(r){return r.id===id;});
+  if(!rev)return;
+  var ne=document.getElementById('rnotes-'+id);
+  var ge=document.getElementById('rgoals-'+id);
+  var re=document.getElementById('rrating-'+id);
+  var rdate=document.getElementById('rdate-'+id);
+  rev.notes=ne?ne.value.trim():'';
+  rev.goals=ge?ge.value.trim():'';
+  rev.rating=re&&re.value?re.value:null;
+  rev.date=rdate?rdate.value:rev.date;
+  rev.status='completed';
+  rev.auto=false;
+  rev.kpis={};
+  ['crOEM','crSuperYes','crMegaYes','optPerH'].forEach(function(k){
+    var el=document.getElementById('rkpi-'+k+'-'+id);
+    if(el&&el.value)rev.kpis[k]=parseFloat(el.value);
+  });
+  renderTab();
+}
+
+function addReview(){
+  var type=prompt('Review type:\nOnboarding Review / Performance Review / Annual Review','Performance Review');
+  if(!type||!type.trim())return;
+  var date=prompt('Scheduled date (YYYY-MM-DD):',today());
+  if(!date)return;
+  if(!reviews[selectedEmp])reviews[selectedEmp]=[];
+  reviews[selectedEmp].push({id:Date.now(),type:type.trim(),date:date,status:date<today()?'overdue':'upcoming',notes:'',goals:'',rating:null,kpis:{}});
+  renderTab();
+}
+
+// ── EMP SETTINGS ACTIONS ──
+function saveEmpSettings(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var teamEl=document.getElementById('es-team');
+  var teamVal=teamEl?teamEl.value:'';
+  if(teamVal==='__new__'){teamVal=prompt('New team name:','')||emp.team;}
+  emp.name=document.getElementById('es-name').value.trim()||emp.name;
+  emp.role=document.getElementById('es-role').value;
+  emp.phase=document.getElementById('es-phase').value;
+  emp.team=teamVal||emp.team;
+  emp.startDate=document.getElementById('es-start').value;
+  emp.contract=document.getElementById('es-contract').value;
+  emp.hours=parseInt(document.getElementById('es-hours').value)||40;
+  renderSidebar();
+  renderEmpDetail();
+}
+
+function setEmpColor(colorIdx){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  emp.color=colorIdx;
+  renderTab();
+}
+
+function saveEmpTargets(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  if(!emp.targets)emp.targets={};
+  emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
+  emp.targets.crSuperYes=parseFloat(document.getElementById('es-crSY').value)||12;
+  emp.targets.crMegaYes=parseFloat(document.getElementById('es-crMY').value)||8;
+  emp.targets.optPerH=parseFloat(document.getElementById('es-opt').value)||2.0;
+  alert('Targets saved for '+emp.name+'. The team overview now uses individual targets.');
+  renderTab();
+}
+
+function deactivateEmp(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  if(!confirm('Deactivate '+emp.name+'? They will be hidden. All data is preserved and can be restored.'))return;
+  emp.active=false;
+  view='team';
+  renderSidebar();
+  renderTeam();
+}
