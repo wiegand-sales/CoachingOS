@@ -88,7 +88,7 @@ document.querySelectorAll('.modal-ov').forEach(function(m){
   m.addEventListener('click',function(e){if(e.target===m)m.classList.add('hidden');});
 });
 renderSidebar();
-renderCoachAnsicht();
+zeigeAnsicht('sfp-overview');
 
 function neuerMitarbeiterSpeichern(){
   var name=document.getElementById('nm-name').value.trim();
@@ -120,3 +120,18 @@ openModal=function(id){
     if(datumEl&&!datumEl.value)datumEl.value=heute();
   }
 };
+
+function zeigeMADetail(id){
+  ausgewaehlterId=id;
+  aktiverTab='profil';
+  ansicht='coach';
+  renderSidebar();
+  renderMitarbeiterDetail();
+}
+function planSession(){
+  var sel=document.getElementById('ns-mitarbeiter');
+  if(sel){sel.innerHTML=aktiveMitarbeiter().map(function(m){return '<option value="'+m.id+'"'+(m.id===ausgewaehlterId?' selected':'')+'>'+m.name+'</option>';}).join('');}
+  var datumEl=document.getElementById('ns-datum');
+  if(datumEl&&!datumEl.value)datumEl.value=heute();
+  openModal('neueSessionModal');
+}
