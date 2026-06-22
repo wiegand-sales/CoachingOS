@@ -736,13 +736,59 @@ function renderTeam(){
     +'</div></div>'
     +'<div class="content">'
     // KPI Kacheln
-    +'<div class="g5" style="margin-bottom:20px">'
-    +'<div class="kpi" style="border-top-color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'"><div class="kpi-label" style="color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'">TEAM CR OEM</div><div class="kpi-val" style="color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'">'+(oem7!==null?Math.round(oem7)+'%':'—')+'</div><div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:5px"><div style="height:100%;width:'+(oem7||0)+'%;background:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'"></div></div><div class="kpi-sub">Ziel ≥ '+CR_GOOD+'%</div></div>'
-    +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">TEAM SUPER YES</div><div class="kpi-val" style="color:var(--purple)">'+(sy7!==null?Math.round(sy7)+'%':'—')+'</div><div class="kpi-sub">aller Gespräche</div></div>'
-    +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">TEAM MEGA YES</div><div class="kpi-val" style="color:var(--teal)">'+(my7!==null?Math.round(my7)+'%':'—')+'</div><div class="kpi-sub">aller Gespräche</div></div>'
-    +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">ZUSÄTZL. MARGE</div><div class="kpi-val" style="color:var(--blue)">€'+totalMargin.toLocaleString('de-DE')+'</div><div class="kpi-sub">'+days+'-Tage Team-Gesamt</div></div>'
-    +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+(totalAlerts>0?'OFFENE ALERTS':'ALLES OK')+'</div><div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div><div class="kpi-sub">'+(totalAlerts>0?'unter Zielwert':'keine Alerts')+'</div></div>'
-    +'</div>'
+    +(function(){
+      var oemCol=oemD!==null&&oemD>=CR_GOOD?'var(--teal)':'var(--amber)';
+      var dOEM=delta(oemD,oem7);
+      var dSY=delta(syD,sy7);
+      var dMY=delta(myD,my7);
+      var dMargin=days===7?null:(totalMargin-totalMargin7);
+      return '<div class="g5" style="margin-bottom:20px">'
+        // CR OEM
+        +'<div class="kpi" style="border-top-color:'+oemCol+'">'
+        +'<div class="kpi-label" style="color:'+oemCol+'">TEAM CR OEM</div>'
+        +'<div style="display:flex;align-items:baseline;justify-content:space-between">'
+        +'<div class="kpi-val" style="color:'+oemCol+'">'+(oemD!==null?Math.round(oemD)+'%':'—')+'</div>'
+        +deltaHTML(dOEM,true)
+        +'</div>'
+        +'<div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:5px">'
+        +'<div style="height:100%;width:'+(oemD||0)+'%;background:'+oemCol+'"></div></div>'
+        +'<div class="kpi-sub">'+(days!==7?'7d: '+(oem7!==null?Math.round(oem7)+'%':'—')+' · ':'')+'Ziel ≥ '+CR_GOOD+'%</div>'
+        +'</div>'
+        // Super Yes
+        +'<div class="kpi" style="border-top-color:var(--purple)">'
+        +'<div class="kpi-label" style="color:var(--purple)">TEAM SUPER YES</div>'
+        +'<div style="display:flex;align-items:baseline;justify-content:space-between">'
+        +'<div class="kpi-val" style="color:var(--purple)">'+(syD!==null?Math.round(syD)+'%':'—')+'</div>'
+        +deltaHTML(dSY,true)
+        +'</div>'
+        +'<div class="kpi-sub">'+(days!==7?'7d: '+(sy7!==null?Math.round(sy7)+'%':'—')+' · ':'')+'aller Gespräche</div>'
+        +'</div>'
+        // Mega Yes
+        +'<div class="kpi" style="border-top-color:var(--teal)">'
+        +'<div class="kpi-label" style="color:var(--teal)">TEAM MEGA YES</div>'
+        +'<div style="display:flex;align-items:baseline;justify-content:space-between">'
+        +'<div class="kpi-val" style="color:var(--teal)">'+(myD!==null?Math.round(myD)+'%':'—')+'</div>'
+        +deltaHTML(dMY,true)
+        +'</div>'
+        +'<div class="kpi-sub">'+(days!==7?'7d: '+(my7!==null?Math.round(my7)+'%':'—')+' · ':'')+'aller Gespräche</div>'
+        +'</div>'
+        // Marge
+        +'<div class="kpi" style="border-top-color:var(--blue)">'
+        +'<div class="kpi-label" style="color:var(--blue)">ZUSÄTZL. MARGE</div>'
+        +'<div style="display:flex;align-items:baseline;justify-content:space-between">'
+        +'<div class="kpi-val" style="color:var(--blue)">€'+totalMargin.toLocaleString('de-DE')+'</div>'
+        +(dMargin!==null?'<span style="font-size:11px;font-weight:600;color:'+(dMargin>=0?'var(--teal)':'var(--red)')+'">'+(dMargin>=0?'↑ +':'↓ ')+'€'+Math.abs(Math.round(dMargin)).toLocaleString('de-DE')+'</span>':'')
+        +'</div>'
+        +'<div class="kpi-sub">'+(days!==7?'7d: €'+totalMargin7.toLocaleString('de-DE')+' · ':'')+days+'-Tage Team-Gesamt</div>'
+        +'</div>'
+        // Alerts
+        +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'
+        +'<div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+( totalAlerts>0?'OFFENE ALERTS':'ALLES OK')+'</div>'
+        +'<div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div>'
+        +'<div class="kpi-sub">'+(totalAlerts>0?'unter Zielwert':'keine Alerts')+'</div>'
+        +'</div>'
+        +'</div>';
+    })()+'</div>'
     // Alert Banner
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' Performance-Alert'+(totalAlerts!==1?'s':'')+' im Team</div><div style="font-size:12px;color:var(--amber-dark)">'+list.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
     // CR Tabelle
