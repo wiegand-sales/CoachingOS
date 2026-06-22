@@ -432,9 +432,6 @@ function checkAlerts(id){
   return alerts;
 }
 function openTaskCount(id){return(tasks[id]||[]).filter(function(t){return!t.done;}).length;}
-function empTargets(emp){
-  return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;
-}
 function allTeams(){
   var ts={};
   employees.forEach(function(e){if(e.team)ts[e.team]=1;});
@@ -445,23 +442,6 @@ function activeEmployees(){
 }
 
 function empTargets(emp){return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;}
-function allTeams(){var ts={};activeEmployees().forEach(function(e){if(e.team)ts[e.team]=1;});return Object.keys(ts).sort();}
-function activeEmployees(){return employees.filter(function(e){return e.active!==false;});}
-
-// ── SIDEBAR ──
-
-function openSessionModal(empId){
-  if(empId)selectedEmp=empId;
-  var sel=document.getElementById('sessionEmpSel');
-  if(sel){
-    sel.innerHTML=employees.filter(function(e){return e.active!==false;}).map(function(e){
-      return '<option value="'+e.id+'"'+(e.id===selectedEmp?' selected':'')+'>'+e.name+'</option>';
-    }).join('');
-  }
-  var datumEl=document.getElementById('sessionDatum');
-  if(datumEl&&!datumEl.value)datumEl.value=today();
-  openModal('sessionPlanenModal');
-}
 
 function renderSidebar(){
   var el=document.getElementById('empList');
@@ -1692,6 +1672,20 @@ function mitarbeiterDeaktivieren(){
   renderMain();
 }
 
+
+function openSessionModal(empId){
+  if(empId)selectedEmp=empId;
+  var sel=document.getElementById('sessionEmpSel');
+  if(sel){
+    sel.innerHTML=employees.filter(function(e){return e.active!==false;}).map(function(e){
+      return '<option value="'+e.id+'"'+(e.id===selectedEmp?' selected':'')+'>'+e.name+'</option>';
+    }).join('');
+  }
+  var datumEl=document.getElementById('sessionDatum');
+  if(datumEl&&!datumEl.value)datumEl.value=today();
+  openModal('sessionPlanenModal');
+}
+
 function openModal(id){document.getElementById(id).classList.remove('hidden');}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.modal-ov').forEach(function(m){
@@ -1722,6 +1716,7 @@ function completeReview(id){
   renderTab();
 }
 
+function addReviewDialog(){return addReview();}
 function addReview(){
   var type=prompt('Gesprächstyp:\nOnboarding-Gespräch / Performance-Gespräch / Jahresgespräch','Performance-Gespräch');
   if(!type||!type.trim())return;
@@ -1778,6 +1773,32 @@ function deactivateEmp(){
   renderSidebar();
   renderTeam();
 }
+
+function scorecardSpeichern(){
+  var pr=protocols[selectedEmp];
+  if(!pr||!pr.length)return;
+  var p=pr[0];
+  var bew=document.getElementById('sc-bewertung');
+  var not=document.getElementById('sc-notizen');
+  var fok=document.getElementById('sc-fokus');
+  if(bew&&bew.value)p.rating=bew.value;
+  if(not&&not.value)p.note=not.value;
+  if(fok&&fok.value)p.focus=fok.value;
+  closeModal('scorecardModal');
+  renderSidebar();
+  renderTab();
+}
 </script>
+
+<!-- SCORECARD MODAL -->
+<div class="modal-ov hidden" id="scorecardModal"><div class="modal" style="width:680px;max-width:96vw">
+  <div class="modal-title"><i class="ti ti-clipboard-check" style="margin-right:8px;color:var(--purple)"></i>Session bewerten</div>
+  <div id="scorecardInhalt"></div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal('scorecardModal')">Abbrechen</button>
+    <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
+  </div>
+</div></div>
+
 </body>
 </html>
