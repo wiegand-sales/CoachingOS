@@ -233,3 +233,45 @@ function deactivateEmp(){
   renderSidebar();
   renderTeam();
 }
+
+// ── Einstellungen Tab – Deutsche Funktionsnamen ──
+function saveEmpEinstellungen(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var teamEl=document.getElementById('es-team');
+  var teamVal=teamEl?teamEl.value:'';
+  if(teamVal==='__new__'){teamVal=prompt('Neuer Team-Name:','')||emp.team;}
+  emp.name=document.getElementById('es-name').value.trim()||emp.name;
+  emp.role=document.getElementById('es-role').value;
+  emp.phase=document.getElementById('es-phase').value;
+  emp.team=teamVal||emp.team;
+  var locEl=document.getElementById('es-location');
+  if(locEl)emp.location=locEl.value.trim()||emp.team;
+  emp.startDate=document.getElementById('es-start').value;
+  emp.contract=document.getElementById('es-contract').value;
+  emp.hours=parseInt(document.getElementById('es-hours').value)||40;
+  renderSidebar();
+  renderEmpDetail();
+}
+
+function saveEmpZiele(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  if(!emp.targets)emp.targets={};
+  emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
+  emp.targets.crSuperYes=parseFloat(document.getElementById('es-crSY').value)||12;
+  emp.targets.crMegaYes=parseFloat(document.getElementById('es-crMY').value)||8;
+  emp.targets.optPerH=parseFloat(document.getElementById('es-opt').value)||2.0;
+  alert('Ziele gespeichert für '+emp.name+'.');
+  renderTab();
+}
+
+function mitarbeiterDeaktivieren(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  if(!confirm('Mitarbeiter deaktivieren: '+emp.name+'?\n\nSie werden in der Sidebar und Teamübersicht ausgeblendet.\nAlle Daten bleiben vollständig erhalten.'))return;
+  emp.active=false;
+  view='team';
+  renderSidebar();
+  renderMain();
+}
