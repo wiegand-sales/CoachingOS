@@ -211,42 +211,42 @@ tr:hover td{background:var(--bg2);}
 
 <!-- MODALS -->
 <div class="modal-ov hidden" id="addEmpModal"><div class="modal">
-  <div class="modal-title">Add Staff Member</div>
-  <div class="f2"><div><label>Full name</label><input type="text" id="newName" placeholder="Anna Bauer"></div><div><label>Role</label><input type="text" id="newRole" placeholder="Inside Sales"></div></div>
-  <div class="f2"><div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Active</option><option>Development</option></select></div><div><label>Start date</label><input type="date" id="newStart"></div></div>
-  <div class="modal-actions"><button class="btn" onclick="closeModal('addEmpModal')">Cancel</button><button class="btn btn-primary" onclick="saveNewEmp()"><i class="ti ti-check"></i> Add</button></div>
+  <div class="modal-title">Mitarbeiter hinzufügen</div>
+  <div class="f2"><div><label>Vollständiger Name</label><input type="text" id="newName" placeholder="Anna Bauer"></div><div><label>Position</label><input type="text" id="newPosition" placeholder="Inside Sales"></div></div>
+  <div class="f2"><div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Aktiv</option><option>Entwicklung</option></select></div><div><label>Startdatum</label><input type="date" id="newStart"></div></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('addEmpModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewEmp()"><i class="ti ti-check"></i> Add</button></div>
 </div></div>
 
 <div class="modal-ov hidden" id="addTaskModal"><div class="modal">
-  <div class="modal-title">Add Task</div>
-  <div style="margin-bottom:10px"><label>Task title</label><input type="text" id="taskText" placeholder="e.g. Read the pitch script – pages 1 to 9"></div>
-  <div style="margin-bottom:10px"><label>Description</label><textarea id="taskDesc" placeholder="Describe what the staff member needs to do..." style="min-height:80px"></textarea></div>
-  <div class="f3"><div><label>Priority</label><select id="taskPrio"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div><div><label>Due date</label><input type="date" id="taskDue"></div><div><label>Source</label><input type="text" id="taskSource" placeholder="Session 10.06"></div></div>
-  <div class="modal-actions"><button class="btn" onclick="closeModal('addTaskModal')">Cancel</button><button class="btn btn-primary" onclick="saveNewTask()"><i class="ti ti-check"></i> Add Task</button></div>
+  <div class="modal-title">Aufgabe hinzufügen</div>
+  <div style="margin-bottom:10px"><label>Aufgabentitel</label><input type="text" id="taskText" placeholder="z.B. Pitch-Skript lesen – pages 1 to 9"></div>
+  <div style="margin-bottom:10px"><label>Beschreibung</label><textarea id="taskDesc" placeholder="Was soll der Mitarbeiter tun..." style="min-height:80px"></textarea></div>
+  <div class="f3"><div><label>Priorität</label><select id="taskPrio"><option value="high">Hoch</option><option value="medium" selected>Mittel</option><option value="low">Niedrig</option></select></div><div><label>Fälligkeitsdatum</label><input type="date" id="taskDue"></div><div><label>Quelle</label><input type="text" id="taskQuelle" placeholder="Session 10.06"></div></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('addTaskModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewTask()"><i class="ti ti-check"></i> Aufgabe hinzufügen</button></div>
 </div></div>
 
 <div class="modal-ov hidden" id="obModal"><div class="modal">
-  <div class="modal-title">Add Onboarding Step</div>
-  <div style="margin-bottom:10px"><label>Step name</label><input type="text" id="obLabelInput" placeholder="e.g. Advanced Product Training"></div>
-  <div class="f2"><div><label>Day</label><input type="number" id="obDayInput" placeholder="1" min="1" value="1"></div><div><label>Video URL (FTP or https://)</label><input type="url" id="obVideoInput" placeholder="https://..."></div></div>
-  <div style="margin-bottom:14px"><label>Description for staff</label><textarea id="obDetailInput" placeholder="Explain what this step covers..."></textarea></div>
-  <div class="modal-actions"><button class="btn" onclick="closeModal('obModal')">Cancel</button><button class="btn btn-primary" onclick="saveOBStep()"><i class="ti ti-check"></i> Add Step</button></div>
+  <div class="modal-title">Onboarding-Schritt hinzufügen</div>
+  <div style="margin-bottom:10px"><label>Schrittname</label><input type="text" id="obLabelInput" placeholder="z.B. Erweiterte Produktschulung"></div>
+  <div class="f2"><div><label>Tag</label><input type="number" id="obTagInput" placeholder="1" min="1" value="1"></div><div><label>Video-URL (FTP or https://)</label><input type="url" id="obVideoInput" placeholder="https://..."></div></div>
+  <div style="margin-bottom:14px"><label>Beschreibung for staff</label><textarea id="obDetailInput" placeholder="Was wird in diesem Schritt behandelt..."></textarea></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('obModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveOBStep()"><i class="ti ti-check"></i> Add Step</button></div>
 </div></div>
 
 <div class="modal-ov hidden" id="ratingModal"><div class="modal">
-  <div class="modal-title">Add Rating Criterion</div>
-  <div style="margin-bottom:10px"><label>Name</label><input type="text" id="rcName" placeholder="e.g. Customer Empathy"></div>
-  <div class="f3"><div><label>Category</label><select id="rcCat"><option>Sales</option><option>Communication</option><option>Product Knowledge</option><option>Other</option></select></div><div><label>Target (%)</label><input type="number" id="rcTarget" value="80" min="0" max="100"></div><div></div></div>
-  <div style="margin-bottom:14px"><label>Description</label><textarea id="rcDesc" placeholder="What does this criterion measure..."></textarea></div>
-  <div class="modal-actions"><button class="btn" onclick="closeModal('ratingModal')">Cancel</button><button class="btn btn-primary" onclick="saveRatingCriterion()"><i class="ti ti-check"></i> Add</button></div>
+  <div class="modal-title">Bewertungskriterium hinzufügen</div>
+  <div style="margin-bottom:10px"><label>Name</label><input type="text" id="rcName" placeholder="z.B. Kundenempathie"></div>
+  <div class="f3"><div><label>Kategorie</label><select id="rcCat"><option>Vertrieb</option><option>Kommunikation</option><option>Produktwissen</option><option>Sonstiges</option></select></div><div><label>Zielwert (%)</label><input type="number" id="rcTarget" value="80" min="0" max="100"></div><div></div></div>
+  <div style="margin-bottom:14px"><label>Beschreibung</label><textarea id="rcDesc" placeholder="Was misst dieses Kriterium..."></textarea></div>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('ratingModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveRatingCriterion()"><i class="ti ti-check"></i> Add</button></div>
 </div></div>
 
 <div class="modal-ov hidden" id="srModal"><div class="modal">
-  <div class="modal-title">Connect SolidRoad</div>
-  <div style="margin-bottom:10px"><label>API Key</label><input type="password" id="srKeyInput" placeholder="sr_live_..."></div>
-  <div style="margin-bottom:14px"><label>Organization ID</label><input type="text" id="srOrgInput" placeholder="Your SolidRoad org ID"></div>
-  <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Find your API key in SolidRoad → Settings → Integrations → API Keys.</p>
-  <div class="modal-actions"><button class="btn" onclick="closeModal('srModal')">Cancel</button><button class="btn btn-primary" onclick="saveSRKey()"><i class="ti ti-plug"></i> Connect</button></div>
+  <div class="modal-title">SolidRoad verbinden</div>
+  <div style="margin-bottom:10px"><label>API-Schlüssel</label><input type="password" id="srKeyInput" placeholder="sr_live_..."></div>
+  <div style="margin-bottom:14px"><label>Organisations-ID</label><input type="text" id="srOrgInput" placeholder="Your SolidRoad org ID"></div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Find your API key in SolidRoad → Settings → Integrations → API-Schlüssels.</p>
+  <div class="modal-actions"><button class="btn" onclick="closeModal('srModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveSRKey()"><i class="ti ti-plug"></i> Verbinden</button></div>
 </div></div>
 <script src="data.js"></script>
 <script src="helpers.js"></script>
