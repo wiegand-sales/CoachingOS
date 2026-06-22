@@ -427,7 +427,7 @@ function checkAlerts(id){
   var alerts=[];
   var oem=pavg(id,'crOEM',7),sy=pavg(id,'crSuperYes',7),opt=pavg(id,'optPerH',7);
   if(oem!==null&&oem<CR_GOOD)alerts.push({key:'CR OEM',val:oem.toFixed(0)+'%',target:CR_GOOD+'%'});
-  if(sy!==null&&sy<KPI_TARGETS.crSuperYes)alerts.push({key:'CR Super Yes',val:sy.toFixed(0)+'%',target:KPI_TARGETS.crSuperYes+'%'});
+  if(sy!==null&&sy<KPI_TARGETS.crSuperYes)alerts.push({key:'CR SY',val:sy.toFixed(0)+'%',target:KPI_TARGETS.crSuperYes+'%'});
   if(opt!==null&&opt<KPI_TARGETS.optPerH)alerts.push({key:'Opt./Hour',val:opt.toFixed(1),target:KPI_TARGETS.optPerH});
   return alerts;
 }
@@ -538,11 +538,11 @@ function renderTeam(){
 
   function crCell(val,target,val7){
     // val = range average, val7 = always 7d average (shown as small number top right)
-    if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);width:105px;min-width:105px;max-width:105px">—</td>';
+    if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);width:95px;min-width:95px;max-width:95px">—</td>';
     var v=Math.round(val);
     var v7=val7!==null&&val7!==undefined?Math.round(val7):null;
     var col=target?(v>=target?'var(--teal)':v>=target*0.85?'var(--amber)':'var(--red)'):(v>=CR_GOOD?'var(--teal)':v>=45?'var(--amber)':'var(--red)');
-    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);width:105px;min-width:105px;max-width:105px">'
+    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);width:95px;min-width:95px;max-width:95px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'
       +'<span style="font-size:13px;font-weight:600;color:'+col+'">'+v+'%</span>'
       +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">'
@@ -816,10 +816,10 @@ function renderTeam(){
     +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr>'
     +'<th style="min-width:160px">Mitarbeiter</th>'
     +'<th style="width:105px;min-width:105px">CR OEM</th>'
-    +'<th style="width:105px;min-width:105px">Teilweise</th>'
-    +'<th style="width:105px;min-width:105px">Yes</th>'
-    +'<th style="width:105px;min-width:105px">Super Yes</th>'
-    +'<th style="width:105px;min-width:105px">Mega Yes</th>'
+    +'<th style="width:95px;min-width:95px">TW</th>'
+    +'<th style="width:95px;min-width:95px">Yes</th>'
+    +'<th style="width:95px;min-width:95px">SY</th>'
+    +'<th style="width:95px;min-width:95px">MY</th>'
     +'<th>Marge</th>'
     +'<th>Opt./h</th>'
     +'<th>Alerts</th>'
@@ -838,7 +838,7 @@ function renderTeam(){
     +'<th style="min-width:160px">Mitarbeiter</th>'
     +'<th>Sessions gesamt</th>'
     +'<th>Letzte Session</th>'
-    +'<th>Letzte Bewertung</th>'
+    +'<th>Letzte Bew.</th>'
     +'<th>Entwicklungsfelder</th>'
     +'<th>KPI-Alerts</th>'
     +'<th>Aktion</th>'
@@ -904,9 +904,9 @@ function renderTab(){
     function a7(key){return perf7.length?(perf7.reduce(function(a,x){return a+x[key];},0)/perf7.length).toFixed(1):'—';}
     var kpis=[
       {label:'CR OEM',key:'crOEM',color:'var(--amber)',target:KPI_TARGETS.crOEM,pct:true},
-      {label:'CR Teilweise',key:'crTeilweise',color:'var(--text2)',target:null,pct:true},
-      {label:'CR Super Yes',key:'crSuperYes',color:'var(--purple)',target:KPI_TARGETS.crSuperYes,pct:true},
-      {label:'CR Mega Yes',key:'crMegaYes',color:'var(--teal)',target:KPI_TARGETS.crMegaYes,pct:true},
+      {label:'CR TW',key:'crTeilweise',color:'var(--text2)',target:null,pct:true},
+      {label:'CR SY',key:'crSuperYes',color:'var(--purple)',target:KPI_TARGETS.crSuperYes,pct:true},
+      {label:'CR MY',key:'crMegaYes',color:'var(--teal)',target:KPI_TARGETS.crMegaYes,pct:true},
       {label:'Opt./Hour',key:'optPerH',color:'var(--blue)',target:KPI_TARGETS.optPerH,pct:false},
     ];
     html+='<div class="g5">';
