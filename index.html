@@ -419,6 +419,20 @@ function allTeams(){var ts={};activeEmployees().forEach(function(e){if(e.team)ts
 function activeEmployees(){return employees.filter(function(e){return e.active!==false;});}
 
 // ── SIDEBAR ──
+
+function openSessionModal(empId){
+  if(empId)selectedEmp=empId;
+  var sel=document.getElementById('sessionEmpSel');
+  if(sel){
+    sel.innerHTML=employees.filter(function(e){return e.active!==false;}).map(function(e){
+      return '<option value="'+e.id+'"'+(e.id===selectedEmp?' selected':'')+'>'+e.name+'</option>';
+    }).join('');
+  }
+  var datumEl=document.getElementById('sessionDatum');
+  if(datumEl&&!datumEl.value)datumEl.value=today();
+  openModal('sessionPlanenModal');
+}
+
 function renderSidebar(){
   var el=document.getElementById('empList');
   el.innerHTML='';
@@ -446,6 +460,44 @@ function showView(v){view=v;renderSidebar();renderMain();}
 function renderMain(){if(view==='team')renderTeam();else if(view==='settings')renderEinstellungen();else renderEmpDetail();}
 
 // ── TEAM VIEW ──
+
+// ── COACHING HELPERS ──
+function sessionsFuerMA(id){
+  return (protocols[id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+}
+function letzteSessionMA(id){
+  var p=protocols[id]||[];
+  return p.length?p.slice().sort(function(a,b){return b.date.localeCompare(a.date);})[0]:null;
+}
+function tageSeitLetzterSession(id){
+  var ls=letzteSessionMA(id);
+  if(!ls)return null;
+  var diff=new Date(today())-new Date(ls.date+'T00:00:00');
+  return Math.floor(diff/86400000);
+}
+function entwicklungsfelder(id){
+  var p=protocols[id]||[];
+  if(!p.length)return [];
+  // Aggregate skills across all protocols
+  var summen={};var anz={};
+  p.forEach(function(pr){
+    if(!pr.skills)return;
+    Object.keys(pr.skills).forEach(function(k){
+      summen[k]=(summen[k]||0)+pr.skills[k];
+      anz[k]=(anz[k]||0)+1;
+    });
+  });
+  var erg=Object.keys(summen).map(function(k){return {name:k,schnitt:summen[k]/anz[k]};});
+  erg.sort(function(a,b){return a.schnitt-b.schnitt;});
+  return erg.slice(0,3).map(function(e){return e.name;});
+}
+function aufmerksamkeitFarbe(tage){
+  if(tage===null)return 'var(--red)';
+  if(tage>14)return 'var(--red)';
+  if(tage>7)return 'var(--amber)';
+  return 'var(--teal)';
+}
+
 function renderTeam(){
   var ma=document.getElementById('mainArea');
   var allP=activeEmployees().map(function(e){return getPerf(e.id,7);}).reduce(function(a,b){return a.concat(b);},[]);
@@ -495,6 +547,19 @@ function renderTeam(){
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(sr!==null?sr+'%':'—')+'</td>'
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(rs?'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span>':'—')+'</td>'
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+      +(function(){
+        var sCount=(protocols[e.id]||[]).length;
+        var tage=tageSeitLetzterSession(e.id);
+        var aFarbe=aufmerksamkeitFarbe(tage);
+        var lsBew=lastRating(e.id);
+        var lsRS=lsBew?RS[lsBew]:null;
+        var entw=entwicklungsfelder(e.id);
+        return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--purple)">'+sCount+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+aFarbe+'">'+(tage===null?'Keine':tage===0?'Heute':tage+'d')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(lsRS?'<span class="badge" style="background:'+lsRS.bg+';color:'+lsRS.color+'">'+lsBew+'</span>':'-')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+(entw.length?entw.join(', '):'-')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>';
+      })()
       +'</tr>';
   });
 
@@ -551,8 +616,46 @@ function renderTeam(){
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' alert'+(totalAlerts!==1?'s':'')+' across the team</div><div style="font-size:12px;color:var(--amber-dark)">'+employees.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
     +'<div class="sec-title" style="margin-bottom:10px">Conversion rates &amp; margin <span style="font-weight:400;color:var(--text3)">· CR as % of all calls · Good CR ≥ '+CR_GOOD+'%</span></div>'
     +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr><th style="min-width:150px">Mitarbeiter</th><th style="min-width:100px">CR OEM</th><th style="min-width:100px">Teilweise</th><th style="min-width:100px">Yes</th><th style="min-width:100px">Super Yes</th><th style="min-width:100px">Mega Yes</th><th>Margin</th><th>Opt./h</th><th>SolidRoad</th><th>Last rating</th><th>Alerts</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
-    +'<div class="sec-title" style="margin-bottom:12px">Mitarbeiter cards</div>'
+    +'<div class="sec-title" style="margin-bottom:12px">Mitarbeiterkarten</div>'
     +'<div class="team-grid">'+cards+'</div>'
+    +(function(){
+      var coachRows='';
+      activeEmployees().forEach(function(e){
+        var c=COLORS[e.color%COLORS.length];
+        var sCount=(protocols[e.id]||[]).length;
+        var tage=tageSeitLetzterSession(e.id);
+        var aFarbe=aufmerksamkeitFarbe(tage);
+        var lsBew=lastRating(e.id);
+        var lsRS=lsBew?RS[lsBew]:null;
+        var entw=entwicklungsfelder(e.id);
+        var al=checkAlerts(e.id);
+        coachRows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
+          +'<div style="display:flex;align-items:center;gap:9px">'
+          +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+          +'<div><div style="font-weight:500">'+e.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
+          +'<div style="font-size:11px;color:var(--text2)">'+e.phase+' · '+(e.team||'')+'</div></div></div></td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--purple)">'+sCount+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+aFarbe+'">'+(tage===null?'Keine':tage===0?'Heute':tage+'d')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(lsRS?'<span class="badge" style="background:'+lsRS.bg+';color:'+lsRS.color+'">'+lsBew+'</span>':'—')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+(entw.length?entw.join(', '):'—')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
+          +'</tr>';
+      });
+      return '<div class="sec-title" style="margin-top:28px;margin-bottom:12px">Coaching-Aufmerksamkeit '
+        +'<span style="font-weight:400;color:var(--text3)">· Rot = über 14 Tage · Gelb = über 7 Tage ohne Session</span></div>'
+        +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">'
+        +'<table><thead><tr>'
+        +'<th style="min-width:160px">Mitarbeiter</th>'
+        +'<th>Sessions gesamt</th>'
+        +'<th>Letzte Session</th>'
+        +'<th>Letzte Bewertung</th>'
+        +'<th>Entwicklungsfelder</th>'
+        +'<th>KPI-Alerts</th>'
+        +'<th>Aktion</th>'
+        +'</tr></thead><tbody>'+coachRows+'</tbody></table></div>';
+    })()
     +'</div>';
 }
 
@@ -1289,6 +1392,31 @@ function saveSRKey(){
   settings.srApiKey=key;settings.srOrgId=org;
   closeModal('srModal');renderSettings();
 }
+
+function sessionSpeichernNeu(){
+  var empId=parseInt(document.getElementById('sessionEmpSel').value);
+  var datum=document.getElementById('sessionDatum').value;
+  var typ=document.getElementById('sessionTyp').value;
+  var thema=document.getElementById('sessionThema').value.trim();
+  var notiz=document.getElementById('sessionNotiz').value.trim();
+  if(!empId||!datum)return alert('Bitte Mitarbeiter und Datum auswählen.');
+  // Add as a planned protocol entry
+  if(!protocols[empId])protocols[empId]=[];
+  protocols[empId].unshift({
+    id:Date.now(),date:datum,rating:null,
+    note:notiz||'',focus:thema||typ,
+    status:'geplant',skills:{},criteria:{},
+    typ:typ
+  });
+  document.getElementById('sessionThema').value='';
+  document.getElementById('sessionNotiz').value='';
+  document.getElementById('sessionDatum').value='';
+  closeModal('sessionPlanenModal');
+  renderSidebar();
+  renderMain();
+  alert('Session geplant für '+datum+'.');
+}
+
 function openModal(id){document.getElementById(id).classList.remove('hidden');}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.modal-ov').forEach(function(m){
@@ -1377,5 +1505,31 @@ function deactivateEmp(){
 }
 
 </script>
+
+<!-- SESSION PLANEN MODAL -->
+<div class="modal-ov hidden" id="sessionPlanenModal"><div class="modal">
+  <div class="modal-title" style="display:flex;align-items:center;gap:8px"><i class="ti ti-calendar-plus" style="color:var(--purple)"></i> Session planen</div>
+  <div class="f2" style="margin-bottom:10px">
+    <div><label>Mitarbeiter</label><select id="sessionEmpSel"></select></div>
+    <div><label>Datum</label><input type="date" id="sessionDatum"></div>
+  </div>
+  <div class="f2" style="margin-bottom:10px">
+    <div><label>Typ</label><select id="sessionTyp">
+      <option>Gesprächsbewertung</option>
+      <option>Onboarding-Session</option>
+      <option>Anlassbezogene Session</option>
+      <option>Mindset-Coaching</option>
+      <option>Einwandbehandlung Training</option>
+      <option>Abschlusstechnik Training</option>
+    </select></div>
+    <div><label>Fokusthema</label><input type="text" id="sessionThema" placeholder="z.B. Einwandbehandlung, Loop-Technik..."></div>
+  </div>
+  <div style="margin-bottom:14px"><label>Anlass / Notiz für den Coach</label><textarea id="sessionNotiz" placeholder="Warum wird diese Session eingeplant? Was soll der Coach beachten..."></textarea></div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal('sessionPlanenModal')">Abbrechen</button>
+    <button class="btn btn-primary" onclick="sessionSpeichernNeu()"><i class="ti ti-check"></i> Session planen</button>
+  </div>
+</div></div>
+
 </body>
 </html>
