@@ -28,7 +28,7 @@ function renderSidebar(){
 }
 
 function showView(v){view=v;renderSidebar();renderMain();}
-function renderMain(){if(view==='team')renderTeam();else if(view==='settings')renderSettings();else renderEmpDetail();}
+function renderMain(){if(view==='team')renderTeam();else if(view==='settings')renderEinstellungen();else renderEmpDetail();}
 
 // ── TEAM VIEW ──
 function renderTeam(){
@@ -114,7 +114,7 @@ function renderTeam(){
       +(av!==null?'<div class="bar-row"><span class="bar-label">Avg. Skill</span><div class="bar-track"><div class="bar-fill" style="width:'+av+'%;background:'+(av>=80?'var(--teal)':av>=60?'var(--purple)':'var(--amber)')+'"></div></div><span class="bar-val">'+av+'%</span></div>':'')
       +(sr!==null?'<div class="bar-row"><span class="bar-label">SolidRoad</span><div class="bar-track"><div class="bar-fill" style="width:'+sr+'%;background:'+scoreColor(sr)+'"></div></div><span class="bar-val">'+sr+'%</span></div>':'')
       +(al.length?'<div style="margin-top:8px;padding:6px 10px;background:var(--amber-bg);border-radius:var(--r-sm);font-size:11px;color:var(--amber-dark)">⚠ '+al.map(function(a){return a.key;}).join(', ')+' below target</div>':'')
-      +(rs?'<div style="margin-top:8px;font-size:12px;color:var(--text2)">Last session: <span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span></div>':'')
+      +(rs?'<div style="margin-top:8px;font-size:12px;color:var(--text2)">Last Session: <span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span></div>':'')
       +'</div>';
   });
 
@@ -123,7 +123,7 @@ function renderTeam(){
   var my7=tc!==null?Math.round(tc):null;
   ma.innerHTML='<div class="topbar">'
     +'<div class="tb-left"><div class="av" style="width:40px;height:40px;font-size:17px;background:var(--purple-bg);color:var(--purple-dark)"><i class="ti ti-layout-grid"></i></div>'
-    +'<div><div class="tb-name">Team Overview</div><div class="tb-meta">'+employees.length+' staff · 7-day average · <span class="ftp-badge"><i class="ti ti-refresh" style="font-size:11px"></i> FTP sync active</span></div></div></div>'
+    +'<div><div class="tb-name">Teamübersicht</div><div class="tb-meta">'+employees.length+' staff · 7-day average · <span class="ftp-badge"><i class="ti ti-refresh" style="font-size:11px"></i> FTP sync active</span></div></div></div>'
     +'</div>'
     +'<div class="content">'
     +'<div class="g5" style="margin-bottom:20px">'
@@ -131,12 +131,12 @@ function renderTeam(){
     +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Team Super Yes</div><div class="kpi-val" style="color:var(--purple)">'+(sy7!==null?sy7+'%':'—')+'</div><div class="kpi-sub">of all calls</div></div>'
     +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Team Mega Yes</div><div class="kpi-val" style="color:var(--teal)">'+(my7!==null?my7+'%':'—')+'</div><div class="kpi-sub">of all calls</div></div>'
     +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Additional Margin</div><div class="kpi-val" style="color:var(--blue)">€'+totalMargin.toLocaleString('de-DE')+'</div><div class="kpi-sub">7-day team total</div></div>'
-    +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+(totalAlerts>0?'Open Alerts':'All Clear')+'</div><div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div><div class="kpi-sub">'+(totalAlerts>0?'staff below target':'no alerts')+'</div></div>'
+    +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+(totalAlerts>0?'Offene Alerts':'Alles im grünen Bereich')+'</div><div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div><div class="kpi-sub">'+(totalAlerts>0?'staff below target':'keine Alerts')+'</div></div>'
     +'</div>'
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' alert'+(totalAlerts!==1?'s':'')+' across the team</div><div style="font-size:12px;color:var(--amber-dark)">'+employees.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
     +'<div class="sec-title" style="margin-bottom:10px">Conversion rates &amp; margin <span style="font-weight:400;color:var(--text3)">· CR as % of all calls · Good CR ≥ '+CR_GOOD+'%</span></div>'
-    +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr><th style="min-width:150px">Staff</th><th style="min-width:100px">CR OEM</th><th style="min-width:100px">Teilweise</th><th style="min-width:100px">Yes</th><th style="min-width:100px">Super Yes</th><th style="min-width:100px">Mega Yes</th><th>Margin</th><th>Opt./h</th><th>SolidRoad</th><th>Last rating</th><th>Alerts</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
-    +'<div class="sec-title" style="margin-bottom:12px">Staff cards</div>'
+    +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr><th style="min-width:150px">Mitarbeiter</th><th style="min-width:100px">CR OEM</th><th style="min-width:100px">Teilweise</th><th style="min-width:100px">Yes</th><th style="min-width:100px">Super Yes</th><th style="min-width:100px">Mega Yes</th><th>Margin</th><th>Opt./h</th><th>SolidRoad</th><th>Last rating</th><th>Alerts</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="sec-title" style="margin-bottom:12px">Mitarbeiter cards</div>'
     +'<div class="team-grid">'+cards+'</div>'
     +'</div>';
 }
@@ -153,16 +153,16 @@ function renderEmpDetail(){
   document.getElementById('mainArea').innerHTML=
     '<div class="topbar"><div class="tb-left">'
     +'<div class="av" style="width:42px;height:42px;font-size:14px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'
-    +'<div><div class="tb-name">'+emp.name+'</div><div class="tb-meta">'+emp.role+' · '+emp.phase+(emp.startDate?' · Started '+fd(emp.startDate):'')+' · '+p.length+' session'+(p.length!==1?'s':'')+'</div></div>'
+    +'<div><div class="tb-name">'+emp.name+'</div><div class="tb-meta">'+emp.role+' · '+emp.phase+(emp.startDate?' · Start '+fd(emp.startDate):'')+' · '+p.length+' Session'+(p.length!==1?'s':'')+'</div></div>'
     +'</div><div style="display:flex;gap:8px"><button class="btn" onclick="window.print()"><i class="ti ti-printer"></i> Print</button></div></div>'
     +'<div class="tab-bar" id="empTabBar">'
     +'<div class="tab" data-tab="performance" onclick="switchTab(\'performance\')">Performance</div>'
-    +'<div class="tab" data-tab="protocols" onclick="switchTab(\'protocols\')">Protocols</div>'
-    +'<div class="tab" data-tab="progress" onclick="switchTab(\'progress\')">Progress</div>'
+    +'<div class="tab" data-tab="protocols" onclick="switchTab(\'protocols\')">Protokolle</div>'
+    +'<div class="tab" data-tab="progress" onclick="switchTab(\'progress\')">Fortschritt</div>'
     +'<div class="tab" data-tab="solidroad" onclick="switchTab(\'solidroad\')">SolidRoad</div>'
     +'<div class="tab" data-tab="onboarding" onclick="switchTab(\'onboarding\')">Onboarding</div>'
-    +'<div class="tab" data-tab="review" onclick="switchTab(\'review\')">Review</div>'
-    +'<div class="tab" data-tab="emp-settings" onclick="switchTab(\'emp-settings\')">Settings</div>'
+    +'<div class="tab" data-tab="review" onclick="switchTab(\'review\')">Gespräche</div>'
+    +'<div class="tab" data-tab="emp-settings" onclick="switchTab(\'emp-settings\')">Einstellungen</div>'
     +'<div class="tab" data-tab="tasks" onclick="switchTab(\'tasks\')" id="tasksTabBtn">Tasks'+(tc>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+tc+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="content" id="tabContent"></div>';
@@ -211,16 +211,16 @@ function renderTab(){
       html+='<div class="kpi" style="border-top-color:'+k.color+'">'
         +'<div class="kpi-label" style="color:'+k.color+'">'+k.label+'</div>'
         +'<div class="kpi-val" style="color:'+k.color+'">'+v+(k.pct&&v!=='—'?'%':'')+'</div>'
-        +'<div class="kpi-sub" style="color:'+(k.target?(hit?'var(--teal)':'var(--red)'):'var(--text3)')+'">'+(k.target?'Target: '+k.target+(k.pct?'% ':' ')+(hit?'✓':'↓'):'7-day avg')+'</div>'
+        +'<div class="kpi-sub" style="color:'+(k.target?(hit?'var(--teal)':'var(--red)'):'var(--text3)')+'">'+(k.target?'Target: '+k.target+(k.pct?'% ':' ')+(hit?'✓':'↓'):'7-Tage-Ø')+'</div>'
         +'</div>';
     });
     html+='</div>';
     if(alerts.length){
       html+='<div class="alert alert-danger" style="margin-bottom:16px">'
         +'<i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
-        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">Below target in '+alerts.length+' area'+(alerts.length!==1?'s':'')+'</div>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">Below target in '+alerts.length+' Bereich'+(alerts.length!==1?'s':'')+'</div>'
         +'<div style="font-size:12px;color:var(--red)">'+alerts.map(function(a){return a.key+': '+a.val+' (target: '+a.target+')';}).join(' · ')+'</div>'
-        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching session – calendar integration coming soon.\')"><i class="ti ti-calendar"></i> Book coaching session</button></div>'
+        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching Session – calendar integration coming soon.\')"><i class="ti ti-calendar"></i> Book coaching Session</button></div>'
         +'</div></div>';
     } else {
       html+='<div class="alert alert-ok" style="margin-bottom:16px">'
@@ -280,7 +280,7 @@ function renderTab(){
     html+='<div class="card"><div class="card-title"><i class="ti ti-edit"></i> New Protocol</div>'
       +'<div class="f3"><div><label>Date</label><input type="date" id="nd" value="'+today()+'"></div>'
       +'<div><label>Rating</label><select id="nr">'+RATINGS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>'
-      +'<div><label>Focus topic</label><input type="text" id="nf" placeholder="Topic of this session"></div></div>'
+      +'<div><label>Focus topic</label><input type="text" id="nf" placeholder="Topic of this Session"></div></div>'
       +'<div style="margin-bottom:10px"><label>Notes</label><textarea id="nt" placeholder="What stood out..."></textarea></div>'
       +'<div style="margin-bottom:12px"><label>Rate criteria (0–100)</label>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:6px">';
@@ -295,7 +295,7 @@ function renderTab(){
       +'</div></div>';
     if(p.length===0){html+='<div class="empty">No protocols yet.</div>';}
     else{
-      html+='<div class="sec-title">Previous sessions</div>';
+      html+='<div class="sec-title">Previous Sessions</div>';
       p.forEach(function(pr){
         var rs=RS[pr.rating];
         html+='<div class="proto"><div class="proto-hdr">'
@@ -331,13 +331,13 @@ function renderTab(){
     if(alerts.length){
       html+='<div class="alert alert-danger" style="margin-bottom:16px">'
         +'<i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
-        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">KPIs below target – coaching session recommended</div>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">KPIs below target – coaching Session recommended</div>'
         +'<div style="font-size:12px;color:var(--red)">'+alerts.map(function(a){return a.key+': '+a.val+' vs target '+a.target;}).join(' · ')+'</div>'
-        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching session.\')"><i class="ti ti-calendar"></i> Book a session</button></div>'
+        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching Session.\')"><i class="ti ti-calendar"></i> Book a Session</button></div>'
         +'</div></div>';
     }
     html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">'
-      +'<div><div class="sec-title">Skill profile (latest session)</div>';
+      +'<div><div class="sec-title">Skill profile (latest Session)</div>';
     if(p.length===0){html+='<div class="empty" style="padding:1.5rem">No data yet.</div>';}
     else{
       var latest=p[0];var skills=latest.skills||{};var first=p[p.length-1].skills||{};
@@ -381,8 +381,8 @@ function renderTab(){
       html+='<div style="background:var(--purple-bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;margin-bottom:14px">'
         +'<div style="font-size:36px;color:var(--purple);margin-bottom:10px"><i class="ti ti-robot"></i></div>'
         +'<div style="font-size:16px;font-weight:600;margin-bottom:6px">Connect SolidRoad</div>'
-        +'<div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Add your API key in Settings to sync simulation scores automatically.</div>'
-        +'<button class="btn btn-primary btn-sm" style="width:auto;margin:0 auto" onclick="showView(\'settings\')"><i class="ti ti-settings"></i> Go to Settings</button></div>';
+        +'<div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Add your API key in Einstellungen to sync simulation scores automatically.</div>'
+        +'<button class="btn btn-primary btn-sm" style="width:auto;margin:0 auto" onclick="showView(\'settings\')"><i class="ti ti-settings"></i> Go to Einstellungen</button></div>';
     }
     if(srScore!==null){
       html+='<div class="g4">'
@@ -419,7 +419,7 @@ function renderTab(){
     var completedSteps=ob.filter(Boolean).length;
     var pct=totalSteps?Math.round(completedSteps/totalSteps*100):0;
     var currentDay=days.find(function(day){return obSteps.filter(function(s){return s.day===day;}).some(function(s){return !ob[obSteps.indexOf(s)];});})||days[days.length-1];
-    var level=pct>=100?'Expert':pct>=75?'Advanced':pct>=50?'Intermediate':pct>=25?'Developing':'Beginner';
+    var level=pct>=100?'Experte':pct>=75?'Sehr gut':pct>=50?'Fortgeschritten':pct>=25?'Entwicklung':'Einsteiger';
     var levelColor=pct>=100?'var(--teal)':pct>=75?'var(--purple)':pct>=50?'var(--blue)':pct>=25?'var(--amber)':'var(--text2)';
     var levelBg=pct>=100?'var(--teal-bg)':pct>=75?'var(--purple-bg)':pct>=50?'var(--blue-bg)':pct>=25?'var(--amber-bg)':'var(--bg2)';
     var daysSince=startDate?Math.floor((new Date()-startDate)/86400000)+1:null;
@@ -427,8 +427,8 @@ function renderTab(){
     html+='<div class="g4" style="margin-bottom:20px">'
       +'<div class="kpi" style="border-top-color:'+levelColor+'"><div class="kpi-label" style="color:'+levelColor+'">Level</div><div class="kpi-val" style="color:'+levelColor+';font-size:17px">'+level+'</div><div class="kpi-sub">'+pct+'% complete</div></div>'
       +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Steps done</div><div class="kpi-val" style="color:var(--teal)">'+completedSteps+'<span style="font-size:13px;color:var(--text3)"> / '+totalSteps+'</span></div><div class="kpi-sub">'+(totalSteps-completedSteps)+' remaining</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Active day</div><div class="kpi-val" style="color:var(--purple)">Day '+currentDay+'</div><div class="kpi-sub">'+(pct>=100?'All done':'Current focus')+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Days since start</div><div class="kpi-val" style="color:var(--blue)">'+(daysSince!==null?daysSince:'—')+'</div><div class="kpi-sub">'+(emp.startDate?'Since '+fd(emp.startDate):'No start date')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Active day</div><div class="kpi-val" style="color:var(--purple)">Day '+currentDay+'</div><div class="kpi-sub">'+(pct>=100?'Alles erledigt':'Aktueller Fokus')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Days since start</div><div class="kpi-val" style="color:var(--blue)">'+(daysSince!==null?daysSince:'—')+'</div><div class="kpi-sub">'+(emp.startDate?'Since '+fd(emp.startDate):'Kein Startdatum')+'</div></div>'
       +'</div>';
     // Donut + Level ladder
     html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">'
@@ -455,7 +455,7 @@ function renderTab(){
     html+='</div></div></div>'
       +'<div class="card" style="margin-bottom:0"><div class="card-title"><i class="ti ti-trophy"></i> Onboarding level</div>'
       +'<div style="display:flex;flex-direction:column;gap:6px">';
-    [['Beginner','0–24%',0],['Developing','25–49%',25],['Intermediate','50–74%',50],['Advanced','75–99%',75],['Expert','100%',100]].forEach(function(entry){
+    [['Einsteiger','0–24%',0],['Entwicklung','25–49%',25],['Fortgeschritten','50–74%',50],['Sehr gut','75–99%',75],['Experte','100%',100]].forEach(function(entry){
       var lv=entry[0],range=entry[1],threshold=entry[2];
       var active=level===lv,reached=pct>=threshold;
       html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-md);background:'+(active?levelBg:'var(--bg2)')+';border:1px solid '+(active?levelColor:'transparent')+'">'
@@ -493,7 +493,7 @@ function renderTab(){
           +'<div class="ob-hdr" onclick="toggleOBDetail('+i+')">'
           +'<div class="ob-check'+(ob[i]?' done':'')+'" onclick="event.stopPropagation();toggleOB('+i+')">'+(ob[i]?'<i class="ti ti-check" style="font-size:11px"></i>':'')+'</div>'
           +'<span class="ob-label">'+step.label+'</span>'
-          +'<span class="ob-status">'+(ob[i]?'Completed':'Pending')+'</span>'
+          +'<span class="ob-status">'+(ob[i]?'Abgeschlossen':'Ausstehend')+'</span>'
           +'<i class="ti ti-chevron-down ob-chev" id="chev-'+i+'"></i></div>'
           +'<div class="ob-detail" id="ob-d-'+i+'">'
           +'<div class="ob-desc">'+step.detail+'</div>'
@@ -519,8 +519,8 @@ function renderTab(){
     // Summary
     html+='<div class="g3" style="margin-bottom:20px">'
       +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Open</div><div class="kpi-val" style="color:var(--purple)">'+openTasks.length+'</div><div class="kpi-sub">'+(openTasks.length===0?'All clear':'task'+(openTasks.length!==1?'s':'')+' to do')+'</div></div>'
-      +'<div class="kpi" style="border-top-color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">Overdue</div><div class="kpi-val" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">'+overdueTasks.length+'</div><div class="kpi-sub">'+(overdueTasks.length>0?'deadline missed':'no overdue tasks')+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+doneTasks.length+'</div><div class="kpi-sub">'+(empTasks.length>0?Math.round(doneTasks.length/empTasks.length*100)+'% completion':'no tasks yet')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">Overdue</div><div class="kpi-val" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">'+overdueTasks.length+'</div><div class="kpi-sub">'+(overdueTasks.length>0?'Frist überschritten':'no overdue tasks')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+doneTasks.length+'</div><div class="kpi-sub">'+(empTasks.length>0?Math.round(doneTasks.length/empTasks.length*100)+'% completion':'noch keine Aufgaben')+'</div></div>'
       +'</div>';
     html+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary btn-sm" onclick="openModal(\'addTaskModal\')"><i class="ti ti-plus"></i> Add task</button></div>';
     if(empTasks.length===0){html+='<div class="empty">No tasks yet. Add tasks manually or from a protocol.</div>';}
@@ -530,11 +530,11 @@ function renderTab(){
       var dueDays=t.dueDate&&!t.done?Math.ceil((new Date(t.dueDate)-new Date(todayStr))/86400000):null;
       var dueLabel='',dueColor='var(--text3)';
       if(t.dueDate){
-        if(t.done){dueLabel='Completed';}
-        else if(dueDays<0){dueLabel='Overdue by '+Math.abs(dueDays)+'d';dueColor='var(--red)';}
-        else if(dueDays===0){dueLabel='Due today';dueColor='var(--amber)';}
-        else if(dueDays===1){dueLabel='Due tomorrow';}
-        else{dueLabel='Due in '+dueDays+'d';}
+        if(t.done){dueLabel='Abgeschlossen';}
+        else if(dueDays<0){dueLabel='Überfällig seit '+Math.abs(dueDays)+'d';dueColor='var(--red)';}
+        else if(dueDays===0){dueLabel='Heute fällig';dueColor='var(--amber)';}
+        else if(dueDays===1){dueLabel='Morgen fällig';}
+        else{dueLabel='Fällig in '+dueDays+'d';}
       }
       return '<div class="task-item'+(od?' overdue':'')+(t.done?' done-item':'')+'" id="task-'+t.id+'">'
         +'<div class="task-row" onclick="toggleTaskDetail('+t.id+')">'
@@ -584,15 +584,15 @@ function renderTab(){
     var typeRS={'Onboarding Review':RS['Yes'],'Performance Review':RS['Super Yes'],'Annual Review':RS['Mega Yes']};
     html+='<div class="g3" style="margin-bottom:20px">'
       +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Total</div><div class="kpi-val" style="color:var(--purple)">'+empReviews.length+'</div><div class="kpi-sub">reviews scheduled</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+empReviews.filter(function(r){return r.status==='completed';}).length+'</div><div class="kpi-sub">done</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+empReviews.filter(function(r){return r.status==='abgeschlossen';}).length+'</div><div class="kpi-sub">done</div></div>'
       +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Upcoming</div><div class="kpi-val" style="color:var(--blue)">'+empReviews.filter(function(r){return r.status==='upcoming';}).length+'</div><div class="kpi-sub">scheduled</div></div>'
       +'</div>';
     html+='<div class="sec-title" style="margin-bottom:12px">Review timeline</div>';
-    if(empReviews.length===0){html+='<div class="empty">No reviews yet. Set a start date in Settings to auto-schedule.</div>';}
+    if(empReviews.length===0){html+='<div class="empty">No reviews yet. Set a start date in Einstellungen to auto-schedule.</div>';}
     empReviews.forEach(function(rev){
       var tc2=typeRS[rev.type]||{bg:'var(--bg2)',color:'var(--text2)'};
-      var sc=rev.status==='completed'?'var(--teal)':rev.status==='overdue'?'var(--red)':'var(--blue)';
-      var scBg=rev.status==='completed'?'var(--teal-bg)':rev.status==='overdue'?'var(--red-bg)':'var(--blue-bg)';
+      var sc=rev.status==='abgeschlossen'?'var(--teal)':rev.status==='overdue'?'var(--red)':'var(--blue)';
+      var scBg=rev.status==='abgeschlossen'?'var(--teal-bg)':rev.status==='overdue'?'var(--red-bg)':'var(--blue-bg)';
       html+='<div class="card">'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px">'
         +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
@@ -605,7 +605,7 @@ function renderTab(){
         +(rev.rating?'<span class="badge" style="background:'+RS[rev.rating].bg+';color:'+RS[rev.rating].color+'">'+rev.rating+'</span>':'')
         +'</div>';
       // Completed review – show notes, goals, KPIs
-      if(rev.status==='completed'){
+      if(rev.status==='abgeschlossen'){
         if(rev.notes)html+='<div style="font-size:13px;line-height:1.6;margin-bottom:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--r-md)">'+rev.notes+'</div>';
         if(rev.goals)html+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px)"><strong>Goals agreed:</strong> '+rev.goals+'</div>';
         if(rev.kpis&&Object.keys(rev.kpis).length){
@@ -649,13 +649,13 @@ function renderTab(){
     html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Basic information</div>'
       +'<div class="f2"><div><label>Full name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
       +'<div><label>Role</label><select id="es-role">'+ROLES.map(function(ro){return '<option'+(ro===emp.role?' selected':'')+'>'+ro+'</option>';}).join('')+'</select></div></div>'
-      +'<div class="f3"><div><label>Phase</label><select id="es-phase"><option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option><option'+(emp.phase==='Active'?' selected':'')+'>Active</option><option'+(emp.phase==='Development'?' selected':'')+'>Development</option></select></div>'
+      +'<div class="f3"><div><label>Phase</label><select id="es-phase"><option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option><option'+(emp.phase==='Aktiv'?' selected':'')+'>Active</option><option'+(emp.phase==='Entwicklung'?' selected':'')+'>Entwicklung</option></select></div>'
       +'<div><label>Team</label><select id="es-team">'+teamOpts+'</select></div>'
       +'<div><label>Start date</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div></div>'
-      +'<div class="f2"><div><label>Contract</label><select id="es-contract"><option value="full"'+(emp.contract==='full'?' selected':'')+'>Full-time</option><option value="part"'+(emp.contract==='part'?' selected':'')+'>Part-time</option></select></div>'
+      +'<div class="f2"><div><label>Contract</label><select id="es-contract"><option value="full"'+(emp.contract==='full'?' selected':'')+'>Vollzeit</option><option value="part"'+(emp.contract==='part'?' selected':'')+'>Teilzeit</option></select></div>'
       +'<div><label>Hours / week</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div></div>'
       +'<div style="margin-bottom:14px"><label>Avatar color</label><div style="margin-top:8px">'+swatches+'</div></div>'
-      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpSettings()"><i class="ti ti-check"></i> Save changes</button></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Save changes</button></div>'
 
       +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individual KPI targets</div>'
       +'<p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">These override global defaults for this staff member. Used in all alerts and the team overview.</p>'
@@ -693,10 +693,10 @@ function renderTab(){
 }
 
 // ── SETTINGS ──
-function renderSettings(){
+function renderEinstellungen(){
   document.getElementById('mainArea').innerHTML=
     '<div class="topbar"><div class="tb-left"><div class="av" style="width:40px;height:40px;font-size:17px;background:var(--bg2);color:var(--text2)"><i class="ti ti-settings"></i></div>'
-    +'<div><div class="tb-name">Settings</div><div class="tb-meta">Integrations &amp; configuration</div></div></div></div>'
+    +'<div><div class="tb-name">Einstellungen</div><div class="tb-meta">Integrations &amp; configuration</div></div></div></div>'
     +'<div class="content" style="max-width:600px">'
     +'<div class="sec-title" style="margin-bottom:12px">Integrations</div>'
     +'<div class="set-row" style="cursor:pointer" onclick="openModal(\'srModal\')">'
