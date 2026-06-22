@@ -1,3 +1,8 @@
+
+function empTargets(emp){return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;}
+function allTeams(){var ts={};activeEmployees().forEach(function(e){if(e.team)ts[e.team]=1;});return Object.keys(ts).sort();}
+function activeEmployees(){return employees.filter(function(e){return e.active!==false;});}
+
 // ── SIDEBAR ──
 function renderSidebar(){
   var el=document.getElementById('empList');
@@ -28,10 +33,10 @@ function renderMain(){if(view==='team')renderTeam();else if(view==='settings')re
 // ── TEAM VIEW ──
 function renderTeam(){
   var ma=document.getElementById('mainArea');
-  var allP=employees.map(function(e){return getPerf(e.id,7);}).reduce(function(a,b){return a.concat(b);},[]);
+  var allP=activeEmployees().map(function(e){return getPerf(e.id,7);}).reduce(function(a,b){return a.concat(b);},[]);
   function tAvg(key){if(!allP.length)return null;return allP.reduce(function(a,x){return a+x[key];},0)/allP.length;}
-  var totalAlerts=employees.reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
-  var totalMargin=employees.reduce(function(a,e){return a+getPerf(e.id,7).reduce(function(b,x){return b+(x.margin||0);},0);},0);
+  var totalAlerts=activeEmployees().reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
+  var totalMargin=activeEmployees().reduce(function(a,e){return a+getPerf(e.id,7).reduce(function(b,x){return b+(x.margin||0);},0);},0);
 
   function crCell(val,target){
     if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border)">—</td>';
@@ -156,6 +161,8 @@ function renderEmpDetail(){
     +'<div class="tab" data-tab="progress" onclick="switchTab(\'progress\')">Progress</div>'
     +'<div class="tab" data-tab="solidroad" onclick="switchTab(\'solidroad\')">SolidRoad</div>'
     +'<div class="tab" data-tab="onboarding" onclick="switchTab(\'onboarding\')">Onboarding</div>'
+    +'<div class="tab" data-tab="review" onclick="switchTab(\'review\')">Review</div>'
+    +'<div class="tab" data-tab="emp-settings" onclick="switchTab(\'emp-settings\')">Settings</div>'
     +'<div class="tab" data-tab="tasks" onclick="switchTab(\'tasks\')" id="tasksTabBtn">Tasks'+(tc>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+tc+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="content" id="tabContent"></div>';
@@ -555,6 +562,112 @@ function renderTab(){
       html+='<div class="sec-title" style="margin-top:16px">Completed ('+doneTasks.length+')</div>';
       doneTasks.forEach(function(t){html+=taskCard(t);});
     }
+  }
+
+
+  // ── REVIEW TAB ──
+  if(activeTab==='review'){
+    var empReviews=reviews[emp.id]||[];
+    // Auto-schedule from start date if not already present
+    if(emp.startDate){
+      var sd=new Date(emp.startDate+'T00:00:00');
+      var autoTypes=[['Onboarding Review',3],['Performance Review',11],['Annual Review',12]];
+      autoTypes.forEach(function(pair){
+        var type=pair[0],mo=pair[1];
+        if(!empReviews.find(function(r){return r.type===type;})){
+          var dd=new Date(sd.getTime());dd.setMonth(dd.getMonth()+mo);
+          empReviews.push({id:Date.now()+mo,type:type,date:dd.toISOString().slice(0,10),status:dd.toISOString().slice(0,10)<today()?'overdue':'upcoming',notes:'',goals:'',rating:null,kpis:{},auto:true});
+        }
+      });
+      empReviews.sort(function(a,b){return a.date.localeCompare(b.date);});
+    }
+    var typeRS={'Onboarding Review':RS['Yes'],'Performance Review':RS['Super Yes'],'Annual Review':RS['Mega Yes']};
+    html+='<div class="g3" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Total</div><div class="kpi-val" style="color:var(--purple)">'+empReviews.length+'</div><div class="kpi-sub">reviews scheduled</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+empReviews.filter(function(r){return r.status==='completed';}).length+'</div><div class="kpi-sub">done</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Upcoming</div><div class="kpi-val" style="color:var(--blue)">'+empReviews.filter(function(r){return r.status==='upcoming';}).length+'</div><div class="kpi-sub">scheduled</div></div>'
+      +'</div>';
+    html+='<div class="sec-title" style="margin-bottom:12px">Review timeline</div>';
+    if(empReviews.length===0){html+='<div class="empty">No reviews yet. Set a start date in Settings to auto-schedule.</div>';}
+    empReviews.forEach(function(rev){
+      var tc2=typeRS[rev.type]||{bg:'var(--bg2)',color:'var(--text2)'};
+      var sc=rev.status==='completed'?'var(--teal)':rev.status==='overdue'?'var(--red)':'var(--blue)';
+      var scBg=rev.status==='completed'?'var(--teal-bg)':rev.status==='overdue'?'var(--red-bg)':'var(--blue-bg)';
+      html+='<div class="card">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px">'
+        +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:'+tc2.bg+';color:'+tc2.color+'">'+rev.type+'</span>'
+        +'<span style="font-size:11px;padding:3px 9px;border-radius:20px;background:'+scBg+';color:'+sc+'">'+rev.status+'</span>'
+        +(rev.auto?'<span style="font-size:10px;color:var(--text3)">auto-scheduled</span>':'')
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--text2)"><i class="ti ti-calendar" style="font-size:12px"></i> '+fd(rev.date)+'</div>'
+        +'</div>'
+        +(rev.rating?'<span class="badge" style="background:'+RS[rev.rating].bg+';color:'+RS[rev.rating].color+'">'+rev.rating+'</span>':'')
+        +'</div>';
+      // Completed review – show notes, goals, KPIs
+      if(rev.status==='completed'){
+        if(rev.notes)html+='<div style="font-size:13px;line-height:1.6;margin-bottom:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--r-md)">'+rev.notes+'</div>';
+        if(rev.goals)html+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px)"><strong>Goals agreed:</strong> '+rev.goals+'</div>';
+        if(rev.kpis&&Object.keys(rev.kpis).length){
+          html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">';
+          var kpiDefs=[{k:'crOEM',l:'CR OEM',c:'var(--amber)'},{k:'crSuperYes',l:'Super Yes',c:'var(--purple)'},{k:'crMegaYes',l:'Mega Yes',c:'var(--teal)'},{k:'optPerH',l:'Opt./h',c:'var(--blue)'}];
+          kpiDefs.forEach(function(kd){if(rev.kpis[kd.k]!==undefined)html+='<div class="kpi" style="border-top-color:'+kd.c+'"><div class="kpi-label" style="color:'+kd.c+'">'+kd.l+'</div><div class="kpi-val" style="color:'+kd.c+'">'+rev.kpis[kd.k]+(kd.k!=='optPerH'?'%':'')+'</div></div>';});
+          html+='</div>';
+        }
+      } else {
+        // Upcoming/overdue – show form to complete
+        html+='<div style="display:flex;flex-direction:column;gap:9px;margin-top:4px">'
+          +'<div><label>Session notes</label><textarea id="rnotes-'+rev.id+'" style="min-height:80px" placeholder="Key observations, strengths, areas to improve..."></textarea></div>'
+          +'<div><label>Goals agreed</label><input type="text" id="rgoals-'+rev.id+'" placeholder="What was agreed for the next period..."></div>'
+          +'<div class="f2">'
+          +'<div><label>Rating</label><select id="rrating-'+rev.id+'"><option value="">Select rating...</option>'+RATINGS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>'
+          +'<div><label>Review date</label><input type="date" id="rdate-'+rev.id+'" value="'+rev.date+'"></div></div>'
+          +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
+          +'<div><label>CR OEM %</label><input type="number" id="rkpi-crOEM-'+rev.id+'" placeholder="e.g. 62" min="0" max="100"></div>'
+          +'<div><label>Super Yes %</label><input type="number" id="rkpi-crSuperYes-'+rev.id+'" placeholder="e.g. 14" min="0" max="100"></div>'
+          +'<div><label>Mega Yes %</label><input type="number" id="rkpi-crMegaYes-'+rev.id+'" placeholder="e.g. 9" min="0" max="100"></div>'
+          +'<div><label>Opt./Hour</label><input type="number" id="rkpi-optPerH-'+rev.id+'" placeholder="e.g. 2.1" step="0.1" min="0"></div>'
+          +'</div>'
+          +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="completeReview('+rev.id+')"><i class="ti ti-check"></i> Complete review</button>'
+          +'</div>';
+      }
+      html+='</div>';
+    });
+    html+='<div style="margin-top:16px">'
+      +'<button class="btn btn-sm" onclick="addReview()"><i class="ti ti-plus"></i> Add review</button>'
+      +'</div>';
+  }
+
+  // ── EMP SETTINGS TAB ──
+  if(activeTab==='emp-settings'){
+    var t=empTargets(emp);
+    var COLORS_LOCAL=COLORS;
+    var swatches=COLORS_LOCAL.map(function(col,i){
+      return '<div onclick="setEmpColor('+i+')" title="'+col.bg+'" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;transition:all .15s"></div>';
+    }).join('');
+    var teamOpts=allTeams().map(function(tm){return '<option'+(tm===emp.team?' selected':'')+'>'+tm+'</option>';}).join('')+'<option value="__new__">+ New team...</option>';
+    html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Basic information</div>'
+      +'<div class="f2"><div><label>Full name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
+      +'<div><label>Role</label><select id="es-role">'+ROLES.map(function(ro){return '<option'+(ro===emp.role?' selected':'')+'>'+ro+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="f3"><div><label>Phase</label><select id="es-phase"><option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option><option'+(emp.phase==='Active'?' selected':'')+'>Active</option><option'+(emp.phase==='Development'?' selected':'')+'>Development</option></select></div>'
+      +'<div><label>Team</label><select id="es-team">'+teamOpts+'</select></div>'
+      +'<div><label>Start date</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div></div>'
+      +'<div class="f2"><div><label>Contract</label><select id="es-contract"><option value="full"'+(emp.contract==='full'?' selected':'')+'>Full-time</option><option value="part"'+(emp.contract==='part'?' selected':'')+'>Part-time</option></select></div>'
+      +'<div><label>Hours / week</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div></div>'
+      +'<div style="margin-bottom:14px"><label>Avatar color</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpSettings()"><i class="ti ti-check"></i> Save changes</button></div>'
+
+      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individual KPI targets</div>'
+      +'<p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">These override global defaults for this staff member. Used in all alerts and the team overview.</p>'
+      +'<div class="g4"><div><label>CR OEM target %</label><input type="number" id="es-crOEM" value="'+t.crOEM+'" min="0" max="100"></div>'
+      +'<div><label>Super Yes target %</label><input type="number" id="es-crSY" value="'+t.crSuperYes+'" min="0" max="100"></div>'
+      +'<div><label>Mega Yes target %</label><input type="number" id="es-crMY" value="'+t.crMegaYes+'" min="0" max="100"></div>'
+      +'<div><label>Opt./Hour target</label><input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"></div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpTargets()"><i class="ti ti-check"></i> Save targets</button></div>'
+
+      +'<div class="card" style="border-top:2px solid var(--amber)"><div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Deactivate staff member</div>'
+      +'<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Deactivated staff are hidden from the sidebar and team overview. All data is preserved and can be restored at any time.</p>'
+      +'<button class="btn btn-warn btn-sm" style="width:auto;background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="deactivateEmp()"><i class="ti ti-user-off"></i> Deactivate '+emp.name+'</button></div>';
   }
 
   tc2.innerHTML=html;
