@@ -1,720 +1,725 @@
-// ══════════════════════════════════════════════
-// APP STATE
-// ══════════════════════════════════════════════
-var ansicht = 'coach'; // 'coach' | 'manager' | 'uebersicht'
-var ausgewaehlterId = 1;
-var aktiverTab = 'profil';
-var aktivesScorecardId = null; // session ID die gerade bewertet wird
 
-// ══════════════════════════════════════════════
-// SIDEBAR
-// ══════════════════════════════════════════════
+function empTargets(emp){return (emp&&emp.targets)?emp.targets:GLOBAL_TARGETS;}
+function allTeams(){var ts={};activeEmployees().forEach(function(e){if(e.team)ts[e.team]=1;});return Object.keys(ts).sort();}
+function activeEmployees(){return employees.filter(function(e){return e.active!==false;});}
+
+// ── SIDEBAR ──
 function renderSidebar(){
-  var el=document.getElementById('mitarbeiterListe');
-  if(!el)return;
+  var el=document.getElementById('empList');
   el.innerHTML='';
-  document.querySelectorAll('.sb-item').forEach(function(x){x.classList.remove('aktiv');});
-  var navOverview=document.getElementById('nav-sfp-overview');
-  var navCoach=document.getElementById('nav-coach');
-  if(ansicht==='sfp-overview'&&navOverview)navOverview.classList.add('aktiv');
-  if(ansicht==='coach'&&navCoach)navCoach.classList.add('aktiv');
-
-  aktiveMitarbeiter().forEach(function(ma){
-    var f=FARBEN[ma.farbe%FARBEN.length];
-    var ls=letzteSession(ma.id);
-    var lsBw=ls?BW[ls.gesamtBewertung]:null;
-    var al=alertsPruefen(ma);
+  document.querySelectorAll('.sb-item').forEach(function(x){x.classList.remove('active');});
+  if(view==='team')document.getElementById('nav-team').classList.add('active');
+  if(view==='settings')document.getElementById('nav-settings').classList.add('active');
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);
+    var rs=r?RS[r]:null;
+    var al=checkAlerts(e.id);
     var d=document.createElement('div');
-    d.className='ma-item'+(ausgewaehlterId===ma.id?' aktiv':'');
-    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(ma.name)+'</div>'
-      +'<div style="flex:1;min-width:0"><div class="ma-name">'+ma.name+'</div><div class="ma-rolle">'+ma.team+'</div></div>'
-      +(al.length?'<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>':'')
-      +(lsBw?'<span class="badge" style="background:'+lsBw.bg+';color:'+lsBw.color+';font-size:10px;padding:2px 5px">'+( ls.gesamtBewertung==='Teilweise'?'T':ls.gesamtBewertung==='Yes'?'Y':ls.gesamtBewertung==='Super Yes'?'SY':'MY')+'</span>':'');
-    d.onclick=(function(id){return function(){ausgewaehlterId=id;aktiverTab='profil';renderSidebar();renderHauptbereich();};})(ma.id);
+    d.className='emp-item'+(view==='emp'&&e.id===selectedEmp?' active':'');
+    var badge=rs?('<span class="emp-badge" style="background:'+rs.bg+';color:'+rs.color+'">'+(r==='Teilweise'?'T':r==='Yes'?'Y':r==='Super Yes'?'SY':'MY')+'</span>'):'';
+    var alrt=al.length?('<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>'):'';
+    d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="emp-name">'+e.name+'</div><div class="emp-role">'+e.role+'</div></div>'
+      +alrt+badge;
+    d.onclick=(function(eid){return function(){selectedEmp=eid;view='emp';activeTab='performance';renderSidebar();renderMain();};})(e.id);
     el.appendChild(d);
   });
 }
 
-function zeigeAnsicht(a){ansicht=a;renderSidebar();renderHauptbereich();}
-function renderHauptbereich(){
-  if(ansicht==='sfp-overview')renderSFPOverview();
-  else if(ansicht==='coach')renderCoachAnsicht();
-  else renderSFPOverview();
-}
+function showView(v){view=v;renderSidebar();renderMain();}
+function renderMain(){if(view==='team')renderTeam();else if(view==='settings')renderEinstellungen();else renderEmpDetail();}
 
+// ── TEAM VIEW ──
+function renderTeam(){
+  var ma=document.getElementById('mainArea');
+  var allP=activeEmployees().map(function(e){return getPerf(e.id,7);}).reduce(function(a,b){return a.concat(b);},[]);
+  function tAvg(key){if(!allP.length)return null;return allP.reduce(function(a,x){return a+x[key];},0)/allP.length;}
+  var totalAlerts=activeEmployees().reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
+  var totalMargin=activeEmployees().reduce(function(a,e){return a+getPerf(e.id,7).reduce(function(b,x){return b+(x.margin||0);},0);},0);
 
-// ══════════════════════════════════════════════
-// SFP OVERVIEW – kombiniert Team-KPIs + Staff Cards (erweitert) + Manager-Tabelle
-// ══════════════════════════════════════════════
-function renderSFPOverview(){
-  var ma=document.getElementById('hauptbereich');
-  if(!ma)return;
-  var liste=aktiveMitarbeiter();
-  var allPerf=liste.map(function(m){return getPerf(m.id,7);}).reduce(function(a,b){return a.concat(b);},[]);
-  function tSchnitt(k){if(!allPerf.length)return null;return allPerf.reduce(function(a,x){return a+x[k];},0)/allPerf.length;}
-  var totalAlerts=liste.reduce(function(a,m){return a+alertsPruefen(m).length;},0);
-  var totalMarge=liste.reduce(function(a,m){return a+getPerf(m.id,7).reduce(function(b,x){return b+(x.marge||0);},0);},0);
-  var oem7=tSchnitt('crOEM'),sy7=tSchnitt('crSuperYes'),my7=tSchnitt('crMegaYes');
-
-  // ── Team KPI Kacheln ──
-  var html='<div class="topbar"><div class="tb-links">'
-    +'<div style="width:40px;height:40px;border-radius:50%;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple)"><i class="ti ti-layout-grid"></i></div>'
-    +'<div><div class="tb-name">SFP Overview</div><div class="tb-meta">'+liste.length+' Mitarbeiter · 7-Tage-Ø · FTP-Sync aktiv</div></div>'
-    +'<div style="display:flex;gap:8px">'
-    +'<button class="btn btn-primary" onclick="planSession()"><i class="ti ti-plus"></i> Session planen</button>'
-    +'<button class="btn btn-primary" onclick="planSession()"><i class="ti ti-plus"></i> Session planen</button>'
-    +'<div class="inhalt">'
-    // ── KPI Kacheln ──
-    +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">'
-    +'<div class="kpi" style="border-top-color:'+(oem7!==null&&oem7>=55?'var(--teal)':'var(--amber)')+'"><div class="kpi-label" style="color:'+(oem7!==null&&oem7>=55?'var(--teal)':'var(--amber)')+'">TEAM CR OEM</div><div class="kpi-val" style="color:'+(oem7!==null&&oem7>=55?'var(--teal)':'var(--amber)')+'">'+(oem7!==null?Math.round(oem7)+'%':'—')+'</div><div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:5px"><div style="height:100%;width:'+(oem7||0)+'%;background:'+(oem7!==null&&oem7>=55?'var(--teal)':'var(--amber)')+'"></div></div><div class="kpi-sub">Ziel ≥ 55%</div></div>'
-    +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">TEAM SUPER YES</div><div class="kpi-val" style="color:var(--purple)">'+(sy7!==null?Math.round(sy7)+'%':'—')+'</div><div class="kpi-sub">aller Gespräche</div></div>'
-    +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">TEAM MEGA YES</div><div class="kpi-val" style="color:var(--teal)">'+(my7!==null?Math.round(my7)+'%':'—')+'</div><div class="kpi-sub">aller Gespräche</div></div>'
-    +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">ZUSÄTZL. MARGE</div><div class="kpi-val" style="color:var(--blue)">€'+totalMarge.toLocaleString('de-DE')+'</div><div class="kpi-sub">7-Tage Team-Gesamt</div></div>'
-    +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+(totalAlerts>0?'OFFENE ALERTS':'ALLES OK')+'</div><div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div><div class="kpi-sub">'+(totalAlerts>0?'unter Zielwert':'keine Alerts')+'</div></div>'
-    +'</div>';
-
-  // ── Alert Banner ──
-  if(totalAlerts>0){
-    html+='<div class="alert alert-gelb" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i>'
-      +'<div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' Performance-Alert'+(totalAlerts>1?'s':'')+' im Team</div>'
-      +'<div style="font-size:12px;color:var(--amber-dark)">'+liste.filter(function(m){return alertsPruefen(m).length>0;}).map(function(m){return m.name;}).join(', ')+'</div>'
-      +'</div></div>';
-  }
-
-  // ── CR Tabelle ──
-  function crZelle(val, ziel){
+  function crCell(val,target){
     if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border)">—</td>';
     var v=Math.round(val);
-    var col=ziel?(v>=ziel?'var(--teal)':v>=ziel*0.85?'var(--amber)':'var(--red)'):(v>=55?'var(--teal)':v>=45?'var(--amber)':'var(--red)');
-    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);min-width:90px">'
+    var col=v>=CR_GOOD?'var(--teal)':v>=45?'var(--amber)':'var(--red)';
+    var hitMark=target?(v>=target?'✓':'↓'+target+'%'):'';
+    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);min-width:100px">'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
       +'<span style="font-size:13px;font-weight:600;color:'+col+'">'+v+'%</span>'
-      +(ziel?'<span style="font-size:10px;color:'+(v>=ziel?'var(--teal)':'var(--red)')+'">'+( v>=ziel?'✓':'↓')+ziel+'%</span>':'')
+      +(target?'<span style="font-size:10px;color:'+(v>=target?'var(--teal)':'var(--red)')+'">'+hitMark+'</span>':'')
       +'</div>'
       +'<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative">'
       +'<div style="height:100%;width:'+Math.min(v,100)+'%;background:'+col+';border-radius:3px"></div>'
-      +(ziel?'<div style="position:absolute;top:0;left:'+Math.min(ziel,100)+'%;height:100%;width:2px;background:rgba(0,0,0,.12)"></div>':'')
+      +(target?'<div style="position:absolute;top:0;left:'+target+'%;height:100%;width:2px;background:rgba(0,0,0,.15)"></div>':'')
       +'</div></td>';
   }
+
+  var ta=tAvg('crOEM'),tb=tAvg('crSuperYes'),tc=tAvg('crMegaYes'),td2=tAvg('optPerH');
   var rows='';
-  liste.forEach(function(m){
-    var f=FARBEN[m.farbe%FARBEN.length];
-    var z=mitarbeiterZiele(m);
-    var ep=getPerf(m.id,7);
-    function ea(k){return ep.length?ep.reduce(function(a,x){return a+x[k];},0)/ep.length:null;}
-    var em=ep.reduce(function(a,x){return a+(x.marge||0);},0);
-    var al=alertsPruefen(m);
-    var ls=letzteSession(m.id);
-    var lsBw=ls?BW[ls.gesamtBewertung]:null;
-    var sr=srSchnitt(m.id);
-    rows+='<tr style="cursor:pointer" onclick="zeigeMADetail('+m.id+')">';
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);var rs=r?RS[r]:null;
+    var av=avgSkill(e.id);var sr=srAvg(e.id);
+    var al=checkAlerts(e.id);
+    var ep=getPerf(e.id,7);
+    function ea(key){return ep.length?ep.reduce(function(a,x){return a+x[key];},0)/ep.length:null;}
+    var em=ep.reduce(function(a,x){return a+(x.margin||0);},0);
+    rows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
       +'<div style="display:flex;align-items:center;gap:9px">'
-      +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(m.name)+'</div>'
-      +'<div><div style="font-weight:500">'+m.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+m.phase+' · '+m.team+'</div></div></div></td>'
-      +crZelle(ea('crOEM'),z.crOEM)
-      +crZelle(ea('crTeilweise'),null)
-      +crZelle(ea('crYes'),null)
-      +crZelle(ea('crSuperYes'),z.crSuperYes)
-      +crZelle(ea('crMegaYes'),z.crMegaYes)
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-weight:600;color:var(--blue)">€'+em.toLocaleString('de-DE')+'</div><div style="font-size:11px;color:var(--text3)">7d</div></td>'
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(ea('optProStunde')!==null?ea('optProStunde').toFixed(1):'—')+'</td>'
+      +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div><div style="font-weight:500">'+e.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
+      +'<div style="font-size:11px;color:var(--text2)">'+e.phase+'</div></div></div></td>'
+      +crCell(ea('crOEM'),CR_GOOD)
+      +crCell(ea('crTeilweise'),null)
+      +crCell(ea('crYes'),null)
+      +crCell(ea('crSuperYes'),KPI_TARGETS.crSuperYes)
+      +crCell(ea('crMegaYes'),KPI_TARGETS.crMegaYes)
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600;color:var(--blue)">€'+em.toLocaleString('de-DE')+'</div><div style="font-size:11px;color:var(--text3)">7d total</div></td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(ea('optPerH')!==null?ea('optPerH').toFixed(1):'—')+'</td>'
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(sr!==null?sr+'%':'—')+'</td>'
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(lsBw?'<span class="badge" style="background:'+lsBw.bg+';color:'+lsBw.color+'">'+ls.gesamtBewertung+'</span>':'—')+'</td>'
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(rs?'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span>':'—')+'</td>'
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
       +'</tr>';
   });
-  html+='<div class="abschnitt-titel" style="margin-bottom:10px">Conversion Rates & Marge <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Individuelle Zielwerte</span></div>'
-    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:28px">'
-    +'<table><thead><tr><th style="min-width:160px">Mitarbeiter</th><th>CR OEM</th><th>Teilweise</th><th>Yes</th><th>Super Yes</th><th>Mega Yes</th><th>Marge</th><th>Opt./h</th><th>SolidRoad</th><th>Letzte Bew.</th><th>Alerts</th></tr></thead><tbody>'+rows+'</tbody></table>'
-    +'</div>';
 
-  // ── Staff Cards (erweitert) ──
-  html+='<div class="abschnitt-titel" style="margin-bottom:14px">Mitarbeiterkarten</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:28px">';
-  liste.forEach(function(m){
-    var f=FARBEN[m.farbe%FARBEN.length];
-    var z=mitarbeiterZiele(m);
-    var ep=getPerf(m.id,7);
-    function ea(k){return ep.length?Math.round(ep.reduce(function(a,x){return a+x[k];},0)/ep.length):null;}
-    var em=ep.reduce(function(a,x){return a+(x.marge||0);},0);
-    var al=alertsPruefen(m);
-    var ls=letzteSession(m.id);
-    var lsBw=ls?BW[ls.gesamtBewertung]:null;
-    var tageSeit=ls?Math.floor((new Date()-new Date(ls.datum+'T00:00:00'))/86400000):null;
-    var sw=staerkenSchwaechen(m.id);
-    var masSessions=sessionsFuerMitarbeiter(m.id);
-    var abgSessions=masSessions.filter(function(s){return s.status==='abgeschlossen';});
+  var cards='';
+  employees.forEach(function(e){
+    var c=COLORS[e.color%COLORS.length];
+    var r=lastRating(e.id);var rs=r?RS[r]:null;
+    var av=avgSkill(e.id);var sr=srAvg(e.id);
+    var ob=onboarding[e.id]||[];var obD=ob.filter(Boolean).length;
+    var ep=getPerf(e.id,7);
+    function ea(key){return ep.length?Math.round(ep.reduce(function(a,x){return a+x[key];},0)/ep.length):null;}
+    var em=ep.reduce(function(a,x){return a+(x.margin||0);},0);
+    var al=checkAlerts(e.id);
     var oem=ea('crOEM');
-    var oemCol=oem!==null?(oem>=z.crOEM?'var(--teal)':oem>=z.crOEM*0.85?'var(--amber)':'var(--red)'):'var(--text3)';
-    var aufmCol=tageSeit===null?'var(--text3)':tageSeit>14?'var(--red)':tageSeit>7?'var(--amber)':'var(--teal)';
-
-    html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:15px 17px;cursor:pointer" onclick="zeigeMADetail('+m.id+')">'
-      // Header
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
-      +'<div class="av" style="width:40px;height:40px;font-size:14px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(m.name)+'</div>'
-      +'<div style="flex:1"><div style="font-size:14px;font-weight:600">'+m.name+'</div>'
-      +'<div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px">'+m.rolle.replace('Vertriebsmitarbeiter','Vertrieb').replace('Senior ','Sr. ')
-      +' <span style="background:var(--blue-bg);color:var(--blue-dark);font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px">'+m.team+'</span></div></div>'
-      +'<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:'+(m.phase==='Aktiv'?BW['Yes'].bg:m.phase==='Onboarding'?BW['Teilweise'].bg:BW['Super Yes'].bg)+';color:'+(m.phase==='Aktiv'?BW['Yes'].color:m.phase==='Onboarding'?BW['Teilweise'].color:BW['Super Yes'].color)+'">'+m.phase+'</span>'
-      +'</div>'
-      // CR OEM Balken
+    var oemColor=oem!==null?(oem>=CR_GOOD?'var(--teal)':oem>=45?'var(--amber)':'var(--red)'):'var(--text3)';
+    cards+='<div class="team-card" onclick="selectEmp('+e.id+')">'
+      +'<div class="tc-hdr"><div class="av" style="width:42px;height:42px;font-size:14px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
+      +'<div style="flex:1"><div style="font-size:14px;font-weight:600">'+e.name+'</div><div style="font-size:12px;color:var(--text2)">'+e.role+'</div></div>'
+      +'<span class="phase-badge" style="background:'+phaseBg(e.phase)+';color:'+phaseCol(e.phase)+'">'+e.phase+'</span></div>'
       +'<div style="margin-bottom:10px">'
-      +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;color:var(--text2)">CR OEM</span><span style="font-size:13px;font-weight:600;color:'+oemCol+'">'+(oem!==null?oem+'%':'—')+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;color:var(--text2)">CR OEM</span><span style="font-size:13px;font-weight:600;color:'+oemColor+'">'+(oem!==null?oem+'%':'—')+'</span></div>'
       +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative">'
-      +(oem!==null?'<div style="height:100%;width:'+Math.min(oem,100)+'%;background:'+oemCol+';border-radius:4px"></div>':'')
-      +'<div style="position:absolute;top:0;left:'+Math.min(z.crOEM,100)+'%;height:100%;width:2px;background:rgba(0,0,0,.15)"></div></div>'
-      +'<div style="font-size:10px;color:var(--text3);margin-top:2px">Ziel ≥ '+z.crOEM+'% · '+(oem!==null&&oem>=z.crOEM?'✓ Im Zielbereich':'↓ Unter Zielwert')+'</div>'
-      +'</div>'
-      // CR Grid
-      +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">'
-      +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:6px 8px;text-align:center"><div style="font-size:13px;font-weight:600;color:var(--amber)">'+(ea('crTeilweise')!==null?ea('crTeilweise')+'%':'—')+'</div><div style="font-size:10px;color:var(--text3)">Teilw.</div></div>'
-      +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:6px 8px;text-align:center"><div style="font-size:13px;font-weight:600;color:var(--blue)">'+(ea('crYes')!==null?ea('crYes')+'%':'—')+'</div><div style="font-size:10px;color:var(--text3)">Yes</div></div>'
-      +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:6px 8px;text-align:center"><div style="font-size:13px;font-weight:600;color:var(--purple)">'+(ea('crSuperYes')!==null?ea('crSuperYes')+'%':'—')+'</div><div style="font-size:10px;color:var(--text3)">Super Yes</div></div>'
-      +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:6px 8px;text-align:center"><div style="font-size:13px;font-weight:600;color:var(--teal)">'+(ea('crMegaYes')!==null?ea('crMegaYes')+'%':'—')+'</div><div style="font-size:10px;color:var(--text3)">Mega Yes</div></div>'
-      +'</div>'
-      // Marge
-      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--blue-bg);border-radius:var(--r-sm);margin-bottom:10px">'
-      +'<span style="font-size:11px;font-weight:500;color:var(--blue-dark)">Zusätzliche Marge (7d)</span>'
-      +'<span style="font-size:14px;font-weight:600;color:var(--blue-dark)">€'+em.toLocaleString('de-DE')+'</span></div>'
-      // Coaching Info
-      +'<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:2px">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-      +'<div style="font-size:11px;color:var(--text2)"><i class="ti ti-calendar-event" style="margin-right:4px;font-size:12px"></i>Letzte Session: <span style="font-weight:600;color:'+aufmCol+'">'+(tageSeit===null?'Noch keine':tageSeit===0?'Heute':tageSeit+'d')+'</span></div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+abgSessions.length+' Session'+(abgSessions.length!==1?'s':'')+' gesamt</div>'
-      +'</div>'
-      // Stärken/Schwächen
-      +(sw?'<div style="display:flex;gap:8px;margin-bottom:8px">'
-        +'<div style="flex:1"><div style="font-size:10px;font-weight:600;color:var(--teal);margin-bottom:3px">STÄRKEN</div>'
-        +sw.staerken.slice(0,2).map(function(s){return '<div style="font-size:11px;color:var(--text2)">✓ '+s.name+'</div>';}).join('')
-        +'</div>'
-        +'<div style="flex:1"><div style="font-size:10px;font-weight:600;color:var(--amber);margin-bottom:3px">ENTWICKLUNG</div>'
-        +sw.schwaechen.slice(0,2).map(function(s){return '<div style="font-size:11px;color:var(--text2)">↑ '+s.name+'</div>';}).join('')
-        +'</div></div>':'')
-      // Letzte Bewertung + Alert + Planen Button
-      +'<div style="display:flex;align-items:center;justify-content:space-between">'
-      +'<div style="display:flex;align-items:center;gap:6px">'
-      +(lsBw?'<span class="badge" style="background:'+lsBw.bg+';color:'+lsBw.color+';font-size:11px">'+ls.gesamtBewertung+'</span>':'')
-      +(al.length?'<span style="font-size:11px;color:var(--red);font-weight:600">⚠ '+al.length+' Alert'+(al.length>1?'s':'')+'</span>':'')
-      +'</div>'
-      +'<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();ausgewaehlterId='+m.id+';planSession()"><i class="ti ti-calendar-plus"></i> Planen</button>'
-      +'</div>'
-      +'</div></div>';
-  });
-  html+='</div>';
-
-  // ── Coaching-Aufmerksamkeit Tabelle ──
-  html+='<div class="abschnitt-titel" style="margin-bottom:12px">Coaching-Aufmerksamkeit <span style="font-weight:400;color:var(--text3)">· Rot = über 14 Tage · Gelb = über 7 Tage ohne Session</span></div>'
-    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">'
-    +'<table><thead><tr><th>Mitarbeiter</th><th>Sessions gesamt</th><th>Letzte Session</th><th>Letzte Bewertung</th><th>Entwicklungsfelder</th><th>KPI-Alerts</th><th>Aktion</th></tr></thead><tbody>';
-  liste.forEach(function(m){
-    var f=FARBEN[m.farbe%FARBEN.length];
-    var masSessions=sessionsFuerMitarbeiter(m.id);
-    var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-    var ls=letzteSession(m.id);
-    var al=alertsPruefen(m);
-    var tageSeit=ls?Math.floor((new Date()-new Date(ls.datum+'T00:00:00'))/86400000):null;
-    var aufmCol=tageSeit===null?'var(--text3)':tageSeit>14?'var(--red)':tageSeit>7?'var(--amber)':'var(--teal)';
-    var sw=staerkenSchwaechen(m.id);
-    html+='<tr style="cursor:pointer" onclick="zeigeMADetail('+m.id+')">';
-      +'<td><div style="display:flex;align-items:center;gap:9px"><div class="av" style="width:30px;height:30px;font-size:11px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(m.name)+'</div>'
-      +'<div><div style="font-weight:500">'+m.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+m.phase+' · '+m.team+'</div></div></div></td>'
-      +'<td style="font-weight:600;color:var(--purple)">'+abg.length+'</td>'
-      +'<td style="font-weight:600;color:'+aufmCol+'">'+(tageSeit===null?'Noch keine':tageSeit===0?'Heute':tageSeit+'d vor')+'</td>'
-      +'<td>'+(ls&&BW[ls.gesamtBewertung]?'<span class="badge" style="background:'+BW[ls.gesamtBewertung].bg+';color:'+BW[ls.gesamtBewertung].color+'">'+ls.gesamtBewertung+'</span>':'—')+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+(sw&&sw.schwaechen.length?sw.schwaechen.map(function(s){return s.name;}).join(', '):'-')+'</td>'
-      +'<td>'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
-      +'<td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();ausgewaehlterId='+m.id+';planSession()"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
-      +'</tr>';
-  });
-  html+='</tbody></table></div></div>';
-  ma.innerHTML=html;
-}
-
-// ══════════════════════════════════════════════
-// COACH ANSICHT – TAGESÜBERSICHT
-// ══════════════════════════════════════════════
-function renderCoachAnsicht(){
-  var ma=document.getElementById('hauptbereich');
-  if(!ma)return;
-  var demnächst=geplanteSessionsDemnächst(7);
-  var ausgewaehlt=mitarbeiter.find(function(m){return m.id===ausgewaehlterId;});
-  var f=ausgewaehlt?FARBEN[ausgewaehlt.farbe%FARBEN.length]:{bg:'var(--purple-bg)',text:'var(--purple)'};
-
-  var sessionListe='';
-  if(!demnächst.length){
-    sessionListe='<div class="leer">Keine geplanten Sessions in den nächsten 7 Tagen.</div>';
-  } else {
-    demnächst.forEach(function(s){
-      var maMa=mitarbeiter.find(function(m){return m.id===s.mitarbeiterId;});
-      if(!maMa)return;
-      var mf=FARBEN[maMa.farbe%FARBEN.length];
-      var isHeute=s.datum===heute();
-      sessionListe+='<div class="session-karte'+(isHeute?' heute':'')+'" onclick="ausgewaehlterId='+maMa.id+';aktiverTab=\'profil\';renderSidebar();renderMitarbeiterDetail()">'
-        +'<div style="display:flex;align-items:center;gap:10px">'
-        +'<div style="text-align:center;min-width:42px"><div style="font-size:10px;font-weight:600;color:'+(isHeute?'var(--purple)':'var(--text2)')+'">'+wochentag(s.datum)+'</div><div style="font-size:18px;font-weight:600;color:'+(isHeute?'var(--purple)':'var(--text)')+'">'+s.datum.split('-')[2]+'</div></div>'
-        +'<div class="av" style="width:36px;height:36px;font-size:13px;background:'+mf.bg+';color:'+mf.text+'">'+kuerzel(maMa.name)+'</div>'
-        +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+maMa.name+'</div>'
-        +'<div style="font-size:12px;color:var(--text2)">'+s.typ+' · '+s.thema+'</div>'
-        +(s.planungsNotiz?'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+s.planungsNotiz+'</div>':'')
-        +'</div>'
-        +(isHeute?'<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();sessionStarten('+s.id+')"><i class="ti ti-play"></i> Starten</button>':'')
-        +'</div></div>';
-    });
-  }
-
-  ma.innerHTML='<div class="topbar">'
-    +'<div class="tb-links"><div style="width:40px;height:40px;border-radius:50%;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple)"><i class="ti ti-calendar-event"></i></div>'
-    +'<div><div class="tb-name">Coach-Dashboard</div><div class="tb-meta">'+datum(heute())+' · '+demnächst.filter(function(s){return s.datum===heute();}).length+' Sessions heute</div></div></div>'
-    +'<div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button></div>'
-    +'</div>'
-    +'<div class="inhalt">'
-    // Nächste Sessions
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'
-    +'<div>'
-    +'<div class="abschnitt-titel">Geplante Sessions – nächste 7 Tage</div>'
-    +sessionListe
-    +'</div>'
-    // Ausgewählter Mitarbeiter Schnellübersicht
-    +'<div>'
-    +'<div class="abschnitt-titel">Schnellübersicht: '+( ausgewaehlt?ausgewaehlt.name:'Mitarbeiter auswählen')+'</div>'
-    +(ausgewaehlt?renderSchnellprofil(ausgewaehlt):'<div class="leer">Links einen Mitarbeiter auswählen.</div>')
-    +'</div></div>'
-    +'</div>';
-}
-
-function renderSchnellprofil(ma){
-  var f=FARBEN[ma.farbe%FARBEN.length];
-  var ls=letzteSession(ma.id);
-  var sw=staerkenSchwaechen(ma.id);
-  var al=alertsPruefen(ma);
-  var sr=srSchnitt(ma.id);
-  var masSessions=sessionsFuerMitarbeiter(ma.id);
-  var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-  var geplant=masSessions.filter(function(s){return s.status==='geplant';});
-
-  var html='<div class="karte" style="cursor:pointer" onclick="aktiverTab=\'profil\';renderMitarbeiterDetail()">'
-    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
-    +'<div class="av" style="width:44px;height:44px;font-size:15px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(ma.name)+'</div>'
-    +'<div><div style="font-size:15px;font-weight:600">'+ma.name+'</div>'
-    +'<div style="font-size:12px;color:var(--text2)">'+ma.rolle+' · <span style="background:'+phaseBg(ma.phase)+';color:'+phaseCol(ma.phase)+';padding:1px 7px;border-radius:20px;font-size:11px;font-weight:600">'+ma.phase+'</span></div></div>'
-    +'</div>';
-
-  // KPI Schnellzahlen
-  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'
-    +'<div style="background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:600;color:var(--amber)">'+(perfSchnitt(ma.id,'crOEM',7)!==null?Math.round(perfSchnitt(ma.id,'crOEM',7))+'%':'-')+'</div><div style="font-size:10px;color:var(--text3)">CR OEM</div></div>'
-    +'<div style="background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:600;color:var(--purple)">'+(perfSchnitt(ma.id,'crSuperYes',7)!==null?Math.round(perfSchnitt(ma.id,'crSuperYes',7))+'%':'-')+'</div><div style="font-size:10px;color:var(--text3)">Super Yes</div></div>'
-    +'<div style="background:var(--bg2);border-radius:var(--r-md);padding:8px 10px;text-align:center"><div style="font-size:17px;font-weight:600;color:var(--blue)">'+abg.length+'</div><div style="font-size:10px;color:var(--text3)">Sessions</div></div>'
-    +'</div>';
-
-  // Alerts
-  if(al.length){
-    html+='<div style="background:var(--red-bg);border:1px solid rgba(226,75,74,.2);border-radius:var(--r-md);padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--red)">'
-      +'<i class="ti ti-alert-circle" style="margin-right:4px"></i>'+al.map(function(a){return a.key+' unter Ziel ('+a.wert+')';}).join(' · ')+'</div>';
-  }
-
-  // Stärken & Schwächen
-  if(sw){
-    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
-      +'<div><div style="font-size:10px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Stärken</div>'
-      +sw.staerken.map(function(s){return '<div style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="ti ti-circle-check" style="color:var(--teal);font-size:13px"></i>'+s.name+'</div>';}).join('')+'</div>'
-      +'<div><div style="font-size:10px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Entwicklungsfelder</div>'
-      +sw.schwaechen.map(function(s){return '<div style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="ti ti-alert-triangle" style="color:var(--amber);font-size:13px"></i>'+s.name+'</div>';}).join('')+'</div>'
+      +(oem!==null?'<div style="height:100%;width:'+Math.min(oem,100)+'%;background:'+oemColor+';border-radius:4px"></div>':'')
+      +'<div style="position:absolute;top:0;left:'+CR_GOOD+'%;height:100%;width:2px;background:rgba(0,0,0,.15)"></div></div>'
+      +'<div style="font-size:10px;color:var(--text3);margin-top:2px">Target ≥ '+CR_GOOD+'% · '+(oem!==null&&oem>=CR_GOOD?'✓ On target':'↓ Below target')+'</div></div>'
+      +'<div class="tc-kpis">'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--amber);font-size:13px">'+(ea('crTeilweise')!==null?ea('crTeilweise')+'%':'—')+'</div><div class="tc-kpi-label">Teilweise</div></div>'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--blue);font-size:13px">'+(ea('crYes')!==null?ea('crYes')+'%':'—')+'</div><div class="tc-kpi-label">Yes</div></div>'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--purple);font-size:13px">'+(ea('crSuperYes')!==null?ea('crSuperYes')+'%':'—')+'</div><div class="tc-kpi-label">Super Yes</div></div>'
+      +'<div class="tc-kpi"><div class="tc-kpi-val" style="color:var(--teal);font-size:13px">'+(ea('crMegaYes')!==null?ea('crMegaYes')+'%':'—')+'</div><div class="tc-kpi-label">Mega Yes</div></div></div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--blue-bg);border-radius:var(--r-sm);margin-bottom:8px"><span style="font-size:11px;font-weight:500;color:var(--blue-dark)">Additional margin (7d)</span><span style="font-size:14px;font-weight:600;color:var(--blue-dark)">€'+em.toLocaleString('de-DE')+'</span></div>'
+      +(av!==null?'<div class="bar-row"><span class="bar-label">Avg. Skill</span><div class="bar-track"><div class="bar-fill" style="width:'+av+'%;background:'+(av>=80?'var(--teal)':av>=60?'var(--purple)':'var(--amber)')+'"></div></div><span class="bar-val">'+av+'%</span></div>':'')
+      +(sr!==null?'<div class="bar-row"><span class="bar-label">SolidRoad</span><div class="bar-track"><div class="bar-fill" style="width:'+sr+'%;background:'+scoreColor(sr)+'"></div></div><span class="bar-val">'+sr+'%</span></div>':'')
+      +(al.length?'<div style="margin-top:8px;padding:6px 10px;background:var(--amber-bg);border-radius:var(--r-sm);font-size:11px;color:var(--amber-dark)">⚠ '+al.map(function(a){return a.key;}).join(', ')+' below target</div>':'')
+      +(rs?'<div style="margin-top:8px;font-size:12px;color:var(--text2)">Last Session: <span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span></div>':'')
       +'</div>';
-  }
+  });
 
-  // Letzte Session
-  if(ls){
-    var lsBw=BW[ls.gesamtBewertung];
-    html+='<div style="font-size:11px;color:var(--text2)">Letzte Session: '+datum(ls.datum)+' <span class="badge" style="background:'+lsBw.bg+';color:'+lsBw.color+'">'+ls.gesamtBewertung+'</span> · '+ls.thema+'</div>';
-  }
-
-  html+='<div style="margin-top:10px"><button class="btn btn-sm btn-primary" style="width:100%;justify-content:center" onclick="aktiverTab=\'profil\';renderMitarbeiterDetail()"><i class="ti ti-arrow-right"></i> Vollprofil öffnen</button></div>';
-  html+='</div>';
-  return html;
+  var oem7=ta!==null?Math.round(ta):null;
+  var sy7=tb!==null?Math.round(tb):null;
+  var my7=tc!==null?Math.round(tc):null;
+  ma.innerHTML='<div class="topbar">'
+    +'<div class="tb-left"><div class="av" style="width:40px;height:40px;font-size:17px;background:var(--purple-bg);color:var(--purple-dark)"><i class="ti ti-layout-grid"></i></div>'
+    +'<div><div class="tb-name">Teamübersicht</div><div class="tb-meta">'+employees.length+' staff · 7-day average · <span class="ftp-badge"><i class="ti ti-refresh" style="font-size:11px"></i> FTP sync active</span></div></div></div>'
+    +'</div>'
+    +'<div class="content">'
+    +'<div class="g5" style="margin-bottom:20px">'
+    +'<div class="kpi" style="border-top-color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'"><div class="kpi-label" style="color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'">Team CR OEM</div><div class="kpi-val" style="color:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'">'+(oem7!==null?oem7+'%':'—')+'</div><div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:5px"><div style="height:100%;width:'+(oem7||0)+'%;background:'+(oem7!==null&&oem7>=CR_GOOD?'var(--teal)':'var(--amber)')+'"></div></div><div class="kpi-sub">Target ≥ '+CR_GOOD+'%</div></div>'
+    +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Team Super Yes</div><div class="kpi-val" style="color:var(--purple)">'+(sy7!==null?sy7+'%':'—')+'</div><div class="kpi-sub">of all calls</div></div>'
+    +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Team Mega Yes</div><div class="kpi-val" style="color:var(--teal)">'+(my7!==null?my7+'%':'—')+'</div><div class="kpi-sub">of all calls</div></div>'
+    +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Additional Margin</div><div class="kpi-val" style="color:var(--blue)">€'+totalMargin.toLocaleString('de-DE')+'</div><div class="kpi-sub">7-day team total</div></div>'
+    +'<div class="kpi" style="border-top-color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+(totalAlerts>0?'Offene Alerts':'Alles im grünen Bereich')+'</div><div class="kpi-val" style="color:'+(totalAlerts>0?'var(--red)':'var(--teal)')+'">'+totalAlerts+'</div><div class="kpi-sub">'+(totalAlerts>0?'staff below target':'keine Alerts')+'</div></div>'
+    +'</div>'
+    +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' alert'+(totalAlerts!==1?'s':'')+' across the team</div><div style="font-size:12px;color:var(--amber-dark)">'+employees.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
+    +'<div class="sec-title" style="margin-bottom:10px">Conversion rates &amp; margin <span style="font-weight:400;color:var(--text3)">· CR as % of all calls · Good CR ≥ '+CR_GOOD+'%</span></div>'
+    +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr><th style="min-width:150px">Mitarbeiter</th><th style="min-width:100px">CR OEM</th><th style="min-width:100px">Teilweise</th><th style="min-width:100px">Yes</th><th style="min-width:100px">Super Yes</th><th style="min-width:100px">Mega Yes</th><th>Margin</th><th>Opt./h</th><th>SolidRoad</th><th>Last rating</th><th>Alerts</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="sec-title" style="margin-bottom:12px">Mitarbeiter cards</div>'
+    +'<div class="team-grid">'+cards+'</div>'
+    +'</div>';
 }
 
-// ══════════════════════════════════════════════
-// MITARBEITER DETAILANSICHT
-// ══════════════════════════════════════════════
-function renderMitarbeiterDetail(){
-  var ma=mitarbeiter.find(function(m){return m.id===ausgewaehlterId;});
-  if(!ma)return;
-  var hauptbereich=document.getElementById('hauptbereich');
-  if(!hauptbereich)return;
-  var f=FARBEN[ma.farbe%FARBEN.length];
-  var masSessions=sessionsFuerMitarbeiter(ma.id);
-  var offAufg=offeneAufgaben(ma.id);
+function selectEmp(id){selectedEmp=id;view='emp';activeTab='performance';renderSidebar();renderMain();}
 
-  hauptbereich.innerHTML='<div class="topbar"><div class="tb-links">'
-    +'<button class="btn btn-sm" onclick="renderCoachAnsicht()"><i class="ti ti-arrow-left"></i> Zurück</button>'
-    +'<div class="av" style="width:42px;height:42px;font-size:14px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(ma.name)+'</div>'
-    +'<div><div class="tb-name">'+ma.name+'</div><div class="tb-meta">'+ma.rolle+' · '+ma.team+' · '+ma.phase+(ma.startDatum?' · Start: '+datum(ma.startDatum):'')+'</div></div>'
-    +'</div><div style="display:flex;gap:8px">'
-    +'<button class="btn btn-primary" onclick="planSession()"><i class="ti ti-plus"></i> Session planen</button>'
-    +'</div></div>'
-    +'<div class="tab-bar" id="maTabBar">'
-    +'<div class="tab" data-tab="profil" onclick="switchTab(\'profil\')">Profil & Stärken</div>'
-    +'<div class="tab" data-tab="sessions" onclick="switchTab(\'sessions\')">Sessions ('+(masSessions.length)+')</div>'
+// ── EMP DETAIL ──
+function renderEmpDetail(){
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var c=COLORS[emp.color%COLORS.length];
+  var p=protocols[emp.id]||[];
+  var tc=openTaskCount(emp.id);
+  document.getElementById('mainArea').innerHTML=
+    '<div class="topbar"><div class="tb-left">'
+    +'<div class="av" style="width:42px;height:42px;font-size:14px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'
+    +'<div><div class="tb-name">'+emp.name+'</div><div class="tb-meta">'+emp.role+' · '+emp.phase+(emp.startDate?' · Start '+fd(emp.startDate):'')+' · '+p.length+' Session'+(p.length!==1?'s':'')+'</div></div>'
+    +'</div><div style="display:flex;gap:8px"><button class="btn" onclick="window.print()"><i class="ti ti-printer"></i> Print</button></div></div>'
+    +'<div class="tab-bar" id="empTabBar">'
     +'<div class="tab" data-tab="performance" onclick="switchTab(\'performance\')">Performance</div>'
+    +'<div class="tab" data-tab="protocols" onclick="switchTab(\'protocols\')">Protokolle</div>'
+    +'<div class="tab" data-tab="progress" onclick="switchTab(\'progress\')">Fortschritt</div>'
     +'<div class="tab" data-tab="solidroad" onclick="switchTab(\'solidroad\')">SolidRoad</div>'
-    +'<div class="tab" data-tab="aufgaben" onclick="switchTab(\'aufgaben\')" id="aufgabenTabBtn">Aufgaben'+(offAufg>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+offAufg+'</span>':'')+'</div>'
+    +'<div class="tab" data-tab="onboarding" onclick="switchTab(\'onboarding\')">Onboarding</div>'
+    +'<div class="tab" data-tab="review" onclick="switchTab(\'review\')">Gespräche</div>'
+    +'<div class="tab" data-tab="emp-settings" onclick="switchTab(\'emp-settings\')">Einstellungen</div>'
+    +'<div class="tab" data-tab="tasks" onclick="switchTab(\'tasks\')" id="tasksTabBtn">Tasks'+(tc>0?' <span style="background:var(--purple);color:#fff;border-radius:20px;font-size:10px;font-weight:600;padding:1px 6px">'+tc+'</span>':'')+'</div>'
     +'</div>'
-    +'<div class="inhalt" id="tabInhalt"></div>';
-
+    +'<div class="content" id="tabContent"></div>';
   renderTabBar();
   renderTab();
 }
 
 function renderTabBar(){
-  var bar=document.getElementById('maTabBar');
+  var bar=document.getElementById('empTabBar');
   if(!bar)return;
-  bar.querySelectorAll('.tab').forEach(function(el){el.classList.toggle('aktiv',el.dataset.tab===aktiverTab);});
+  bar.querySelectorAll('.tab').forEach(function(el){
+    el.classList.toggle('active',el.dataset.tab===activeTab);
+  });
 }
-function switchTab(t){aktiverTab=t;renderTabBar();renderTab();}
 
-// ══════════════════════════════════════════════
-// TAB INHALTE
-// ══════════════════════════════════════════════
+function switchTab(t){activeTab=t;renderTabBar();renderTab();}
+
+// ── RENDER TAB ──
 function renderTab(){
-  var ma=mitarbeiter.find(function(m){return m.id===ausgewaehlterId;});
-  if(!ma)return;
-  var el=document.getElementById('tabInhalt');
-  if(!el)return;
+  var emp=employees.find(function(e){return e.id===selectedEmp;});
+  if(!emp)return;
+  var tc2=document.getElementById('tabContent');
+  if(!tc2)return;
+  var p=protocols[emp.id]||[];
+  var ob=onboarding[emp.id]||obSteps.map(function(){return false;});
+  var obD=ob.filter(Boolean).length;
+  var sr=solidroadData[emp.id]||{simulations:[]};
+  var alerts=checkAlerts(emp.id);
   var html='';
 
-  // ── PROFIL & STÄRKEN ──
-  if(aktiverTab==='profil'){
-    var sw=staerkenSchwaechen(ma.id);
-    var al=alertsPruefen(ma);
-    var abgSessions=sessions.filter(function(s){return s.mitarbeiterId===ma.id&&s.status==='abgeschlossen'&&Object.keys(s.scorecard||{}).length>0;});
-
-    // Alert-Box
-    if(al.length){
-      html+='<div class="alert alert-rot"><i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
-        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">'+al.length+' KPI'+(al.length>1?'s':'')+' unter Zielwert – Coaching empfohlen</div>'
-        +'<div style="font-size:12px;color:var(--red);margin-top:2px">'+al.map(function(a){return a.key+': '+a.wert+' (Ziel: '+a.ziel+')';}).join(' · ')+'</div>'
-        +'<div style="margin-top:8px"><button class="btn btn-sm" style="background:var(--red-bg);color:var(--red);border-color:var(--red)" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-calendar-plus"></i> Session einplanen</button></div>'
-        +'</div></div>';
-    }
-
-    if(!sw){
-      html+='<div class="leer">Noch keine abgeschlossenen Bewertungen vorhanden.<br>Session starten um erste Scorecard auszufüllen.</div>';
-    } else {
-      // Stärken & Schwächen Übersicht
-      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">';
-      // Stärken
-      html+='<div><div class="abschnitt-titel" style="color:var(--teal)"><i class="ti ti-thumb-up" style="margin-right:6px"></i>Top Stärken</div>';
-      sw.staerken.forEach(function(s){
-        var pct=s.schnitt/4*100;
-        html+='<div style="margin-bottom:10px">'
-          +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:13px;font-weight:500">'+s.name+'</span><span style="font-size:12px;color:var(--text2)">'+s.schnitt.toFixed(1)+'/4</span></div>'
-          +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+scorefarbe(s.schnitt,4)+';border-radius:4px"></div></div>'
-          +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+s.kategorie+' · '+s.anzahl+' Bewertung'+(s.anzahl>1?'en':'')+'</div>'
-          +'</div>';
-      });
-      html+='</div>';
-      // Schwächen
-      html+='<div><div class="abschnitt-titel" style="color:var(--amber)"><i class="ti ti-target" style="margin-right:6px"></i>Entwicklungsfelder</div>';
-      sw.schwaechen.forEach(function(s){
-        var pct=s.schnitt/4*100;
-        html+='<div style="margin-bottom:10px">'
-          +'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:13px;font-weight:500">'+s.name+'</span><span style="font-size:12px;color:var(--text2)">'+s.schnitt.toFixed(1)+'/4</span></div>'
-          +'<div style="height:7px;background:var(--bg3);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+scorefarbe(s.schnitt,4)+';border-radius:4px"></div></div>'
-          +'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+s.kategorie+' · '+s.anzahl+' Bewertung'+(s.anzahl>1?'en':'')+'</div>'
-          +'</div>';
-      });
-      html+='</div></div>';
-
-      // Alle Kriterien
-      html+='<div class="abschnitt-titel">Alle Kriterien im Überblick</div>';
-      SCORECARD.forEach(function(kat){
-        html+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;gap:6px">'
-          +'<span>'+kat.kategorie+'</span><span style="font-size:10px;color:var(--text3);font-weight:400">Gewichtung: '+kat.gewichtung+'%</span></div>';
-        kat.kriterien.forEach(function(k){
-          var eintrag=sw.alle.find(function(e){return e.id===k.id;});
-          if(!eintrag)return;
-          var pct=eintrag.schnitt/4*100;
-          var col=scorefarbe(eintrag.schnitt,4);
-          html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
-            +'<span style="font-size:13px;color:var(--text2);width:160px;flex-shrink:0">'+k.name+'</span>'
-            +'<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px"></div></div>'
-            +'<span style="font-size:12px;color:var(--text2);width:34px;text-align:right">'+eintrag.schnitt.toFixed(1)+'</span>'
-            +'</div>';
-        });
-        html+='</div>';
-      });
-    }
-  }
-
-  // ── SESSIONS ──
-  if(aktiverTab==='sessions'){
-    var masSessions=sessionsFuerMitarbeiter(ma.id);
-    var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-    var geplant=masSessions.filter(function(s){return s.status==='geplant';});
-
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
-      +'<div style="display:flex;gap:10px">'
-      +'<div class="kpi" style="border-top-color:var(--purple);flex:1"><div class="kpi-label" style="color:var(--purple)">Gesamt</div><div class="kpi-val" style="color:var(--purple)">'+masSessions.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--teal);flex:1"><div class="kpi-label" style="color:var(--teal)">Abgeschlossen</div><div class="kpi-val" style="color:var(--teal)">'+abg.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--blue);flex:1"><div class="kpi-label" style="color:var(--blue)">Geplant</div><div class="kpi-val" style="color:var(--blue)">'+geplant.length+'</div></div>'
-      +'</div>'
-      +'<button class="btn btn-primary btn-sm" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button>'
-      +'</div>';
-
-    if(geplant.length){
-      html+='<div class="abschnitt-titel">Geplante Sessions</div>';
-      geplant.forEach(function(s){
-        var isHeute=s.datum===heute();
-        html+='<div class="session-karte'+(isHeute?' heute':'')+'">'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-          +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<span style="font-size:12px;font-weight:600;color:'+(isHeute?'var(--purple)':'var(--text2)')+'">'+datum(s.datum)+'</span>'
-          +'<span style="font-size:12px;color:var(--text2)">'+s.typ+'</span>'
-          +'<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--blue-bg);color:var(--blue-dark)">'+s.thema+'</span>'
-          +'</div>'
-          +(isHeute?'<button class="btn btn-primary btn-sm" onclick="sessionStarten('+s.id+')"><i class="ti ti-play"></i> Bewerten</button>':'')
-          +'</div>'
-          +(s.planungsNotiz?'<div style="font-size:12px;color:var(--text2)"><i class="ti ti-note" style="margin-right:4px"></i>'+s.planungsNotiz+'</div>':'')
-          +'</div>';
-      });
-    }
-
-    if(abg.length){
-      html+='<div class="abschnitt-titel" style="margin-top:16px">Abgeschlossene Sessions</div>';
-      abg.forEach(function(s){
-        var bw=BW[s.gesamtBewertung]||{bg:'var(--bg2)',color:'var(--text2)'};
-        var punkte=scorecardGesamtpunkte(s.scorecard);
-        html+='<div class="session-karte" onclick="sessionOeffnen('+s.id+')">'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-          +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<span style="font-size:12px;font-weight:600;color:var(--text2)">'+datum(s.datum)+'</span>'
-          +'<span style="font-size:12px;color:var(--text2)">'+s.typ+'</span>'
-          +'<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2)">'+s.thema+'</span>'
-          +'</div>'
-          +'<div style="display:flex;align-items:center;gap:8px">'
-          +(punkte!==null?'<span style="font-size:12px;font-weight:600;color:'+scorefarbe(punkte,100)+'">'+punkte+' Pkt.</span>':'')
-          +'<span class="badge" style="background:'+bw.bg+';color:'+bw.color+'">'+s.gesamtBewertung+'</span>'
-          +'</div></div>'
-          +(s.notizen?'<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:6px">'+s.notizen+'</div>':'')
-          +(s.naechsteSchritte?'<div style="font-size:12px;color:var(--text3)"><i class="ti ti-arrow-right" style="margin-right:3px"></i>'+s.naechsteSchritte+'</div>':'')
-          +'</div>';
-      });
-    }
-    if(!masSessions.length){html+='<div class="leer">Noch keine Sessions vorhanden.</div>';}
-  }
-
-  // ── PERFORMANCE ──
-  if(aktiverTab==='performance'){
-    var z=mitarbeiterZiele(ma);
-    var perf7=getPerf(ma.id,7);
-    function p7(k){return perf7.length?(perf7.reduce(function(a,x){return a+x[k];},0)/perf7.length).toFixed(1):'—';}
-    html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">';
-    [{k:'crOEM',l:'CR OEM',c:'var(--amber)',z:z.crOEM,pct:true},{k:'crTeilweise',l:'CR Teilweise',c:'var(--text2)',z:null,pct:true},{k:'crSuperYes',l:'CR Super Yes',c:'var(--purple)',z:z.crSuperYes,pct:true},{k:'crMegaYes',l:'CR Mega Yes',c:'var(--teal)',z:z.crMegaYes,pct:true},{k:'optProStunde',l:'Opt./Stunde',c:'var(--blue)',z:z.optProStunde,pct:false}].forEach(function(kd){
-      var v=p7(kd.k);var hit=kd.z?(parseFloat(v)>=kd.z):true;
-      html+='<div class="kpi" style="border-top-color:'+kd.c+'"><div class="kpi-label" style="color:'+kd.c+'">'+kd.l+'</div><div class="kpi-val" style="color:'+kd.c+'">'+v+(kd.pct&&v!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(kd.z?(hit?'var(--teal)':'var(--red)'):'var(--text3)')+'">'+(kd.z?'Ziel: '+kd.z+(kd.pct?'%':'')+' '+(hit?'✓':'↓'):'7-Tage-Ø')+'</div></div>';
+  // ── PERFORMANCE TAB ──
+  if(activeTab==='performance'){
+    var perf7=getPerf(emp.id,7);
+    function a7(key){return perf7.length?(perf7.reduce(function(a,x){return a+x[key];},0)/perf7.length).toFixed(1):'—';}
+    var kpis=[
+      {label:'CR OEM',key:'crOEM',color:'var(--amber)',target:KPI_TARGETS.crOEM,pct:true},
+      {label:'CR Teilweise',key:'crTeilweise',color:'var(--text2)',target:null,pct:true},
+      {label:'CR Super Yes',key:'crSuperYes',color:'var(--purple)',target:KPI_TARGETS.crSuperYes,pct:true},
+      {label:'CR Mega Yes',key:'crMegaYes',color:'var(--teal)',target:KPI_TARGETS.crMegaYes,pct:true},
+      {label:'Opt./Hour',key:'optPerH',color:'var(--blue)',target:KPI_TARGETS.optPerH,pct:false},
+    ];
+    html+='<div class="g5">';
+    kpis.forEach(function(k){
+      var v=a7(k.key);
+      var hit=k.target?(parseFloat(v)>=k.target):true;
+      html+='<div class="kpi" style="border-top-color:'+k.color+'">'
+        +'<div class="kpi-label" style="color:'+k.color+'">'+k.label+'</div>'
+        +'<div class="kpi-val" style="color:'+k.color+'">'+v+(k.pct&&v!=='—'?'%':'')+'</div>'
+        +'<div class="kpi-sub" style="color:'+(k.target?(hit?'var(--teal)':'var(--red)'):'var(--text3)')+'">'+(k.target?'Target: '+k.target+(k.pct?'% ':' ')+(hit?'✓':'↓'):'7-Tage-Ø')+'</div>'
+        +'</div>';
     });
     html+='</div>';
-    // Tabelle
-    var perf=performance[ma.id]||[];
-    if(perf.length){
-      html+='<div class="abschnitt-titel">Tagesprotokoll</div><div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden"><table><thead><tr><th>Datum</th><th>CR OEM</th><th>Teilw.</th><th>Yes</th><th>Super Yes</th><th>Mega Yes</th><th>Opt./h</th><th>Marge</th></tr></thead><tbody>';
-      perf.slice(0,15).forEach(function(row){
-        html+='<tr><td>'+datum(row.datum)+'</td><td style="color:var(--amber);font-weight:600">'+row.crOEM+'%</td><td>'+row.crTeilweise+'%</td><td>'+row.crYes+'%</td><td style="color:var(--purple);font-weight:600">'+row.crSuperYes+'%</td><td style="color:var(--teal);font-weight:600">'+row.crMegaYes+'%</td><td>'+row.optProStunde.toFixed(1)+'</td><td style="color:var(--blue)">€'+(row.marge||0)+'</td></tr>';
+    if(alerts.length){
+      html+='<div class="alert alert-danger" style="margin-bottom:16px">'
+        +'<i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">Below target in '+alerts.length+' Bereich'+(alerts.length!==1?'s':'')+'</div>'
+        +'<div style="font-size:12px;color:var(--red)">'+alerts.map(function(a){return a.key+': '+a.val+' (target: '+a.target+')';}).join(' · ')+'</div>'
+        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching Session – calendar integration coming soon.\')"><i class="ti ti-calendar"></i> Book coaching Session</button></div>'
+        +'</div></div>';
+    } else {
+      html+='<div class="alert alert-ok" style="margin-bottom:16px">'
+        +'<i class="ti ti-circle-check" style="font-size:18px;color:var(--teal);flex-shrink:0"></i>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--teal-dark)">All KPIs on target</div></div></div>';
+    }
+    // Chart
+    html+='<div class="chart-wrap">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em">Performance trend</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<div class="chart-toggle">'
+      +'<button class="'+(perfMetric==='optPerH'?'active':'')+'" onclick="setMetric(\'optPerH\')">Opt./h</button>'
+      +'<button class="'+(perfMetric==='crOEM'?'active':'')+'" onclick="setMetric(\'crOEM\')">CR OEM</button>'
+      +'<button class="'+(perfMetric==='crSuperYes'?'active':'')+'" onclick="setMetric(\'crSuperYes\')">Super Yes</button>'
+      +'<button class="'+(perfMetric==='crMegaYes'?'active':'')+'" onclick="setMetric(\'crMegaYes\')">Mega Yes</button>'
+      +'</div>'
+      +'<div class="chart-toggle">'
+      +'<button class="'+(perfRange===7?'active':'')+'" onclick="setRange(7)">7d</button>'
+      +'<button class="'+(perfRange===30?'active':'')+'" onclick="setRange(30)">30d</button>'
+      +'<button class="'+(perfRange===90?'active':'')+'" onclick="setRange(90)">90d</button>'
+      +'</div></div></div>'
+      +'<canvas id="perfChart" height="80"></canvas></div>';
+    // Manual entry form
+    html+='<div class="card">'
+      +'<div class="card-title"><i class="ti ti-plus"></i> Log Daily Performance</div>'
+      +'<div class="f5"><div><label>Date</label><input type="date" id="pd" value="'+today()+'"></div>'
+      +'<div><label>CR OEM %</label><input type="number" id="po" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>CR Super Yes %</label><input type="number" id="psy" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>CR Mega Yes %</label><input type="number" id="pmy" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>Opt./Hour</label><input type="number" id="pop" placeholder="0.0" step="0.1" min="0"></div></div>'
+      +'<div class="f2"><div><label>CR Teilweise %</label><input type="number" id="pt" placeholder="0-100" min="0" max="100"></div>'
+      +'<div><label>CR Yes %</label><input type="number" id="pyes" placeholder="0-100" min="0" max="100"></div></div>'
+      +'<div style="margin-bottom:12px"><label>Note</label><input type="text" id="pn" placeholder="Optional..."></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="savePerf()"><i class="ti ti-check"></i> Save Entry</button>'
+      +'</div>';
+    // Log table
+    var perf=performance[emp.id]||[];
+    if(perf.length>0){
+      html+='<div class="sec-title">Daily log</div><div class="tbl"><table><thead><tr><th>Date</th><th>CR OEM</th><th>Teilw.</th><th>Yes</th><th>Super Yes</th><th>Mega Yes</th><th>Opt./h</th><th>Margin</th></tr></thead><tbody>';
+      perf.slice(0,20).forEach(function(row){
+        html+='<tr><td>'+fd(row.date)+'</td>'
+          +'<td style="color:var(--amber);font-weight:600">'+row.crOEM+'%</td>'
+          +'<td>'+row.crTeilweise+'%</td>'
+          +'<td>'+row.crYes+'%</td>'
+          +'<td style="color:var(--purple);font-weight:600">'+row.crSuperYes+'%</td>'
+          +'<td style="color:var(--teal);font-weight:600">'+row.crMegaYes+'%</td>'
+          +'<td>'+row.optPerH.toFixed(1)+'</td>'
+          +'<td style="color:var(--blue)">€'+(row.margin||0)+'</td></tr>';
       });
       html+='</tbody></table></div>';
     }
   }
 
-  // ── SOLIDROAD ──
-  if(aktiverTab==='solidroad'){
-    var srDaten=solidroad[ma.id]||{simulationen:[]};
-    var sims=srDaten.simulationen;
-    var srS=srSchnitt(ma.id);
-    if(srS!==null){
-      html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
-        +'<div class="kpi" style="border-top-color:'+scorefarbe(srS,100)+'"><div class="kpi-label" style="color:'+scorefarbe(srS,100)+'">Ø Ergebnis</div><div class="kpi-val" style="color:'+scorefarbe(srS,100)+'">'+srS+'%</div><div class="kpi-sub">alle Simulationen</div></div>'
-        +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Simulationen</div><div class="kpi-val" style="color:var(--blue)">'+sims.length+'</div><div class="kpi-sub">abgeschlossen</div></div>'
-        +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Bestanden</div><div class="kpi-val" style="color:var(--teal)">'+sims.filter(function(s){return s.bestanden;}).length+'</div><div class="kpi-sub">von '+sims.length+'</div></div>'
-        +'<div class="kpi" style="border-top-color:var(--red)"><div class="kpi-label" style="color:var(--red)">Nicht bestanden</div><div class="kpi-val" style="color:var(--red)">'+sims.filter(function(s){return !s.bestanden;}).length+'</div><div class="kpi-sub">wiederholen</div></div>'
+  // ── PROTOCOLS TAB ──
+  if(activeTab==='protocols'){
+    html+='<div class="card"><div class="card-title"><i class="ti ti-edit"></i> New Protocol</div>'
+      +'<div class="f3"><div><label>Date</label><input type="date" id="nd" value="'+today()+'"></div>'
+      +'<div><label>Rating</label><select id="nr">'+RATINGS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>'
+      +'<div><label>Focus topic</label><input type="text" id="nf" placeholder="Topic of this Session"></div></div>'
+      +'<div style="margin-bottom:10px"><label>Notes</label><textarea id="nt" placeholder="What stood out..."></textarea></div>'
+      +'<div style="margin-bottom:12px"><label>Rate criteria (0–100)</label>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:6px">';
+    ratingCriteria.forEach(function(rc){
+      html+='<div><label style="font-size:11px">'+rc.name+'</label><input type="number" id="rc-'+rc.id+'" placeholder="'+rc.target+'" min="0" max="100"></div>';
+    });
+    html+='</div></div>'
+      +'<div style="display:flex;gap:10px">'
+      +'<button class="btn btn-primary btn-sm" onclick="saveNote()"><i class="ti ti-check"></i> Save Protocol</button>'
+      +'<button class="btn btn-sm" onclick="openModal(\'ratingModal\')"><i class="ti ti-plus"></i> Add criterion</button>'
+      +'<button class="btn btn-sm" style="color:var(--purple);border-color:var(--purple)" onclick="addTaskFromCurrentProtocol()"><i class="ti ti-checkbox"></i> Add as task</button>'
+      +'</div></div>';
+    if(p.length===0){html+='<div class="empty">No protocols yet.</div>';}
+    else{
+      html+='<div class="sec-title">Previous Sessions</div>';
+      p.forEach(function(pr){
+        var rs=RS[pr.rating];
+        html+='<div class="proto"><div class="proto-hdr">'
+          +'<div class="proto-meta"><i class="ti ti-calendar" style="font-size:12px"></i>'+fd(pr.date)+(pr.focus?' · '+pr.focus:'')+'</div>'
+          +'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+pr.rating+'</span></div>'
+          +'<div style="font-size:13px;line-height:1.6">'+pr.note+'</div>';
+        if(pr.criteria&&Object.keys(pr.criteria).length){
+          html+='<div class="crit-tags">';
+          ratingCriteria.forEach(function(rc){
+            if(pr.criteria[rc.id]===undefined)return;
+            var v=pr.criteria[rc.id];
+            var col=v>=rc.target?'var(--teal-bg)':v>=rc.target*.8?'var(--amber-bg)':'var(--red-bg)';
+            var tc=v>=rc.target?'var(--teal-dark)':v>=rc.target*.8?'var(--amber-dark)':'var(--red)';
+            html+='<span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;background:'+col+';color:'+tc+'">'+rc.name+': '+v+'%</span>';
+          });
+          html+='</div>';
+        }
+        html+='</div>';
+      });
+    }
+    html+='<div class="sec-title" style="margin-top:20px">Rating criteria</div>'
+      +'<div class="tbl"><table><thead><tr><th>Criterion</th><th>Category</th><th>Target</th><th>Description</th></tr></thead><tbody>';
+    ratingCriteria.forEach(function(rc){
+      html+='<tr><td style="font-weight:500">'+rc.name+'</td><td><span class="badge" style="background:var(--bg2);color:var(--text2)">'+rc.cat+'</span></td><td>'+rc.target+'%</td><td style="color:var(--text2)">'+rc.desc+'</td></tr>';
+    });
+    html+='</tbody></table></div><button class="btn btn-sm" onclick="openModal(\'ratingModal\')"><i class="ti ti-plus"></i> Add criterion</button>';
+  }
+
+  // ── PROGRESS TAB ──
+  if(activeTab==='progress'){
+    var perf7b=getPerf(emp.id,7);
+    function avb(key){return perf7b.length?(perf7b.reduce(function(a,x){return a+x[key];},0)/perf7b.length).toFixed(1):'—';}
+    if(alerts.length){
+      html+='<div class="alert alert-danger" style="margin-bottom:16px">'
+        +'<i class="ti ti-alert-circle" style="font-size:18px;color:var(--red);flex-shrink:0"></i>'
+        +'<div><div style="font-size:13px;font-weight:600;color:var(--red)">KPIs below target – coaching Session recommended</div>'
+        +'<div style="font-size:12px;color:var(--red)">'+alerts.map(function(a){return a.key+': '+a.val+' vs target '+a.target;}).join(' · ')+'</div>'
+        +'<div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="alert(\'Book a coaching Session.\')"><i class="ti ti-calendar"></i> Book a Session</button></div>'
+        +'</div></div>';
+    }
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">'
+      +'<div><div class="sec-title">Skill profile (latest Session)</div>';
+    if(p.length===0){html+='<div class="empty" style="padding:1.5rem">No data yet.</div>';}
+    else{
+      var latest=p[0];var skills=latest.skills||{};var first=p[p.length-1].skills||{};
+      SKILLS.forEach(function(s,i){
+        var key=SK_DE[i];var val=skills[key]||0;var prev=first[key]||0;var delta=val-prev;
+        var col=val>=80?'var(--teal)':val>=60?'var(--purple)':'var(--amber)';
+        html+='<div class="skill-row"><span class="skill-label">'+s+'</span>'
+          +'<div class="skill-track"><div class="skill-fill" style="width:'+val+'%;background:'+col+'"></div></div>'
+          +'<span class="skill-pct">'+val+'%</span>'
+          +'<span class="skill-delta" style="color:'+(delta>=0?'var(--teal)':'var(--red)')+'">'+(delta>=0?'+':'')+delta+'</span></div>';
+      });
+    }
+    html+='</div><div><div class="sec-title">Performance (7-day avg)</div><div class="g2">'
+      +'<div class="kpi" style="border-top-color:var(--amber)"><div class="kpi-label" style="color:var(--amber)">CR OEM</div><div class="kpi-val" style="color:var(--amber)">'+avb('crOEM')+(avb('crOEM')!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('crOEM'))>=KPI_TARGETS.crOEM?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.crOEM+'%</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Super Yes</div><div class="kpi-val" style="color:var(--purple)">'+avb('crSuperYes')+(avb('crSuperYes')!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('crSuperYes'))>=KPI_TARGETS.crSuperYes?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.crSuperYes+'%</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Mega Yes</div><div class="kpi-val" style="color:var(--teal)">'+avb('crMegaYes')+(avb('crMegaYes')!=='—'?'%':'')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('crMegaYes'))>=KPI_TARGETS.crMegaYes?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.crMegaYes+'%</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Opt./Hour</div><div class="kpi-val" style="color:var(--blue)">'+avb('optPerH')+'</div><div class="kpi-sub" style="color:'+(parseFloat(avb('optPerH'))>=KPI_TARGETS.optPerH?'var(--teal)':'var(--red)')+'">Target: '+KPI_TARGETS.optPerH+'</div></div>'
+      +'</div></div></div>';
+    if(p.length>0){
+      html+='<div class="sec-title">Session history</div><div class="sess-hist">';
+      p.forEach(function(pr,i){
+        var rs=RS[pr.rating];
+        var sa=pr.skills?Math.round(Object.values(pr.skills).reduce(function(a,b){return a+b;},0)/Object.values(pr.skills).length):null;
+        var bc=pr.rating==='Mega Yes'?'var(--teal)':pr.rating==='Super Yes'?'var(--purple)':pr.rating==='Yes'?'var(--blue)':'var(--amber)';
+        html+='<div class="sess-row">'
+          +'<span style="font-size:11px;color:var(--text3);width:18px;text-align:right">'+(p.length-i)+'</span>'
+          +'<span style="font-size:12px;color:var(--text2);width:74px">'+fd(pr.date)+'</span>'
+          +'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+pr.rating+'</span>'
+          +(sa!==null?'<div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+sa+'%;background:'+bc+';border-radius:3px"></div></div><span style="font-size:12px;color:var(--text2);width:32px;text-align:right">'+sa+'%</span>':'<div style="flex:1"></div>')
+          +'<span style="font-size:12px;color:var(--text2);width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(pr.focus||'')+'</span></div>';
+      });
+      html+='</div>';
+    }
+  }
+
+  // ── SOLIDROAD TAB ──
+  if(activeTab==='solidroad'){
+    var sims=sr.simulations;
+    var srScore=sims.length?Math.round(sims.reduce(function(a,s){return a+s.score;},0)/sims.length):null;
+    if(!settings.srApiKey){
+      html+='<div style="background:var(--purple-bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;margin-bottom:14px">'
+        +'<div style="font-size:36px;color:var(--purple);margin-bottom:10px"><i class="ti ti-robot"></i></div>'
+        +'<div style="font-size:16px;font-weight:600;margin-bottom:6px">Connect SolidRoad</div>'
+        +'<div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Add your API key in Einstellungen to sync simulation scores automatically.</div>'
+        +'<button class="btn btn-primary btn-sm" style="width:auto;margin:0 auto" onclick="showView(\'settings\')"><i class="ti ti-settings"></i> Go to Einstellungen</button></div>';
+    }
+    if(srScore!==null){
+      html+='<div class="g4">'
+        +'<div class="kpi" style="border-top-color:'+scoreColor(srScore)+'"><div class="kpi-label" style="color:'+scoreColor(srScore)+'">Avg. Score</div><div class="kpi-val" style="color:'+scoreColor(srScore)+'">'+srScore+'%</div><div class="kpi-sub">all simulations</div></div>'
+        +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Simulations</div><div class="kpi-val" style="color:var(--blue)">'+sims.length+'</div><div class="kpi-sub">completed</div></div>'
+        +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Best Score</div><div class="kpi-val" style="color:var(--teal)">'+Math.max.apply(null,sims.map(function(s){return s.score;}))+'%</div><div class="kpi-sub">highest simulation</div></div>'
+        +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Passed</div><div class="kpi-val" style="color:var(--purple)">'+sims.filter(function(s){return s.status==='passed';}).length+'</div><div class="kpi-sub">of '+sims.length+'</div></div>'
         +'</div>';
     }
-    html+='<div class="abschnitt-titel">Simulationen</div>';
-    if(!sims.length){html+='<div class="leer">Noch keine Simulationen abgeschlossen.</div>';}
-    sims.forEach(function(s){
-      var col=s.score>=85?'var(--teal)':s.score>=70?'var(--purple)':'var(--red)';
-      html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px">'
-        +'<div style="width:50px;height:50px;border-radius:50%;border:3px solid '+col+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:'+col+';flex-shrink:0">'+s.score+'%</div>'
-        +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+s.name+'</div><div style="font-size:12px;color:var(--text2);margin-top:2px">'+datum(s.datum)+' · '+(s.bestanden?'<span style="color:var(--teal)">✓ Bestanden</span>':'<span style="color:var(--red)">✗ Nicht bestanden</span>')+'</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+s.tags.map(function(t){return '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2)">'+t+'</span>';}).join('')+'</div>'
-        +'</div></div>';
-    });
-  }
-
-  // ── AUFGABEN ──
-  if(aktiverTab==='aufgaben'){
-    var empAufg=aufgaben[ma.id]||[];
-    var todayStr=heute();
-    function istUeberfaellig(a){return !a.erledigt&&a.faelligAm&&a.faelligAm<todayStr;}
-    var offen=empAufg.filter(function(a){return !a.erledigt&&!istUeberfaellig(a);});
-    var ueberfaellig=empAufg.filter(function(a){return istUeberfaellig(a);});
-    var erledigt=empAufg.filter(function(a){return a.erledigt;});
-    var prioFarbe={hoch:{bg:'var(--red-bg)',col:'var(--red)'},mittel:{bg:'var(--amber-bg)',col:'var(--amber-dark)'},niedrig:{bg:'var(--bg2)',col:'var(--text2)'}};
-
-    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">'
-      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Offen</div><div class="kpi-val" style="color:var(--purple)">'+offen.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:'+(ueberfaellig.length?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(ueberfaellig.length?'var(--red)':'var(--teal)')+'">Überfällig</div><div class="kpi-val" style="color:'+(ueberfaellig.length?'var(--red)':'var(--teal)')+'">'+ueberfaellig.length+'</div></div>'
-      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Erledigt</div><div class="kpi-val" style="color:var(--teal)">'+erledigt.length+'</div></div>'
-      +'</div>';
-
-    html+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary btn-sm" onclick="openModal(\'neueAufgabeModal\')"><i class="ti ti-plus"></i> Aufgabe hinzufügen</button></div>';
-
-    function aufgabeKarte(a){
-      var pf=prioFarbe[a.prioritaet]||prioFarbe.niedrig;
-      var ue=istUeberfaellig(a);
-      var tage=a.faelligAm&&!a.erledigt?Math.ceil((new Date(a.faelligAm)-new Date(todayStr))/86400000):null;
-      var faelligText=a.faelligAm?(a.erledigt?'Erledigt':tage<0?'Überfällig seit '+Math.abs(tage)+'d':tage===0?'Heute fällig':tage===1?'Morgen fällig':'Fällig in '+tage+'d'):'';
-      var faelligFarbe=a.erledigt?'var(--text3)':tage!==null&&tage<0?'var(--red)':tage===0?'var(--amber)':'var(--text3)';
-      return '<div style="background:var(--bg);border:1px solid var(--border);'+(ue?'border-left:3px solid var(--red);':'')+( a.erledigt?'opacity:.6;':'')+' border-radius:var(--r-lg);margin-bottom:8px;overflow:hidden">'
-        +'<div style="display:flex;align-items:flex-start;gap:12px;padding:13px 15px;cursor:pointer" onclick="toggleAufgabeDetail('+a.id+')">'
-        +'<div onclick="event.stopPropagation();aufgabeErledigen('+a.id+')" style="width:22px;height:22px;border-radius:50%;border:2px solid '+(a.erledigt?'var(--teal)':'var(--border2)')+';background:'+(a.erledigt?'var(--teal)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;margin-top:1px;transition:all .15s">'
-        +(a.erledigt?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':'')+'</div>'
-        +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;'+(a.erledigt?'text-decoration:line-through;color:var(--text3)':'')+'">'+a.text+'</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px">'
-        +(a.quelle?'<span>'+a.quelle+'</span>':'')
-        +(faelligText?'<span style="color:'+faelligFarbe+'">'+faelligText+'</span>':'')
-        +'</div></div>'
-        +'<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:'+pf.bg+';color:'+pf.col+';flex-shrink:0">'+a.prioritaet+'</span>'
-        +'</div>'
-        +'<div id="aufg-detail-'+a.id+'" style="display:none;padding:0 15px 13px 49px;border-top:1px solid var(--border);background:var(--bg2);font-size:13px;color:var(--text2);line-height:1.6">'
-        +(a.beschreibung||'Keine Beschreibung.')
-        +'<div style="display:flex;gap:8px;margin-top:10px">'
-        +(!a.erledigt?'<button class="btn btn-sm btn-primary" onclick="aufgabeErledigen('+a.id+')"><i class="ti ti-check"></i> Als erledigt markieren</button>':'<button class="btn btn-sm" onclick="aufgabeErledigen('+a.id+')"><i class="ti ti-rotate-left"></i> Wieder öffnen</button>')
-        +'<button class="btn btn-sm" style="color:var(--red);border-color:var(--red)" onclick="aufgabeLoeschen('+a.id+')"><i class="ti ti-trash"></i> Löschen</button>'
-        +'</div></div></div>';
+    if(sims.length>0){
+      html+='<div class="sec-title">Simulations</div>';
+      sims.forEach(function(s){
+        var col=scoreColor(s.score);
+        html+='<div class="sr-sim"><div class="sr-ring" style="border-color:'+col+';color:'+col+'">'+s.score+'%</div>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+s.name+'</div><div style="font-size:12px;color:var(--text2);margin-top:2px">'+fd(s.date)+'</div>'
+          +'<div class="sr-tags">'+s.tags.map(function(t){return '<span class="sr-tag">'+t+'</span>';}).join('')+'</div></div></div>';
+      });
+    } else if(settings.srApiKey){html+='<div class="empty">No simulations completed yet.</div>';}
+    if(settings.srApiKey){
+      html+='<div class="card"><div class="card-title"><i class="ti ti-plus"></i> Log Simulation Manually</div>'
+        +'<div class="f3"><div><label>Name</label><input type="text" id="srName" placeholder="e.g. Objection: Price too high"></div>'
+        +'<div><label>Date</label><input type="date" id="srDate" value="'+today()+'"></div>'
+        +'<div><label>Score (%)</label><input type="number" id="srScore" placeholder="0-100" min="0" max="100"></div></div>'
+        +'<div style="margin-bottom:12px"><label>Tags (comma separated)</label><input type="text" id="srTags" placeholder="e.g. Objection Handling, Closing"></div>'
+        +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveSRSim()"><i class="ti ti-check"></i> Save</button></div>';
     }
-
-    if(empAufg.length===0){html+='<div class="leer">Noch keine Aufgaben vorhanden.</div>';}
-    if(ueberfaellig.length){html+='<div class="abschnitt-titel" style="color:var(--red)">Überfällig ('+ueberfaellig.length+')</div>';ueberfaellig.forEach(function(a){html+=aufgabeKarte(a);});}
-    if(offen.length){html+='<div class="abschnitt-titel" style="margin-top:'+(ueberfaellig.length?'16px':'0')+'">Offen ('+offen.length+')</div>';offen.forEach(function(a){html+=aufgabeKarte(a);});}
-    if(erledigt.length){html+='<div class="abschnitt-titel" style="margin-top:16px">Erledigt ('+erledigt.length+')</div>';erledigt.forEach(function(a){html+=aufgabeKarte(a);});}
   }
 
-  el.innerHTML=html;
-}
-
-// ── Session Scorecard bewerten ──
-function sessionStarten(sessionId){
-  aktivesScorecardId=sessionId;
-  var s=sessions.find(function(x){return x.id===sessionId;});
-  if(!s)return;
-  var ma=mitarbeiter.find(function(m){return m.id===s.mitarbeiterId;});
-  ausgewaehlterId=s.mitarbeiterId;
-  renderScorecardModal(s,ma);
-}
-function sessionOeffnen(sessionId){
-  var s=sessions.find(function(x){return x.id===sessionId;});
-  if(!s)return;
-  aktivesScorecardId=sessionId;
-  var ma=mitarbeiter.find(function(m){return m.id===s.mitarbeiterId;});
-  renderScorecardModal(s,ma);
-}
-
-function renderScorecardModal(s,ma){
-  var modal=document.getElementById('scorecardModal');
-  var inhalt=document.getElementById('scorecardInhalt');
-  if(!modal||!inhalt)return;
-
-  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
-    +'<div><label>Session-Datum</label><input type="date" id="sc-datum" value="'+s.datum+'"></div>'
-    +'<div><label>Typ</label><select id="sc-typ"><option'+(s.typ==='Onboarding-Session'?' selected':'')+'>Onboarding-Session</option><option'+(s.typ==='Gesprächsbewertung'?' selected':'')+'>Gesprächsbewertung</option><option'+(s.typ==='Anlassbezogene Session'?' selected':'')+'>Anlassbezogene Session</option></select></div>'
-    +'<div><label>Thema</label><input type="text" id="sc-thema" value="'+s.thema+'" placeholder="z.B. Einwandbehandlung"></div>'
-    +'<div><label>Gesamtbewertung</label><select id="sc-bewertung"><option value="">Bewertung wählen...</option>'+BEWERTUNGEN.map(function(b){return '<option'+(s.gesamtBewertung===b?' selected':'')+'>'+b+'</option>';}).join('')+'</select></div>'
-    +'</div>';
-
-  // Scorecard Kriterien
-  SCORECARD.forEach(function(kat){
-    html+='<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">'+kat.kategorie+' <span style="font-weight:400;color:var(--text3)">('+kat.gewichtung+'%)</span></div>';
-    kat.kriterien.forEach(function(k){
-      var aktuell=s.scorecard?s.scorecard[k.id]:null;
-      html+='<div style="margin-bottom:14px">'
-        +'<div style="font-size:13px;font-weight:500;margin-bottom:3px">'+k.name+'</div>'
-        +'<div style="font-size:11px;color:var(--text3);margin-bottom:8px">'+k.beschreibung+'</div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">';
-      k.stufen.forEach(function(stufe,idx){
-        var wert=idx+1;
-        var gewaehlt=aktuell===wert;
-        var farbe=wert===1?'var(--red)':wert===2?'var(--amber)':wert===3?'var(--purple)':'var(--teal)';
-        html+='<div onclick="scorecardWaehlen(\''+k.id+'\','+wert+')" id="sc-'+k.id+'-'+wert+'" style="padding:8px;border-radius:var(--r-md);border:2px solid '+(gewaehlt?farbe:'var(--border2)')+';background:'+(gewaehlt?farbe+'22':'transparent')+';cursor:pointer;text-align:center;transition:all .15s">'
-          +'<div style="font-size:13px;font-weight:700;color:'+farbe+'">'+wert+'</div>'
-          +'<div style="font-size:10px;color:var(--text2);line-height:1.3;margin-top:2px">'+stufe+'</div>'
-          +'</div>';
+  // ── ONBOARDING TAB ──
+  if(activeTab==='onboarding'){
+    var startDate=emp.startDate?new Date(emp.startDate+'T00:00:00'):null;
+    var days=[...new Set(obSteps.map(function(s){return s.day;}))].sort(function(a,b){return a-b;});
+    var totalSteps=obSteps.length;
+    var completedSteps=ob.filter(Boolean).length;
+    var pct=totalSteps?Math.round(completedSteps/totalSteps*100):0;
+    var currentDay=days.find(function(day){return obSteps.filter(function(s){return s.day===day;}).some(function(s){return !ob[obSteps.indexOf(s)];});})||days[days.length-1];
+    var level=pct>=100?'Experte':pct>=75?'Sehr gut':pct>=50?'Fortgeschritten':pct>=25?'Entwicklung':'Einsteiger';
+    var levelColor=pct>=100?'var(--teal)':pct>=75?'var(--purple)':pct>=50?'var(--blue)':pct>=25?'var(--amber)':'var(--text2)';
+    var levelBg=pct>=100?'var(--teal-bg)':pct>=75?'var(--purple-bg)':pct>=50?'var(--blue-bg)':pct>=25?'var(--amber-bg)':'var(--bg2)';
+    var daysSince=startDate?Math.floor((new Date()-startDate)/86400000)+1:null;
+    // Summary cards
+    html+='<div class="g4" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:'+levelColor+'"><div class="kpi-label" style="color:'+levelColor+'">Level</div><div class="kpi-val" style="color:'+levelColor+';font-size:17px">'+level+'</div><div class="kpi-sub">'+pct+'% complete</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Steps done</div><div class="kpi-val" style="color:var(--teal)">'+completedSteps+'<span style="font-size:13px;color:var(--text3)"> / '+totalSteps+'</span></div><div class="kpi-sub">'+(totalSteps-completedSteps)+' remaining</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Active day</div><div class="kpi-val" style="color:var(--purple)">Day '+currentDay+'</div><div class="kpi-sub">'+(pct>=100?'Alles erledigt':'Aktueller Fokus')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Days since start</div><div class="kpi-val" style="color:var(--blue)">'+(daysSince!==null?daysSince:'—')+'</div><div class="kpi-sub">'+(emp.startDate?'Since '+fd(emp.startDate):'Kein Startdatum')+'</div></div>'
+      +'</div>';
+    // Donut + Level ladder
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">'
+      +'<div class="card" style="margin-bottom:0"><div class="card-title"><i class="ti ti-chart-donut"></i> Overall progress</div>'
+      +'<div style="display:flex;align-items:center;gap:20px">'
+      +'<div style="position:relative;width:96px;height:96px;flex-shrink:0">'
+      +'<svg viewBox="0 0 36 36" style="width:96px;height:96px;transform:rotate(-90deg)">'
+      +'<circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--bg3)" stroke-width="3.2"/>'
+      +'<circle cx="18" cy="18" r="15.9" fill="none" stroke="'+levelColor+'" stroke-width="3.2" stroke-dasharray="'+pct+' '+(100-pct)+'" stroke-linecap="round"/>'
+      +'</svg>'
+      +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="font-size:17px;font-weight:600;color:'+levelColor+'">'+pct+'%</span></div></div>'
+      +'<div style="flex:1">';
+    days.forEach(function(day){
+      var ds=obSteps.filter(function(s){return s.day===day;});
+      var done=ds.filter(function(s){return ob[obSteps.indexOf(s)];}).length;
+      var dp=Math.round(done/ds.length*100);
+      var dc=dp===100?'var(--teal)':dp>=50?'var(--purple)':'var(--amber)';
+      html+='<div style="margin-bottom:9px">'
+        +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+        +'<span style="font-size:12px;color:var(--text2)">Day '+day+'</span>'
+        +'<span style="font-size:12px;font-weight:600;color:'+(dp===100?'var(--teal)':'var(--text2)')+'">'+done+'/'+ds.length+(dp===100?' ✓':'')+'</span></div>'
+        +'<div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+dp+'%;background:'+dc+';border-radius:3px"></div></div></div>';
+    });
+    html+='</div></div></div>'
+      +'<div class="card" style="margin-bottom:0"><div class="card-title"><i class="ti ti-trophy"></i> Onboarding level</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">';
+    [['Einsteiger','0–24%',0],['Entwicklung','25–49%',25],['Fortgeschritten','50–74%',50],['Sehr gut','75–99%',75],['Experte','100%',100]].forEach(function(entry){
+      var lv=entry[0],range=entry[1],threshold=entry[2];
+      var active=level===lv,reached=pct>=threshold;
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-md);background:'+(active?levelBg:'var(--bg2)')+';border:1px solid '+(active?levelColor:'transparent')+'">'
+        +'<div style="width:26px;height:26px;border-radius:50%;background:'+(reached?(active?levelColor:'var(--teal)'):'var(--bg3)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        +'<i class="ti ti-'+(reached?'check':'lock')+'" style="font-size:12px;color:'+(reached?'#fff':'var(--text3)')+'"></i></div>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:'+(active?'600':'400')+';color:'+(active?levelColor:'var(--text2)')+'">'+lv+'</div>'
+        +'<div style="font-size:11px;color:var(--text3)">'+range+'</div></div>'
+        +(active?'<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:'+levelColor+';color:#fff">Current</span>':'')
+        +'</div>';
+    });
+    html+='</div></div></div>';
+    // Steps by day
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+      +'<div class="sec-title" style="margin-bottom:0">Steps by day</div>'
+      +'<button class="btn btn-sm" onclick="openModal(\'obModal\')"><i class="ti ti-plus"></i> Add step</button></div>';
+    days.forEach(function(day){
+      var daySteps=obSteps.filter(function(s){return s.day===day;});
+      var dayDone=daySteps.filter(function(s){return ob[obSteps.indexOf(s)];}).length;
+      var dayPct=Math.round(dayDone/daySteps.length*100);
+      var dateLabel='';
+      if(startDate){
+        var dd=new Date(startDate.getTime()+(day-1)*86400000);
+        dateLabel=' · '+fd(dd.toISOString().slice(0,10));
+      }
+      html+='<div style="margin-bottom:10px"><div class="ob-day-hdr">'
+        +'<i class="ti ti-calendar-event" style="color:var(--purple);font-size:16px"></i>'
+        +'<span class="ob-day-label">Day '+day+dateLabel+'</span>'
+        +'<span style="font-size:12px;color:var(--text2)">'+dayDone+'/'+daySteps.length+'</span>'
+        +'<div style="flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;max-width:120px;margin:0 10px">'
+        +'<div style="height:100%;width:'+dayPct+'%;background:'+(dayPct===100?'var(--teal)':'var(--purple)')+';border-radius:3px"></div></div>'
+        +'<span style="font-size:11px;font-weight:600;color:'+(dayPct===100?'var(--teal)':'var(--text3)')+'">'+(dayPct===100?'✓ Done':dayPct+'%')+'</span></div><div>';
+      daySteps.forEach(function(step){
+        var i=obSteps.indexOf(step);
+        html+='<div class="ob-step">'
+          +'<div class="ob-hdr" onclick="toggleOBDetail('+i+')">'
+          +'<div class="ob-check'+(ob[i]?' done':'')+'" onclick="event.stopPropagation();toggleOB('+i+')">'+(ob[i]?'<i class="ti ti-check" style="font-size:11px"></i>':'')+'</div>'
+          +'<span class="ob-label">'+step.label+'</span>'
+          +'<span class="ob-status">'+(ob[i]?'Abgeschlossen':'Ausstehend')+'</span>'
+          +'<i class="ti ti-chevron-down ob-chev" id="chev-'+i+'"></i></div>'
+          +'<div class="ob-detail" id="ob-d-'+i+'">'
+          +'<div class="ob-desc">'+step.detail+'</div>'
+          +'<div class="ob-video-wrap">'
+          +'<div class="ob-video-label"><span><i class="ti ti-video" style="font-size:13px;margin-right:4px"></i>Training video</span>'+(step.videoUrl?'<span class="ftp-badge"><i class="ti ti-cloud" style="font-size:11px"></i> FTP</span>':'')+'</div>'
+          +(step.videoUrl?'<video controls preload="metadata" style="width:100%;max-height:280px;border-radius:var(--r-sm);background:#000"><source src="'+step.videoUrl+'"><p style="font-size:12px;color:var(--text2);padding:8px">Cannot play. <a href="'+step.videoUrl+'" target="_blank">Open directly</a></p></video>':'<div style="font-size:12px;color:var(--text3);margin-bottom:8px">No video linked yet.</div>')
+          +'<div style="display:flex;gap:8px;margin-top:8px"><input type="url" id="vid-'+i+'" placeholder="FTP path or https://" value="'+(step.videoUrl||'')+'" style="font-size:12px"><button class="btn btn-sm" onclick="saveVideoUrl('+i+')"><i class="ti ti-check"></i> Save</button></div>'
+          +'</div></div></div>';
       });
       html+='</div></div>';
     });
-    html+='</div>';
-  });
+  }
 
-  html+='<div><label>Notizen zur Session</label><textarea id="sc-notizen" style="min-height:80px" placeholder="Was ist aufgefallen? Stärken, Schwächen, Beobachtungen...">'+( s.notizen||'')+'</textarea></div>'
-    +'<div style="margin-top:10px"><label>Nächste Schritte / Aufgaben für Mitarbeiter</label><textarea id="sc-naechste" style="min-height:60px" placeholder="Was soll der Mitarbeiter bis zur nächsten Session tun...">'+( s.naechsteSchritte||'')+'</textarea></div>';
+  // ── TASKS TAB ──
+  if(activeTab==='tasks'){
+    var empTasks=tasks[emp.id]||[];
+    var todayStr=today();
+    function isOD(t){return !t.done&&t.dueDate&&t.dueDate<todayStr;}
+    var openTasks=empTasks.filter(function(t){return !t.done&&!isOD(t);});
+    var overdueTasks=empTasks.filter(function(t){return isOD(t);});
+    var doneTasks=empTasks.filter(function(t){return t.done;});
+    var prioStyle={high:{bg:'var(--red-bg)',color:'var(--red)'},medium:{bg:'var(--amber-bg)',color:'var(--amber-dark)'},low:{bg:'var(--bg2)',color:'var(--text2)'}};
+    // Summary
+    html+='<div class="g3" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Open</div><div class="kpi-val" style="color:var(--purple)">'+openTasks.length+'</div><div class="kpi-sub">'+(openTasks.length===0?'All clear':'task'+(openTasks.length!==1?'s':'')+' to do')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'"><div class="kpi-label" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">Overdue</div><div class="kpi-val" style="color:'+(overdueTasks.length>0?'var(--red)':'var(--teal)')+'">'+overdueTasks.length+'</div><div class="kpi-sub">'+(overdueTasks.length>0?'Frist überschritten':'no overdue tasks')+'</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+doneTasks.length+'</div><div class="kpi-sub">'+(empTasks.length>0?Math.round(doneTasks.length/empTasks.length*100)+'% completion':'noch keine Aufgaben')+'</div></div>'
+      +'</div>';
+    html+='<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary btn-sm" onclick="openModal(\'addTaskModal\')"><i class="ti ti-plus"></i> Add task</button></div>';
+    if(empTasks.length===0){html+='<div class="empty">No tasks yet. Add tasks manually or from a protocol.</div>';}
+    function taskCard(t){
+      var ps=prioStyle[t.priority]||prioStyle.low;
+      var od=isOD(t);
+      var dueDays=t.dueDate&&!t.done?Math.ceil((new Date(t.dueDate)-new Date(todayStr))/86400000):null;
+      var dueLabel='',dueColor='var(--text3)';
+      if(t.dueDate){
+        if(t.done){dueLabel='Abgeschlossen';}
+        else if(dueDays<0){dueLabel='Überfällig seit '+Math.abs(dueDays)+'d';dueColor='var(--red)';}
+        else if(dueDays===0){dueLabel='Heute fällig';dueColor='var(--amber)';}
+        else if(dueDays===1){dueLabel='Morgen fällig';}
+        else{dueLabel='Fällig in '+dueDays+'d';}
+      }
+      return '<div class="task-item'+(od?' overdue':'')+(t.done?' done-item':'')+'" id="task-'+t.id+'">'
+        +'<div class="task-row" onclick="toggleTaskDetail('+t.id+')">'
+        +'<div class="task-check'+(t.done?' done':'')+'" onclick="event.stopPropagation();toggleTask('+t.id+')">'+(t.done?'<i class="ti ti-check" style="font-size:11px"></i>':'')+'</div>'
+        +'<div style="flex:1;min-width:0"><div class="task-title'+(t.done?' done':'')+'">'+(od?'<i class="ti ti-alert-circle" style="font-size:13px;color:var(--red);margin-right:4px"></i>':'')+t.text+'</div>'
+        +'<div class="task-meta">'+(t.source?'<span>'+t.source+'</span>':'')+( dueLabel?'<span style="color:'+dueColor+'">'+dueLabel+'</span>':'')+'</div></div>'
+        +'<span class="task-prio" style="background:'+ps.bg+';color:'+ps.color+'">'+t.priority+'</span>'
+        +'<button class="task-del" onclick="event.stopPropagation();deleteTask('+t.id+')"><i class="ti ti-x"></i></button>'
+        +'</div>'
+        +'<div class="task-detail" id="td-'+t.id+'">'+(t.description||'No description added.')
+        +'<div class="task-actions">'
+        +(!t.done?'<button class="btn btn-sm btn-primary" onclick="toggleTask('+t.id+')"><i class="ti ti-check"></i> Mark as done</button>':'<button class="btn btn-sm" onclick="toggleTask('+t.id+')"><i class="ti ti-rotate-left"></i> Reopen</button>')
+        +'<button class="btn btn-sm btn-danger" onclick="deleteTask('+t.id+')"><i class="ti ti-trash"></i> Delete</button>'
+        +'</div></div></div>';
+    }
+    if(overdueTasks.length>0){
+      html+='<div class="sec-title" style="color:var(--red)">Overdue ('+overdueTasks.length+')</div>';
+      overdueTasks.forEach(function(t){html+=taskCard(t);});
+    }
+    if(openTasks.length>0){
+      html+='<div class="sec-title" style="margin-top:'+(overdueTasks.length?'16px':'0')+'">Open ('+openTasks.length+')</div>';
+      openTasks.forEach(function(t){html+=taskCard(t);});
+    }
+    if(doneTasks.length>0){
+      html+='<div class="sec-title" style="margin-top:16px">Completed ('+doneTasks.length+')</div>';
+      doneTasks.forEach(function(t){html+=taskCard(t);});
+    }
+  }
 
-  inhalt.innerHTML=html;
-  modal.classList.remove('hidden');
-}
 
-function scorecardWaehlen(kriteriumId, wert){
-  var s=sessions.find(function(x){return x.id===aktivesScorecardId;});
-  if(!s){s={scorecard:{}};} if(!s.scorecard)s.scorecard={};
-  s.scorecard[kriteriumId]=wert;
-  // Update visual
-  for(var i=1;i<=4;i++){
-    var el=document.getElementById('sc-'+kriteriumId+'-'+i);
-    if(!el)continue;
-    var farbe=i===1?'var(--red)':i===2?'var(--amber)':i===3?'var(--purple)':'var(--teal)';
-    el.style.borderColor=i===wert?farbe:'var(--border2)';
-    el.style.background=i===wert?farbe+'22':'transparent';
+  // ── REVIEW TAB ──
+  if(activeTab==='review'){
+    var empReviews=reviews[emp.id]||[];
+    // Auto-schedule from start date if not already present
+    if(emp.startDate){
+      var sd=new Date(emp.startDate+'T00:00:00');
+      var autoTypes=[['Onboarding Review',3],['Performance Review',11],['Annual Review',12]];
+      autoTypes.forEach(function(pair){
+        var type=pair[0],mo=pair[1];
+        if(!empReviews.find(function(r){return r.type===type;})){
+          var dd=new Date(sd.getTime());dd.setMonth(dd.getMonth()+mo);
+          empReviews.push({id:Date.now()+mo,type:type,date:dd.toISOString().slice(0,10),status:dd.toISOString().slice(0,10)<today()?'overdue':'upcoming',notes:'',goals:'',rating:null,kpis:{},auto:true});
+        }
+      });
+      empReviews.sort(function(a,b){return a.date.localeCompare(b.date);});
+    }
+    var typeRS={'Onboarding Review':RS['Yes'],'Performance Review':RS['Super Yes'],'Annual Review':RS['Mega Yes']};
+    html+='<div class="g3" style="margin-bottom:20px">'
+      +'<div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-label" style="color:var(--purple)">Total</div><div class="kpi-val" style="color:var(--purple)">'+empReviews.length+'</div><div class="kpi-sub">reviews scheduled</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--teal)"><div class="kpi-label" style="color:var(--teal)">Completed</div><div class="kpi-val" style="color:var(--teal)">'+empReviews.filter(function(r){return r.status==='abgeschlossen';}).length+'</div><div class="kpi-sub">done</div></div>'
+      +'<div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-label" style="color:var(--blue)">Upcoming</div><div class="kpi-val" style="color:var(--blue)">'+empReviews.filter(function(r){return r.status==='upcoming';}).length+'</div><div class="kpi-sub">scheduled</div></div>'
+      +'</div>';
+    html+='<div class="sec-title" style="margin-bottom:12px">Review timeline</div>';
+    if(empReviews.length===0){html+='<div class="empty">No reviews yet. Set a start date in Einstellungen to auto-schedule.</div>';}
+    empReviews.forEach(function(rev){
+      var tc2=typeRS[rev.type]||{bg:'var(--bg2)',color:'var(--text2)'};
+      var sc=rev.status==='abgeschlossen'?'var(--teal)':rev.status==='overdue'?'var(--red)':'var(--blue)';
+      var scBg=rev.status==='abgeschlossen'?'var(--teal-bg)':rev.status==='overdue'?'var(--red-bg)':'var(--blue-bg)';
+      html+='<div class="card">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px">'
+        +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:'+tc2.bg+';color:'+tc2.color+'">'+rev.type+'</span>'
+        +'<span style="font-size:11px;padding:3px 9px;border-radius:20px;background:'+scBg+';color:'+sc+'">'+rev.status+'</span>'
+        +(rev.auto?'<span style="font-size:10px;color:var(--text3)">auto-scheduled</span>':'')
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--text2)"><i class="ti ti-calendar" style="font-size:12px"></i> '+fd(rev.date)+'</div>'
+        +'</div>'
+        +(rev.rating?'<span class="badge" style="background:'+RS[rev.rating].bg+';color:'+RS[rev.rating].color+'">'+rev.rating+'</span>':'')
+        +'</div>';
+      // Completed review – show notes, goals, KPIs
+      if(rev.status==='abgeschlossen'){
+        if(rev.notes)html+='<div style="font-size:13px;line-height:1.6;margin-bottom:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--r-md)">'+rev.notes+'</div>';
+        if(rev.goals)html+='<div style="font-size:12px;color:var(--text2);margin-bottom:10px)"><strong>Goals agreed:</strong> '+rev.goals+'</div>';
+        if(rev.kpis&&Object.keys(rev.kpis).length){
+          html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">';
+          var kpiDefs=[{k:'crOEM',l:'CR OEM',c:'var(--amber)'},{k:'crSuperYes',l:'Super Yes',c:'var(--purple)'},{k:'crMegaYes',l:'Mega Yes',c:'var(--teal)'},{k:'optPerH',l:'Opt./h',c:'var(--blue)'}];
+          kpiDefs.forEach(function(kd){if(rev.kpis[kd.k]!==undefined)html+='<div class="kpi" style="border-top-color:'+kd.c+'"><div class="kpi-label" style="color:'+kd.c+'">'+kd.l+'</div><div class="kpi-val" style="color:'+kd.c+'">'+rev.kpis[kd.k]+(kd.k!=='optPerH'?'%':'')+'</div></div>';});
+          html+='</div>';
+        }
+      } else {
+        // Upcoming/overdue – show form to complete
+        html+='<div style="display:flex;flex-direction:column;gap:9px;margin-top:4px">'
+          +'<div><label>Session notes</label><textarea id="rnotes-'+rev.id+'" style="min-height:80px" placeholder="Key observations, strengths, areas to improve..."></textarea></div>'
+          +'<div><label>Goals agreed</label><input type="text" id="rgoals-'+rev.id+'" placeholder="What was agreed for the next period..."></div>'
+          +'<div class="f2">'
+          +'<div><label>Rating</label><select id="rrating-'+rev.id+'"><option value="">Select rating...</option>'+RATINGS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select></div>'
+          +'<div><label>Review date</label><input type="date" id="rdate-'+rev.id+'" value="'+rev.date+'"></div></div>'
+          +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
+          +'<div><label>CR OEM %</label><input type="number" id="rkpi-crOEM-'+rev.id+'" placeholder="e.g. 62" min="0" max="100"></div>'
+          +'<div><label>Super Yes %</label><input type="number" id="rkpi-crSuperYes-'+rev.id+'" placeholder="e.g. 14" min="0" max="100"></div>'
+          +'<div><label>Mega Yes %</label><input type="number" id="rkpi-crMegaYes-'+rev.id+'" placeholder="e.g. 9" min="0" max="100"></div>'
+          +'<div><label>Opt./Hour</label><input type="number" id="rkpi-optPerH-'+rev.id+'" placeholder="e.g. 2.1" step="0.1" min="0"></div>'
+          +'</div>'
+          +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="completeReview('+rev.id+')"><i class="ti ti-check"></i> Complete review</button>'
+          +'</div>';
+      }
+      html+='</div>';
+    });
+    html+='<div style="margin-top:16px">'
+      +'<button class="btn btn-sm" onclick="addReview()"><i class="ti ti-plus"></i> Add review</button>'
+      +'</div>';
+  }
+
+  // ── EMP SETTINGS TAB ──
+  if(activeTab==='emp-settings'){
+    var t=empTargets(emp);
+    var COLORS_LOCAL=COLORS;
+    var swatches=COLORS_LOCAL.map(function(col,i){
+      return '<div onclick="setEmpColor('+i+')" title="'+col.bg+'" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;transition:all .15s"></div>';
+    }).join('');
+    var teamOpts=allTeams().map(function(tm){return '<option'+(tm===emp.team?' selected':'')+'>'+tm+'</option>';}).join('')+'<option value="__new__">+ New team...</option>';
+    html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Basic information</div>'
+      +'<div class="f2"><div><label>Full name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
+      +'<div><label>Role</label><select id="es-role">'+ROLES.map(function(ro){return '<option'+(ro===emp.role?' selected':'')+'>'+ro+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="f3"><div><label>Phase</label><select id="es-phase"><option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option><option'+(emp.phase==='Aktiv'?' selected':'')+'>Active</option><option'+(emp.phase==='Entwicklung'?' selected':'')+'>Entwicklung</option></select></div>'
+      +'<div><label>Team</label><select id="es-team">'+teamOpts+'</select></div>'
+      +'<div><label>Start date</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div></div>'
+      +'<div class="f2"><div><label>Contract</label><select id="es-contract"><option value="full"'+(emp.contract==='full'?' selected':'')+'>Vollzeit</option><option value="part"'+(emp.contract==='part'?' selected':'')+'>Teilzeit</option></select></div>'
+      +'<div><label>Hours / week</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div></div>'
+      +'<div style="margin-bottom:14px"><label>Avatar color</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Save changes</button></div>'
+
+      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individual KPI targets</div>'
+      +'<p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">These override global defaults for this staff member. Used in all alerts and the team overview.</p>'
+      +'<div class="g4"><div><label>CR OEM target %</label><input type="number" id="es-crOEM" value="'+t.crOEM+'" min="0" max="100"></div>'
+      +'<div><label>Super Yes target %</label><input type="number" id="es-crSY" value="'+t.crSuperYes+'" min="0" max="100"></div>'
+      +'<div><label>Mega Yes target %</label><input type="number" id="es-crMY" value="'+t.crMegaYes+'" min="0" max="100"></div>'
+      +'<div><label>Opt./Hour target</label><input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"></div></div>'
+      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpTargets()"><i class="ti ti-check"></i> Save targets</button></div>'
+
+      +'<div class="card" style="border-top:2px solid var(--amber)"><div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Deactivate staff member</div>'
+      +'<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Deactivated staff are hidden from the sidebar and team overview. All data is preserved and can be restored at any time.</p>'
+      +'<button class="btn btn-warn btn-sm" style="width:auto;background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="deactivateEmp()"><i class="ti ti-user-off"></i> Deactivate '+emp.name+'</button></div>';
+  }
+
+  tc2.innerHTML=html;
+
+  // Render chart
+  if(activeTab==='performance'){
+    setTimeout(function(){
+      var canvas=document.getElementById('perfChart');
+      if(!canvas)return;
+      if(activeChart){activeChart.destroy();activeChart=null;}
+      var data=getPerf(selectedEmp,perfRange);
+      var labels=data.map(function(d){return fd(d.date);});
+      var vals=data.map(function(d){return d[perfMetric];});
+      var target=KPI_TARGETS[perfMetric];
+      var colors={optPerH:'#378ADD',crOEM:'#BA7517',crSuperYes:'#534AB7',crMegaYes:'#1D9E75',crTeilweise:'#888780',crYes:'#639922'};
+      var col=colors[perfMetric]||'#534AB7';
+      var mLabels={optPerH:'Opt./Hour',crOEM:'CR OEM %',crSuperYes:'CR Super Yes %',crMegaYes:'CR Mega Yes %',crTeilweise:'CR Teilweise %',crYes:'CR Yes %'};
+      var datasets=[{label:mLabels[perfMetric]||perfMetric,data:vals,borderColor:col,backgroundColor:col+'22',fill:true,tension:0.35,pointRadius:perfRange<=7?4:2,pointBackgroundColor:col}];
+      if(target)datasets.push({label:'Target ('+target+')',data:data.map(function(){return target;}),borderColor:'#E24B4A',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false});
+      activeChart=new Chart(canvas,{type:'line',data:{labels:labels,datasets:datasets},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11},maxTicksLimit:10},grid:{display:false}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+    },50);
   }
 }
 
-// ══════════════════════════════════════════════
-// MANAGER ANSICHT
-// ══════════════════════════════════════════════
-function renderManagerAnsicht(){
-  var ma=document.getElementById('hauptbereich');
-  if(!ma)return;
-  var liste=aktiveMitarbeiter();
-  var heute30=getPerf;
-
-  var rows='';
-  liste.forEach(function(m){
-    var f=FARBEN[m.farbe%FARBEN.length];
-    var masSessions=sessionsFuerMitarbeiter(m.id);
-    var abg=masSessions.filter(function(s){return s.status==='abgeschlossen';});
-    var ls=letzteSession(m.id);
-    var al=alertsPruefen(m);
-    var tageSeitLetzter=ls?Math.floor((new Date()-new Date(ls.datum+'T00:00:00'))/86400000):null;
-    var aufmerksamkeitFarbe=tageSeitLetzter===null?'var(--text3)':tageSeitLetzter>14?'var(--red)':tageSeitLetzter>7?'var(--amber)':'var(--teal)';
-    var sw=staerkenSchwaechen(m.id);
-    rows+='<tr style="cursor:pointer" onclick="ausgewaehlterId='+m.id+';aktiverTab=\'profil\';ansicht=\'coach\';renderSidebar();renderMitarbeiterDetail()">'
-      +'<td><div style="display:flex;align-items:center;gap:9px"><div class="av" style="width:30px;height:30px;font-size:11px;background:'+f.bg+';color:'+f.text+'">'+kuerzel(m.name)+'</div><div><div style="font-weight:500">'+m.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div><div style="font-size:11px;color:var(--text2)">'+m.phase+' · '+m.team+'</div></div></div></td>'
-      +'<td style="font-weight:600">'+abg.length+'</td>'
-      +'<td style="color:'+aufmerksamkeitFarbe+';font-weight:600">'+(tageSeitLetzter===null?'Keine':tageSeitLetzter===0?'Heute':tageSeitLetzter+'d')+'</td>'
-      +'<td>'+(ls?'<span class="badge" style="background:'+BW[ls.gesamtBewertung].bg+';color:'+BW[ls.gesamtBewertung].color+'">'+ls.gesamtBewertung+'</span>':'-')+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+(sw&&sw.schwaechen.length?sw.schwaechen.map(function(s){return s.name;}).join(', '):'-')+'</td>'
-      +'<td>'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
-      +'<td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();ausgewaehlterId='+m.id+';planSession()"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
-      +'</tr>';
-  });
-
-  ma.innerHTML='<div class="topbar"><div class="tb-links">'
-    +'<div style="width:40px;height:40px;border-radius:50%;background:var(--teal-bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--teal)"><i class="ti ti-users"></i></div>'
-    +'<div><div class="tb-name">Manager-Übersicht</div><div class="tb-meta">'+liste.length+' aktive Mitarbeiter · Coaching-Status</div></div>'
-    +'</div><div style="display:flex;gap:8px"><button class="btn btn-primary" onclick="openModal(\'neueSessionModal\')"><i class="ti ti-plus"></i> Session planen</button></div></div>'
-    +'<div class="inhalt">'
-    +'<div class="abschnitt-titel">Coaching-Aufmerksamkeit <span style="font-weight:400;color:var(--text3)">· Rot = über 14 Tage keine Session · Gelb = über 7 Tage</span></div>'
-    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px">'
-    +'<table><thead><tr><th>Mitarbeiter</th><th>Sessions gesamt</th><th>Letzte Session</th><th>Letzte Bewertung</th><th>Entwicklungsfelder</th><th>KPI-Alerts</th><th>Aktion</th></tr></thead><tbody>'+rows+'</tbody></table>'
-    +'</div></div>';
+// ── SETTINGS ──
+function renderEinstellungen(){
+  document.getElementById('mainArea').innerHTML=
+    '<div class="topbar"><div class="tb-left"><div class="av" style="width:40px;height:40px;font-size:17px;background:var(--bg2);color:var(--text2)"><i class="ti ti-settings"></i></div>'
+    +'<div><div class="tb-name">Einstellungen</div><div class="tb-meta">Integrations &amp; configuration</div></div></div></div>'
+    +'<div class="content" style="max-width:600px">'
+    +'<div class="sec-title" style="margin-bottom:12px">Integrations</div>'
+    +'<div class="set-row" style="cursor:pointer" onclick="openModal(\'srModal\')">'
+    +'<div class="set-icon" style="background:var(--purple-bg);color:var(--purple)"><i class="ti ti-robot"></i></div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:500">SolidRoad</div><div style="font-size:12px;color:var(--text2)">AI-powered sales simulations</div></div>'
+    +(settings.srApiKey?'<span class="connected">Connected</span>':'<span class="disconnected">Not connected</span>')
+    +'</div>'
+    +'<div class="set-row"><div class="set-icon" style="background:var(--teal-bg);color:var(--teal)"><i class="ti ti-refresh"></i></div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:500">FTP Data Sync</div><div style="font-size:12px;color:var(--text2)">Performance CSV auto-import</div>'
+    +'<div style="margin-top:8px"><input type="url" id="ftpInput" placeholder="ftp://yourserver.com/performance/" value="'+settings.ftpUrl+'" style="font-size:12px"></div></div>'
+    +'<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span class="connected">Active</span><button class="btn btn-sm btn-primary" onclick="saveFTP()">Save</button></div></div>'
+    +'<div class="set-row"><div class="set-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-brand-github"></i></div>'
+    +'<div style="flex:1"><div style="font-size:13px;font-weight:500">GitHub Pages</div><div style="font-size:12px;color:var(--text2)">wiegand-sales.github.io/coaching-dashboard</div></div>'
+    +'<span class="disconnected">Pending</span></div>'
+    +'<div class="sec-title" style="margin-top:24px;margin-bottom:12px">KPI Targets</div>'
+    +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Performance targets (used for alerts)</div>'
+    +'<div class="g4"><div><label>CR OEM target %</label><input type="number" id="tOEM" value="'+KPI_TARGETS.crOEM+'"></div>'
+    +'<div><label>Super Yes target %</label><input type="number" id="tSY" value="'+KPI_TARGETS.crSuperYes+'"></div>'
+    +'<div><label>Mega Yes target %</label><input type="number" id="tMY" value="'+KPI_TARGETS.crMegaYes+'"></div>'
+    +'<div><label>Opt./Hour target</label><input type="number" id="tOpt" value="'+KPI_TARGETS.optPerH+'"></div></div>'
+    +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveTargets()"><i class="ti ti-check"></i> Save targets</button></div>'
+    +'<div class="sec-title" style="margin-top:4px;margin-bottom:12px">About</div>'
+    +'<div class="set-row"><div class="set-icon" style="background:var(--bg2);color:var(--text2)"><i class="ti ti-info-circle"></i></div>'
+    +'<div><div style="font-size:13px;font-weight:500">Sales Coaching Dashboard</div><div style="font-size:12px;color:var(--text2)">Wiegand &amp; Partner · v3.0 · Built for Peter Rode</div></div></div>'
+    +'</div>';
 }
