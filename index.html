@@ -212,8 +212,13 @@ tr:hover td{background:var(--bg2);}
 <!-- MODALS -->
 <div class="modal-ov hidden" id="addEmpModal"><div class="modal">
   <div class="modal-title">Mitarbeiter hinzufügen</div>
-  <div class="f2"><div><label>Vollständiger Name</label><input type="text" id="newName" placeholder="Anna Bauer"></div><div><label>Position</label><input type="text" id="newPosition" placeholder="Inside Sales"></div></div>
-  <div class="f2"><div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Aktiv</option><option>Entwicklung</option></select></div><div><label>Startdatum</label><input type="date" id="newStart"></div></div>
+  <div class="f2"><div><label>Vollständiger Name</label><input type="text" id="newName" placeholder="z.B. Anna Bauer"></div>
+  <div><label>Position</label><select id="newRole"><option>Vertriebsmitarbeiter</option><option>Senior Vertriebsmitarbeiter</option><option>Sales Coach</option></select></div></div>
+  <div class="f3"><div><label>Phase</label><select id="newPhase"><option>Onboarding</option><option>Aktiv</option><option>Entwicklung</option></select></div>
+  <div><label>Team</label><input type="text" id="newTeam" placeholder="z.B. Deutschland"></div>
+  <div><label>Startdatum</label><input type="date" id="newStart"></div></div>
+  <div class="f2"><div><label>Anstellung</label><select id="newContract"><option value="Vollzeit">Vollzeit</option><option value="Teilzeit">Teilzeit</option></select></div>
+  <div><label>Stunden / Woche</label><input type="number" id="newHours" value="40" min="1" max="60"></div></div>
   <div class="modal-actions"><button class="btn" onclick="closeModal('addEmpModal')">Abbrechen</button><button class="btn btn-primary" onclick="saveNewEmp()"><i class="ti ti-check"></i> Add</button></div>
 </div></div>
 
@@ -1456,15 +1461,20 @@ function addTaskFromCurrentProtocol(){
 }
 function saveNewEmp(){
   var name=document.getElementById('newName').value.trim();
-  var role=document.getElementById('newRole').value.trim();
+  var role=document.getElementById('newRole').value;
   var phase=document.getElementById('newPhase').value;
   var startDate=document.getElementById('newStart').value;
-  if(!name)return;
-  var ne={id:Date.now(),name:name,role:role||'Sales',phase:phase,color:employees.length%COLORS.length,startDate:startDate};
+  var team=document.getElementById('newTeam').value.trim()||'Deutschland';
+  var contract=document.getElementById('newContract').value;
+  var hours=parseInt(document.getElementById('newHours').value)||40;
+  if(!name)return alert('Bitte einen Namen eingeben.');
+  var ne={id:Date.now(),name:name,role:role,phase:phase,color:employees.length%COLORS.length,startDate:startDate,team:team,contract:contract,hours:hours,active:true};
   employees.push(ne);
-  protocols[ne.id]=[];performance[ne.id]=[];solidroadData[ne.id]={simulations:[]};
-  onboarding[ne.id]=obSteps.map(function(){return false;});
-  tasks[ne.id]=[];
+  protocols[ne.id]=[];
+  performance[ne.id]=[];
+  if(typeof solidroadData!=='undefined')solidroadData[ne.id]={simulations:[]};
+  if(typeof onboarding!=='undefined'&&typeof obSteps!=='undefined')onboarding[ne.id]=obSteps.map(function(){return false;});
+  if(typeof tasks!=='undefined')tasks[ne.id]=[];
   closeModal('addEmpModal');
   renderSidebar();renderMain();
 }
