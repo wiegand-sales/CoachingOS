@@ -516,14 +516,19 @@ function renderTeam(){
   var totalMargin=list.reduce(function(a,e){return a+getPerf(e.id,days).reduce(function(b,x){return b+(x.margin||0);},0);},0);
   var oem7=tAvg('crOEM'),sy7=tAvg('crSuperYes'),my7=tAvg('crMegaYes');
 
-  function crCell(val,target){
-    if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border)">—</td>';
+  function crCell(val,target,val7){
+    // val = range average, val7 = always 7d average (shown as small number top right)
+    if(val===null)return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);width:105px;min-width:105px;max-width:105px">—</td>';
     var v=Math.round(val);
+    var v7=val7!==null&&val7!==undefined?Math.round(val7):null;
     var col=target?(v>=target?'var(--teal)':v>=target*0.85?'var(--amber)':'var(--red)'):(v>=CR_GOOD?'var(--teal)':v>=45?'var(--amber)':'var(--red)');
-    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);min-width:90px">'
-      +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+    return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);width:105px;min-width:105px;max-width:105px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'
       +'<span style="font-size:13px;font-weight:600;color:'+col+'">'+v+'%</span>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">'
+      +(v7!==null?'<span style="font-size:10px;font-weight:600;color:var(--text3)">'+v7+'%</span>':'')
       +(target?'<span style="font-size:10px;color:'+(v>=target?'var(--teal)':'var(--red)')+'">'+( v>=target?'✓':'↓')+target+'%</span>':'')
+      +'</div>'
       +'</div>'
       +'<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative">'
       +'<div style="height:100%;width:'+Math.min(v,100)+'%;background:'+col+';border-radius:3px"></div>'
@@ -538,7 +543,9 @@ function renderTeam(){
     var r=lastRating(e.id); var rs=r?RS[r]:null;
     var al=checkAlerts(e.id);
     var ep=getPerf(e.id,days);
+    var ep7=days===7?ep:getPerf(e.id,7);
     function ea(key){return ep.length?ep.reduce(function(a,x){return a+x[key];},0)/ep.length:null;}
+    function ea7(key){return ep7.length?ep7.reduce(function(a,x){return a+x[key];},0)/ep7.length:null;}
     var em=ep.reduce(function(a,x){return a+(x.margin||0);},0);
     var sCount=(protocols[e.id]||[]).length;
     var tage=tageSeitLetzterSession(e.id);
@@ -552,12 +559,12 @@ function renderTeam(){
       +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
       +'<div><div style="font-weight:500">'+e.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
       +'<div style="font-size:11px;color:var(--text2)">'+e.phase+'</div></div></div></td>'
-      // CR Spalten
-      +crCell(ea('crOEM'),CR_GOOD)
-      +crCell(ea('crTeilweise'),null)
-      +crCell(ea('crYes'),null)
-      +crCell(ea('crSuperYes'),KPI_TARGETS.crSuperYes)
-      +crCell(ea('crMegaYes'),KPI_TARGETS.crMegaYes)
+      // CR Spalten – feste Breite, kleine 7d-Zahl oben rechts
+      +crCell(ea('crOEM'),CR_GOOD,days!==7?ea7('crOEM'):null)
+      +crCell(ea('crTeilweise'),null,days!==7?ea7('crTeilweise'):null)
+      +crCell(ea('crYes'),null,days!==7?ea7('crYes'):null)
+      +crCell(ea('crSuperYes'),KPI_TARGETS.crSuperYes,days!==7?ea7('crSuperYes'):null)
+      +crCell(ea('crMegaYes'),KPI_TARGETS.crMegaYes,days!==7?ea7('crMegaYes'):null)
       // Marge
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
       +'<div style="font-size:13px;font-weight:600;color:var(--blue)">€'+em.toLocaleString('de-DE')+'</div>'
@@ -739,14 +746,14 @@ function renderTeam(){
     // Alert Banner
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' Performance-Alert'+(totalAlerts!==1?'s':'')+' im Team</div><div style="font-size:12px;color:var(--amber-dark)">'+list.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
     // CR Tabelle
-    +'<div class="sec-title" style="margin-bottom:10px">Conversion Rates & Marge <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Gut ≥ '+CR_GOOD+'%</span></div>'
+    +'<div class="sec-title" style="margin-bottom:10px">Conversion Rates & Marge <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Gut ≥ '+CR_GOOD+'%'+(days!==7?' · Kleine Zahl = 7-Tage-Ø':'')+'</span></div>'
     +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr>'
     +'<th style="min-width:160px">Mitarbeiter</th>'
-    +'<th style="min-width:90px">CR OEM</th>'
-    +'<th style="min-width:90px">Teilweise</th>'
-    +'<th style="min-width:90px">Yes</th>'
-    +'<th style="min-width:90px">Super Yes</th>'
-    +'<th style="min-width:90px">Mega Yes</th>'
+    +'<th style="width:105px;min-width:105px">CR OEM</th>'
+    +'<th style="width:105px;min-width:105px">Teilweise</th>'
+    +'<th style="width:105px;min-width:105px">Yes</th>'
+    +'<th style="width:105px;min-width:105px">Super Yes</th>'
+    +'<th style="width:105px;min-width:105px">Mega Yes</th>'
     +'<th>Marge</th>'
     +'<th>Opt./h</th>'
     +'<th>Alerts</th>'
