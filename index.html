@@ -1725,7 +1725,9 @@ function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.modal-ov').forEach(function(m){
   m.addEventListener('click',function(e){if(e.target===m)m.classList.add('hidden');});
 });
-renderSidebar();showView('team');
+lsLoad();
+renderSidebar();
+showView('team');
 
 // ── REVIEW ACTIONS ──
 function completeReview(id){
