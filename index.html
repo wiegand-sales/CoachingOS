@@ -835,7 +835,7 @@ function renderTeam(){
     // Alert Banner
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' Performance-Alert'+(totalAlerts!==1?'s':'')+' im Team</div><div style="font-size:12px;color:var(--amber-dark)">'+list.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
     // CR Tabelle
-    +'<div class="sec-title" style="margin-bottom:10px">Conversion Rates & Marge <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Gut ≥ '+CR_GOOD+'%'+(days!==7?' · Kleine Zahl = 7-Tage-Ø':'')+'</span></div>'
+    +'<div class="sec-title" style="margin-bottom:10px">Conversion Rates & Marge <span style="font-weight:400;color:var(--text3)">· CR als % aller Gespräche · Gut ≥ '+CR_GOOD+'%'+(days!==7?' · Pfeil = Trend vs. 7-Tage-Ø':'')+'</span></div>'
     +'<div class="tbl" style="margin-bottom:24px"><table><thead><tr>'
     +'<th style="min-width:160px">Mitarbeiter</th>'
     +'<th style="width:105px;min-width:105px">CR OEM</th>'
