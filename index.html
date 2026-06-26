@@ -223,6 +223,24 @@ tr:hover td{background:var(--bg2);}
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="sidebar">
   <div class="sb-header">
     <div class="sb-logo"><div class="sb-dot"></div><span class="sb-title">SFP Coaching</span></div>
@@ -338,6 +356,23 @@ tr:hover td{background:var(--bg2);}
     <button class="btn btn-primary" onclick="scorecardSpeichern()"><i class="ti ti-check"></i> Session speichern</button>
   </div>
 </div></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -653,7 +688,12 @@ function lsLoad(){
     var raw=localStorage.getItem(LS_KEY);
     if(!raw)return false;
     var d=JSON.parse(raw);
-    if(d.employees&&d.employees.length)employees=d.employees;
+    if(d.employees&&d.employees.length){
+      employees=d.employees;
+      // Migrate old role names to short codes
+      var _roleMap={'Sales Executive':'SE','Senior Vertriebsmitarbeiter':'SE','Vertriebsmitarbeiter':'SR','Sales Representative':'SR','Valencia':'VLC','Sales Department Manager':'SDM','Sales Coach':'SC'};
+      employees.forEach(function(e){if(_roleMap[e.role])e.role=_roleMap[e.role];});
+    }
     if(d.protocols)protocols=d.protocols;
     if(d.solidroadData)solidroadData=d.solidroadData;
     if(d.onboarding)onboarding=d.onboarding;
@@ -755,19 +795,19 @@ var ROLES=['Vertriebsmitarbeiter','Senior Vertriebsmitarbeiter','Sales Coach'];
 var GLOBAL_TARGETS=KPI_TARGETS;
 
 var employees=[
-  {id:1,name:"Johann Breuer",role:"Sales Executive",phase:"Aktiv",color:0,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:2,name:"Dogoro Dembele",role:"Sales Department Manager",phase:"Aktiv",color:1,startDate:'2026-01-01',team:"SDM",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:3,name:"Thorsten M\u00fcller",role:"Sales Executive",phase:"Aktiv",color:2,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:4,name:"Jan Klimmeck",role:"Sales Representative",phase:"Aktiv",color:3,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:5,name:"Bianca Sachon",role:"Sales Representative",phase:"Aktiv",color:4,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:6,name:"Melanie Murad",role:"Sales Executive",phase:"Aktiv",color:5,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:7,name:"Amir Hazaimia",role:"Sales Executive",phase:"Aktiv",color:0,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:8,name:"Jenny Weise",role:"Sales Executive",phase:"Aktiv",color:1,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:9,name:"Niko Nikolic",role:"Sales Representative",phase:"Aktiv",color:2,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:10,name:"Stefan Lang",role:"Sales Representative",phase:"Inaktiv",color:3,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:false,targets:null},
-  {id:11,name:"Kathrin Steininger",role:"Sales Coach",phase:"Aktiv",color:4,startDate:'2026-01-01',team:"SC",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:12,name:"Duygu Sulaiman",role:"Sales Representative",phase:"Aktiv",color:5,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
-  {id:13,name:"Olti Dragusha",role:"Sales Representative",phase:"Aktiv",color:0,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:1,name:"Johann Breuer",role:"SE",phase:"Aktiv",color:0,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:2,name:"Dogoro Dembele",role:"SDM",phase:"Aktiv",color:1,startDate:'2026-01-01',team:"SDM",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:3,name:"Thorsten M\u00fcller",role:"SE",phase:"Aktiv",color:2,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:4,name:"Jan Klimmeck",role:"SR",phase:"Aktiv",color:3,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:5,name:"Bianca Sachon",role:"SR",phase:"Aktiv",color:4,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:6,name:"Melanie Murad",role:"SE",phase:"Aktiv",color:5,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:7,name:"Amir Hazaimia",role:"SE",phase:"Aktiv",color:0,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:8,name:"Jenny Weise",role:"SE",phase:"Aktiv",color:1,startDate:'2026-01-01',team:"SE",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:9,name:"Niko Nikolic",role:"SR",phase:"Aktiv",color:2,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:10,name:"Stefan Lang",role:"SR",phase:"Inaktiv",color:3,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:false,targets:null},
+  {id:11,name:"Kathrin Steininger",role:"SC",phase:"Aktiv",color:4,startDate:'2026-01-01',team:"SC",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:12,name:"Duygu Sulaiman",role:"SR",phase:"Aktiv",color:5,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
+  {id:13,name:"Olti Dragusha",role:"SR",phase:"Aktiv",color:0,startDate:'2026-01-01',team:"SR",contract:'Vollzeit',hours:40,active:true,targets:null},
   {id:14,name:"Rafael Muresan",role:"Sales Representative (Valencia)",phase:"Aktiv",color:1,startDate:'2026-01-01',team:"VLC",contract:'Vollzeit',hours:40,active:true,targets:null},
   {id:15,name:"Julius Kolbeck",role:"Sales Representative (Valencia)",phase:"Aktiv",color:2,startDate:'2026-01-01',team:"VLC",contract:'Vollzeit',hours:40,active:true,targets:null},
   {id:16,name:"Laura Seven",role:"Sales Representative (Valencia)",phase:"Aktiv",color:3,startDate:'2026-01-01',team:"VLC",contract:'Vollzeit',hours:40,active:true,targets:null},
@@ -886,7 +926,7 @@ function phaseBg(ph){return{Aktiv:RS['Yes'].bg,Onboarding:RS['Teilweise'].bg,Ent
 function phaseCol(ph){return{Aktiv:RS['Yes'].color,Onboarding:RS['Teilweise'].color,Entwicklung:RS['Super Yes'].color}[ph]||'#6b6b67';}
 function getPerf(id,days){
   var p=performance[id]||[];
-  var cutoff=new Date('2026-06-13T00:00:00');
+  var cutoff=new Date();
   cutoff.setDate(cutoff.getDate()-days);
   return p.filter(function(x){return new Date(x.date)>=cutoff;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
 }
@@ -929,8 +969,13 @@ function empTargets(emp){
     crTeilweise:{val:val('crTW',25),            dir:dir('crTWDir','crTeilweise','lte')},
     crSuperYes: {val:val('crSuperYes',12),      dir:dir('crSYDir','crSuperYes','gte')},
     crMegaYes:  {val:val('crMegaYes',8),        dir:dir('crMYDir','crMegaYes','gte')},
-    optPerH:    {val:val('optPerH',2.0),        dir:dir('optPerHDir','optPerH','gte')},
-    optPerDay:  {val:val('optPerDay',16),       dir:dir('optPerDayDir','optPerDay','gte')}
+    optPerH:     {val:val('optPerH',2.0),         dir:dir('optPerHDir','optPerH','gte')},
+    optPerDay:   {val:val('optPerDay',16),          dir:dir('optPerDayDir','optPerDay','gte')},
+    crYes:       {val:val('crYes',null),             dir:dir('crYesDir','crYes','gte')},
+    aktivitaeten:{val:val('aktivitaeten',null),       dir:dir('aktivDir','aktivitaeten','gte')},
+    convOEM:     {val:val('convOEM',null),            dir:dir('convOEMDir','convOEM','gte')},
+    optGesamt:   {val:val('optGesamt',null)!=null?val('optGesamt',null):val('optPerDay',null), dir:dir('optGesamtDir','optGesamt','gte')},
+    margeGesamt: {val:val('margeGesamt',null),        dir:dir('margeDir','margeGesamt','gte')}
   };
 }
 
@@ -942,7 +987,7 @@ function renderSidebar(){
   var nc=document.getElementById('nav-coaching');if(nc)nc.classList.toggle('active',view==='coaching');
   if(view==='settings')document.getElementById('nav-settings').classList.add('active');
   var HIDDEN=['SDM','SC'];
-  var visible=employees.filter(function(e){return e.active!==false&&HIDDEN.indexOf(e.team)<0;});
+  var visible=employees.filter(function(e){return e.active!==false&&HIDDEN.indexOf(e.role)<0;});
   // Mitarbeiter in Onboarding-Phase kommen alle in eine Gruppe
   var onboardingEmps=visible.filter(function(e){return e.phase==='Onboarding';});
   var aktivEmps=visible.filter(function(e){return e.phase!=='Onboarding';});
@@ -950,7 +995,7 @@ function renderSidebar(){
   var order=['SE','SR','VLC','SDM','SC'];
   var positions=[];
   aktivEmps.forEach(function(e){
-    var r=e.role||e.team||'Sonstige';
+    var r=e.role||'Sonstige';
     if(positions.indexOf(r)<0)positions.push(r);
   });
   positions.sort(function(a,b){
@@ -959,7 +1004,7 @@ function renderSidebar(){
   });
   var groups=[];
   positions.forEach(function(pos){
-    var members=aktivEmps.filter(function(e){return (e.role||e.team||'Sonstige')===pos;});
+    var members=aktivEmps.filter(function(e){return (e.role||'Sonstige')===pos;});
     if(members.length)groups.push({key:pos,label:pos,members:members});
   });
   if(onboardingEmps.length)groups.push({key:'OB',label:'Onboarding',members:onboardingEmps});
@@ -972,12 +1017,10 @@ function renderSidebar(){
     var al=checkAlerts(emp.id);
     var d=document.createElement('div');
     d.className='emp-item'+(view==='emp'&&emp.id===selectedEmp?' active':'');
-    var badge=rs?('<span class="emp-badge" style="background:'+rs.bg+';color:'+rs.color+'">'+(r==='Teilweise'?'T':r==='Yes'?'Y':r==='Super Yes'?'SY':'MY')+'</span>'):'';
     var alrt=al.length?('<i class="ti ti-alert-triangle" style="font-size:13px;color:var(--amber);flex-shrink:0"></i>'):'';
-    var vlcBadge=emp.team==='VLC'?('<span style="font-size:9px;font-weight:700;color:var(--blue);background:var(--bg2);border-radius:3px;padding:1px 4px;flex-shrink:0;margin-right:2px">VLC</span>'):'';
     d.innerHTML='<div class="av" style="width:32px;height:32px;font-size:12px;background:'+c.bg+';color:'+c.text+'">'+ini(emp.name)+'</div>'
       +'<div style="flex:1;min-width:0"><div class="emp-name">'+emp.name+'</div><div class="emp-role">'+emp.role+'</div></div>'
-      +alrt+vlcBadge+badge;
+      +alrt;
     d.onclick=(function(eid){return function(){selectedEmp=eid;view='emp';activeTab='performance';renderSidebar();renderMain();};})(emp.id);
     return d;
   }
@@ -1139,9 +1182,9 @@ function renderTeam(){
   if(!ma)return;
   var days=teamRange||7;
   var HIDDEN=['SDM','SC'];
-  var allVisible=activeEmployees().filter(function(e){return HIDDEN.indexOf(e.team)<0;});
-  var inactiveAll=employees.filter(function(e){return e.active===false&&HIDDEN.indexOf(e.team)<0;});
-  var list=teamFilter==='INAKTIV'?inactiveAll:teamFilter==='ALL'?allVisible:allVisible.filter(function(e){return e.team===teamFilter;});
+  var allVisible=activeEmployees().filter(function(e){return HIDDEN.indexOf(e.role)<0;});
+  var inactiveAll=employees.filter(function(e){return e.active===false&&HIDDEN.indexOf(e.role)<0;});
+  var list=teamFilter==='INAKTIV'?inactiveAll:teamFilter==='ALL'?allVisible:teamFilter==='OB'?allVisible.filter(function(e){return e.phase==='Onboarding';}):allVisible.filter(function(e){return e.role===teamFilter&&e.phase!=='Onboarding';});
   var allP=list.map(function(e){return getPerf(e.id,days);}).reduce(function(a,b){return a.concat(b);},[]);
   function tAvg(key){if(!allP.length)return null;return allP.reduce(function(a,x){return a+x[key];},0)/allP.length;}
   var totalAlerts=list.reduce(function(a,e){return a+checkAlerts(e.id).length;},0);
@@ -1188,7 +1231,10 @@ function renderTeam(){
     var sCount=(protocols[e.id]||[]).length;
     var tage=tageSeitLetzterSession(e.id);
     var aFarbe=aufmerksamkeitFarbe(tage);
-    var entw=entwicklungsfelder(e.id);
+    var _ss=(protocols[e.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var _ls=_ss[0]||null;
+    var lsType=_ls?(_ls.type||'—'):'—';
+    var lsTopics=_ls&&_ls.topics&&_ls.topics.length?_ls.topics.slice(0,2).join(', '):'—';
 
     rows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
       // Mitarbeiter
@@ -1197,31 +1243,30 @@ function renderTeam(){
       +'<div class="av" style="width:30px;height:30px;font-size:11px;background:'+c.bg+';color:'+c.text+'">'+ini(e.name)+'</div>'
       +'<div><div style="font-weight:500">'+e.name+(al.length?'<i class="ti ti-alert-triangle" style="font-size:12px;color:var(--amber);margin-left:4px"></i>':'')+'</div>'
       +'<div style="font-size:11px;color:var(--text2)">'+e.phase+'</div></div></div></td>'
-      // CR Spalten – feste Breite, kleine 7d-Zahl oben rechts
-      +crCell(ea('crOEM'),KPI_TARGETS.crOEM.val,KPI_TARGETS.crOEM.dir)
-      +crCell(ea('crTeilweise'),KPI_TARGETS.crTeilweise.val,KPI_TARGETS.crTeilweise.dir)
-      +crCell(ea('crYes'),null,'gte')
-      +crCell(ea('crSuperYes'),KPI_TARGETS.crSuperYes.val,KPI_TARGETS.crSuperYes.dir)
-      +crCell(ea('crMegaYes'),KPI_TARGETS.crMegaYes.val,KPI_TARGETS.crMegaYes.dir)
+      // CR Spalten
+      +crCell(ea('crOEM'),empTargets(e).crOEM.val,empTargets(e).crOEM.dir)
+      +crCell(ea('crTeilweise'),empTargets(e).crTeilweise.val,empTargets(e).crTeilweise.dir)
+      +crCell(ea('crYes'),empTargets(e).crYes?empTargets(e).crYes.val:null,'gte')
+      +crCell(ea('crSuperYes'),empTargets(e).crSuperYes.val,empTargets(e).crSuperYes.dir)
+      +crCell(ea('crMegaYes'),empTargets(e).crMegaYes.val,empTargets(e).crMegaYes.dir)
       // Marge
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
       +'<div style="font-size:13px;font-weight:600;color:var(--blue)">€'+em.toLocaleString('de-DE')+'</div>'
       +'<div style="font-size:11px;color:var(--text3)">'+days+'d</div></td>'
       // Opt/h
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(ea('optPerH')!==null?ea('optPerH').toFixed(1):'—')+'</td>'
-      // KPI Alerts
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
-      // Letzte Bewertung
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(rs?'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span>':'—')+'</td>'
+      // Alerts
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--amber);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
       // Sessions
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--purple)">'+sCount+'</td>'
       // Letzte Session
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+aFarbe+'">'+(tage===null?'Keine':tage===0?'Heute':tage+'d')+'</td>'
-      // Entwicklungsfelder
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);max-width:200px">'+(entw.length?entw.join(', '):'—')+'</td>'
-      // Planen
-      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
-      +'<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
+      // Art des Coachings
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsType+'</td>'
+      // Inhalt des Coachings
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsTopics+'</td>'
+      // Aktion
+      +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>'
       +'</tr>';
   });
 
@@ -1341,8 +1386,11 @@ function renderTeam(){
     var sCount=(protocols[e.id]||[]).length;
     var tage=tageSeitLetzterSession(e.id);
     var aFarbe=aufmerksamkeitFarbe(tage);
-    var entw=entwicklungsfelder(e.id);
     var al=checkAlerts(e.id);
+    var _ss=(protocols[e.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var _ls=_ss[0]||null;
+    var lsType=_ls?(_ls.type||'—'):'—';
+    var lsTopics=_ls&&_ls.topics&&_ls.topics.length?_ls.topics.slice(0,2).join(', '):'—';
     coachRows+='<tr style="cursor:pointer" onclick="selectEmp('+e.id+')">'
       +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
       +'<div style="display:flex;align-items:center;gap:9px">'
@@ -1351,23 +1399,11 @@ function renderTeam(){
       +'<div style="font-size:11px;color:var(--text2)">'+e.phase+(e.team?' · '+e.team:'')+'</div></div></div></td>'
       +(function(){
         var naechste=naechsteGeplanteSession(e.id);
-        var skill=avgSkill(e.id);
-        var skillCol=skill!==null?(skill>=80?'var(--teal)':skill>=60?'var(--purple)':'var(--amber)'):'var(--text3)';
         return '<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:var(--purple)">'+sCount+'</td>'
           +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;color:'+aFarbe+'">'+(tage===null?'Keine':tage===0?'Heute':tage+'d')+'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
-          +(naechste
-            ?'<span style="font-size:12px;font-weight:600;color:var(--purple)"><i class="ti ti-calendar-event" style="font-size:12px;margin-right:4px"></i>'+fd(naechste)+'</span>'
-            :'<span style="font-size:12px;color:var(--text3)">—</span>')
-          +'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(rs?'<span class="badge" style="background:'+rs.bg+';color:'+rs.color+'">'+r+'</span>':'—')+'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'
-          +(skill!==null
-            ?'<div style="display:flex;align-items:center;gap:6px"><div style="width:50px;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+skill+'%;background:'+skillCol+'"></div></div><span style="font-size:12px;font-weight:600;color:'+skillCol+'">'+skill+'%</span></div>'
-            :'<span style="font-size:12px;color:var(--text3)">—</span>')
-          +'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+(entw.length?entw.join(', '):'—')+'</td>'
-          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)">'+(al.length?'<span style="color:var(--red);font-weight:600;font-size:12px">⚠ '+al.length+'</span>':'<span style="color:var(--teal)">✓</span>')+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsType+'</td>'
+          +'<td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">'+lsTopics+'</td>'
+          +(al.length?'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--amber);font-weight:600;font-size:12px">⚠ '+al.length+'</span></td>':'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><span style="color:var(--teal)">✓</span></td>')
           +'<td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openSessionModal('+e.id+')"><i class="ti ti-calendar-plus"></i> Planen</button></td>';
       })()
       +'</tr>';
@@ -1418,12 +1454,14 @@ function renderTeam(){
     +(totalAlerts>0?'<div class="alert alert-warn" style="margin-bottom:18px"><i class="ti ti-alert-triangle" style="font-size:18px;color:var(--amber);flex-shrink:0"></i><div><div style="font-size:13px;font-weight:600;color:var(--amber-dark)">'+totalAlerts+' Performance-Alert'+(totalAlerts!==1?'s':'')+' im Team</div><div style="font-size:12px;color:var(--amber-dark)">'+list.filter(function(e){return checkAlerts(e.id).length>0;}).map(function(e){return e.name;}).join(', ')+'</div></div></div>':'')
     // CR Tabelle
     +(function(){
+      var onboardingEmpsT=allVisible.filter(function(e){return e.phase==='Onboarding';});
       var FDEFS=[
-        {key:'ALL',label:'Alle',n:allVisible.length},
-        {key:'SE',label:'SE',n:allVisible.filter(function(e){return e.team==='SE';}).length},
-        {key:'SR',label:'SR',n:allVisible.filter(function(e){return e.team==='SR';}).length},
-        {key:'VLC',label:'VLC',n:allVisible.filter(function(e){return e.team==='VLC';}).length},
-        {key:'INAKTIV',label:'Inaktiv',n:inactiveAll.length},
+        {key:'ALL',    label:'Alle',       n:allVisible.length},
+        {key:'SE',     label:'SE',         n:allVisible.filter(function(e){return e.role==='SE'&&e.phase!=='Onboarding';}).length},
+        {key:'SR',     label:'SR',         n:allVisible.filter(function(e){return e.role==='SR'&&e.phase!=='Onboarding';}).length},
+        {key:'VLC',    label:'VLC',        n:allVisible.filter(function(e){return e.role==='VLC'&&e.phase!=='Onboarding';}).length},
+        {key:'OB',     label:'Onboarding', n:onboardingEmpsT.length},
+        {key:'INAKTIV',label:'Inaktiv',    n:inactiveAll.length},
       ];
       var fbar='<div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap">';
       fbar+='<span style="font-size:11px;font-weight:600;color:var(--text3);margin-right:2px">Anzeigen:</span>';
@@ -1445,10 +1483,10 @@ function renderTeam(){
     +'<th>Marge</th>'
     +'<th>Opt./h</th>'
     +'<th>Alerts</th>'
-    +'<th>Letzte Bew.</th>'
     +'<th>Sessions</th>'
     +'<th>Letzte Session</th>'
-    +'<th>Entwicklungsfelder</th>'
+    +'<th>Art des Coachings</th>'
+    +'<th>Inhalt des Coachings</th>'
     +'<th>Aktion</th>'
     +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
     // Staff Cards
@@ -1460,11 +1498,9 @@ function renderTeam(){
     +'<th style="min-width:160px">Mitarbeiter</th>'
     +'<th>Sessions</th>'
     +'<th>Letzte Session</th>'
-    +'<th>Nächste Session</th>'
-    +'<th>Letzte Bew.</th>'
-    +'<th>Ø Skill</th>'
-    +'<th>Entwicklungsfelder</th>'
-    +'<th>KPI-Alerts</th>'
+    +'<th>Art des Coachings</th>'
+    +'<th>Inhalt des Coachings</th>'
+    +'<th>Alerts</th>'
     +'<th>Aktion</th>'
     +'</tr></thead><tbody>'+coachRows+'</tbody></table></div>'
     +'</div>';
@@ -1525,7 +1561,8 @@ function renderTab(){
     var empT=empTargets(emp);
     var perf7=getPerf(emp.id,7);
     var perfAll=(performance[emp.id]||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
-    function avg7(key){if(!perf7.length)return null;return perf7.reduce(function(a,x){return a+(x[key]||0);},0)/perf7.length;}
+    var perfRangeData=getPerf(emp.id,perfRange);
+    function avgRange(key){if(!perfRangeData.length)return null;return perfRangeData.reduce(function(a,x){return a+(x[key]||0);},0)/perfRangeData.length;}
     function kpiCol(v,t,dir){if(v===null)return 'var(--text3)';return(dir==='lte'?v<=t:v>=t)?'var(--teal)':'var(--red)';}
     var kpis=[
       {label:'CR OEM', key:'crOEM',      target:empT.crOEM.val,      dir:empT.crOEM.dir,      pct:true},
@@ -1536,7 +1573,7 @@ function renderTab(){
     ];
     html+='<div class="g5" style="margin-bottom:16px">';
     kpis.forEach(function(k){
-      var v=avg7(k.key);var vR=v!==null?(k.pct?Math.round(v):+v.toFixed(1)):null;
+      var v=avgRange(k.key);var vR=v!==null?(k.pct?Math.round(v):+v.toFixed(1)):null;
       var col=v!==null?kpiCol(v,k.target,k.dir):'var(--text3)';
       var hit=v!==null&&(k.dir==='lte'?v<=k.target:v>=k.target);
       html+='<div class="kpi" style="border-top-color:'+col+'">'
@@ -2124,6 +2161,15 @@ function renderTab(){
   // ── EMP SETTINGS TAB ──
   if(activeTab==='emp-settings'){
     var t=empTargets(emp);
+    var _tr=emp.targets||{};
+    var tf={
+      crOEM:_tr.crOEM!=null?_tr.crOEM:t.crOEM.val,crOEMDir:_tr.crOEMDir||t.crOEM.dir,
+      crTW:_tr.crTW!=null?_tr.crTW:t.crTeilweise.val,crTWDir:_tr.crTWDir||t.crTeilweise.dir,
+      crSuperYes:_tr.crSuperYes!=null?_tr.crSuperYes:t.crSuperYes.val,crSYDir:_tr.crSYDir||t.crSuperYes.dir,
+      crMegaYes:_tr.crMegaYes!=null?_tr.crMegaYes:t.crMegaYes.val,crMYDir:_tr.crMYDir||t.crMegaYes.dir,
+      optPerH:_tr.optPerH!=null?_tr.optPerH:t.optPerH.val,optPerHDir:_tr.optPerHDir||t.optPerH.dir,
+      optPerDay:_tr.optPerDay!=null?_tr.optPerDay:t.optPerDay.val,optPerDayDir:_tr.optPerDayDir||t.optPerDay.dir
+    };
     var swatches=COLORS.map(function(col,i){
       return '<div onclick="setEmpColor('+i+')" style="width:28px;height:28px;border-radius:50%;cursor:pointer;background:'+col.bg+';border:3px solid '+(emp.color===i?col.text:'transparent')+';display:inline-block;margin-right:6px;margin-bottom:6px;transition:all .15s"></div>';
     }).join('');
@@ -2131,107 +2177,103 @@ function renderTab(){
     var ROLLEN=['Vertriebsmitarbeiter','Senior Vertriebsmitarbeiter','Sales Coach'];
 
     html+='<div class="card"><div class="card-title"><i class="ti ti-user"></i> Stammdaten</div>'
-      +'<div class="f2" style="margin-bottom:12px">'
-      +'<div><label>Vollständiger Name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
-      +'<div><label>Position</label>'
-      +'<select id="es-role" onchange="var cv=this.value;if(cv===\'__new__\'){var nv=prompt(\'Neue Position eingeben:\');if(nv&&nv.trim()){var opt=document.createElement(\'option\');opt.value=nv.trim();opt.text=nv.trim();this.add(opt);this.value=nv.trim();}}" >'
-      +'<option'+(emp.role==='SR'?' selected':'')+'>SR</option>'
-      +'<option'+(emp.role==='SE'?' selected':'')+'>SE</option>'
-      +'<option'+(emp.role==='VLC'?' selected':'')+'>VLC</option>'
-      +'<option'+(emp.role==='SDM'?' selected':'')+'>SDM</option>'
-      +'<option'+(emp.role==='SC'?' selected':'')+'>SC</option>'
-      +'<option value="__new__">+ Neue Position hinzufügen</option>'
-      +'</select></div>'
-      +'</div>'
-      +'<div class="f3" style="margin-bottom:12px">'
-      +'<div><label>Phase</label><select id="es-phase">'
-      +'<option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option>'
-      +'<option'+(emp.phase==='Aktiv'?' selected':'')+'>Aktiv</option>'
-      +'</select></div>'
-      +'<div><label>Anstellung</label><select id="es-contract">'
-      +'<option value="Vollzeit"'+(emp.contract==='Vollzeit'||emp.contract==='full'?' selected':'')+'>Vollzeit</option>'
-      +'<option value="Teilzeit"'+(emp.contract==='Teilzeit'||emp.contract==='part'?' selected':'')+'>Teilzeit</option>'
-      +'</select></div>'
-      +'<div><label>Stunden / Woche</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div>'
-      +'</div>'
-      +'<div class="f2" style="margin-bottom:12px">'
-      +'<div><label>Vertragsbeginn</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div>'
-      +'<div><label>Vertragsende</label><input type="date" id="es-end" value="'+(emp.endDate||'')+'"></div>'
-      +'</div>'
-      +'<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
-      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
-      +'</div>'
+      html+='<div class="f2" style="margin-bottom:12px">'
+      html+='<div><label>Vollständiger Name</label><input type="text" id="es-name" value="'+emp.name+'"></div>'
+      html+='<div><label>Position</label>'
+      html+='<select id="es-role" onchange="var cv=this.value;if(cv===\'__new__\'){var nv=prompt(\'Neue Position eingeben:\');if(nv&&nv.trim()){var opt=document.createElement(\'option\');opt.value=nv.trim();opt.text=nv.trim();this.add(opt);this.value=nv.trim();}}" >'
+      html+='<option'+(emp.role==='SR'?' selected':'')+'>SR</option>'
+      html+='<option'+(emp.role==='SE'?' selected':'')+'>SE</option>'
+      html+='<option'+(emp.role==='VLC'?' selected':'')+'>VLC</option>'
+      html+='<option'+(emp.role==='SDM'?' selected':'')+'>SDM</option>'
+      html+='<option'+(emp.role==='SC'?' selected':'')+'>SC</option>'
+      html+='<option value="__new__">+ Neue Position hinzufügen</option>'
+      html+='</select></div>'
+      html+='</div>'
+      html+='<div class="f3" style="margin-bottom:12px">'
+      html+='<div><label>Phase</label><select id="es-phase">'
+      html+='<option'+(emp.phase==='Onboarding'?' selected':'')+'>Onboarding</option>'
+      html+='<option'+(emp.phase==='Aktiv'?' selected':'')+'>Aktiv</option>'
+      html+='</select></div>'
+      html+='<div><label>Anstellung</label><select id="es-contract">'
+      html+='<option value="Vollzeit"'+(emp.contract==='Vollzeit'||emp.contract==='full'?' selected':'')+'>Vollzeit</option>'
+      html+='<option value="Teilzeit"'+(emp.contract==='Teilzeit'||emp.contract==='part'?' selected':'')+'>Teilzeit</option>'
+      html+='</select></div>'
+      html+='<div><label>Stunden / Woche</label><input type="number" id="es-hours" value="'+(emp.hours||40)+'" min="1" max="60"></div>'
+      html+='</div>'
+      html+='<div class="f2" style="margin-bottom:12px">'
+      html+='<div><label>Vertragsbeginn</label><input type="date" id="es-start" value="'+(emp.startDate||'')+'"></div>'
+      html+='<div><label>Vertragsende</label><input type="date" id="es-end" value="'+(emp.endDate||'')+'"></div>'
+      html+='</div>'
+      html+='<div style="margin-bottom:16px"><label>Avatar-Farbe</label><div style="margin-top:8px">'+swatches+'</div></div>'
+      html+='<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpEinstellungen()"><i class="ti ti-check"></i> Änderungen speichern</button>'
+      html+='</div>'
 
-      +'<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individuelle KPI-Ziele</div>'
-      +'<p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Diese Werte überschreiben die globalen Standards für diesen Mitarbeiter und werden in allen Alerts und der Teamübersicht verwendet.</p>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR OEM</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crOEM" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crOEMDir==="gte"||!t.crOEMDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crOEMDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crOEM" value="'+t.crOEM+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR TW (Teilweise)</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crTW" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crTWDir==="gte"||!t.crTWDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crTWDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crTW" value="'+(t.crTW||25)+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR Super Yes</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crSY" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crSYDir==="gte"||!t.crSYDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crSYDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crSY" value="'+t.crSuperYes+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">CR Mega Yes</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-crMY" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.crMYDir==="gte"||!t.crMYDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.crMYDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-crMY" value="'+t.crMegaYes+'" step="1" min="0" max="100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'<span style="font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Opt. / Stunde</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-opt" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.optPerHDir==="gte"||!t.optPerHDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.optPerHDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-opt" value="'+t.optPerH+'" step="0.1" min="0"  style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'</div></div>'
-      +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Opt. / Tag</div>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<select id="es-d-optDay" style="width:80px;flex-shrink:0;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600">'
-      +'<option value="gte"'+(t.optPerDayDir==="gte"||!t.optPerDayDir?' selected':'')+'>mind.</option>'
-      +'<option value="lte"'+(t.optPerDayDir==="lte"?' selected':'')+'>max.</option>'
-      +'</select>'
-      +'<input type="number" id="es-optDay" value="'+(t.optPerDay||16)+'" step="1" min="0"  style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:15px;font-weight:700;text-align:center">'
-      +'</div></div>'
-      +'</div>'
-      +'<button class="btn btn-primary btn-sm" style="width:auto" onclick="saveEmpZiele()"><i class="ti ti-check"></i> Ziele speichern</button>'
-      +'</div>'
+      html+='<div class="card"><div class="card-title"><i class="ti ti-target"></i> Individuelle KPI-Ziele</div>'
+      html+='<p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Diese Werte überschreiben die globalen Standards für diesen Mitarbeiter und werden in allen Alerts und der Teamübersicht verwendet.</p>'
+      
 
-      +'<div class="card" style="border-top:2px solid var(--amber)">'
-      +'<div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Mitarbeiter deaktivieren</div>'
-      +'<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Deaktivierte Mitarbeiter werden in der Sidebar und Teamübersicht ausgeblendet. Alle Daten bleiben vollständig erhalten und können jederzeit wiederhergestellt werden.</p>'
-      +'<button class="btn btn-sm" style="background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="mitarbeiterDeaktivieren()"><i class="ti ti-user-off"></i> '+emp.name+' deaktivieren</button>'
-      +'</div>';
+      // ── CR Kategorie ──
+      html+='<div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.06em;margin-bottom:8px">CR-WERTE (%)</div>';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+      [{lbl:'CR OEM',id:'crOEM',did:'crOEMDir',fv:_tr.crOEM!=null?_tr.crOEM:t.crOEM.val,fd:_tr.crOEMDir||t.crOEM.dir},
+       {lbl:'CR TW (Teilweise)',id:'crTW',did:'crTWDir',fv:_tr.crTW!=null?_tr.crTW:t.crTeilweise.val,fd:_tr.crTWDir||t.crTeilweise.dir},
+       {lbl:'CR Yes',id:'crYes',did:'crYesDir',fv:_tr.crYes!=null?_tr.crYes:(t.crYes&&t.crYes.val!=null?t.crYes.val:''),fd:_tr.crYesDir||(t.crYes?t.crYes.dir:'gte')},
+       {lbl:'CR Super Yes',id:'crSY',did:'crSYDir',fv:_tr.crSuperYes!=null?_tr.crSuperYes:t.crSuperYes.val,fd:_tr.crSYDir||t.crSuperYes.dir},
+       {lbl:'CR Mega Yes',id:'crMY',did:'crMYDir',fv:_tr.crMegaYes!=null?_tr.crMegaYes:t.crMegaYes.val,fd:_tr.crMYDir||t.crMegaYes.dir}
+      ].forEach(function(f){
+        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px">';
+        html+='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">'+f.lbl+'</div>';
+        html+='<div style="display:flex;align-items:center;gap:6px">';
+        html+='<select id="es-d-'+f.id+'" style="width:72px;flex-shrink:0;padding:5px 6px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600"><option value="gte"'+(f.fd==='gte'?' selected':'')+'>mind.</option><option value="lte"'+(f.fd==='lte'?' selected':'')+'>max.</option></select>';
+        html+='<input type="number" id="es-'+f.id+'" value="'+f.fv+'" step="1" min="0" max="100" placeholder="—" style="flex:1;min-width:0;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;text-align:center">';
+        html+='<span style="font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0">%</span>';
+        html+='</div></div>';
+      });
+      html+='</div>';
+
+      // ── Zahlen Kategorie ──
+      html+='<div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.06em;margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border)">TAGESWERTE</div>';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+      [{lbl:'Aktivitäten/Tag',id:'aktiv',did:'aktivDir',fv:_tr.aktivitaeten!=null?_tr.aktivitaeten:(t.aktivitaeten&&t.aktivitaeten.val!=null?t.aktivitaeten.val:''),fd:_tr.aktivDir||(t.aktivitaeten?t.aktivitaeten.dir:'gte'),unit:''},
+       {lbl:'Conv. OEM/Tag',id:'convOEM',did:'convOEMDir',fv:_tr.convOEM!=null?_tr.convOEM:(t.convOEM&&t.convOEM.val!=null?t.convOEM.val:''),fd:_tr.convOEMDir||(t.convOEM?t.convOEM.dir:'gte'),unit:''},
+       {lbl:'Opt. Gesamt/Tag',id:'optDay',did:'optPerDayDir',fv:_tr.optGesamt!=null?_tr.optGesamt:(t.optGesamt&&t.optGesamt.val!=null?t.optGesamt.val:''),fd:_tr.optGesamtDir||(t.optGesamt?t.optGesamt.dir:'gte'),unit:''},
+       {lbl:'Opt. / Stunde',id:'opt',did:'optPerHDir',fv:_tr.optPerH!=null?_tr.optPerH:t.optPerH.val,fd:_tr.optPerHDir||t.optPerH.dir,unit:'',step:0.1}
+      ].forEach(function(f){
+        var step=f.step||1;
+        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px">';
+        html+='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">'+f.lbl+'</div>';
+        html+='<div style="display:flex;align-items:center;gap:6px">';
+        html+='<select id="es-d-'+f.id+'" style="width:72px;flex-shrink:0;padding:5px 6px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600"><option value="gte"'+(f.fd==='gte'?' selected':'')+'>mind.</option><option value="lte"'+(f.fd==='lte'?' selected':'')+'>max.</option></select>';
+        html+='<input type="number" id="es-'+f.id+'" value="'+f.fv+'" step="'+step+'" min="0" placeholder="—" style="flex:1;min-width:0;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;text-align:center">';
+        if(f.unit)html+='<span style="font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0">'+f.unit+'</span>';
+        html+='</div></div>';
+      });
+      html+='</div>';
+
+      // ── Marge ──
+      html+='<div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.06em;margin-bottom:8px;padding-top:12px;border-top:1px solid var(--border)">MARGE</div>';
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+      (function(){
+        var fv=_tr.margeGesamt!=null?_tr.margeGesamt:(t.margeGesamt&&t.margeGesamt.val!=null?t.margeGesamt.val:'');
+        var fd=_tr.margeDir||(t.margeGesamt?t.margeGesamt.dir:'gte');
+        html+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 12px">';
+        html+='<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">Marge Ziel</div>';
+        html+='<div style="display:flex;align-items:center;gap:6px">';
+        html+='<select id="es-d-marge" style="width:72px;flex-shrink:0;padding:5px 6px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:12px;font-weight:600"><option value="gte"'+(fd==='gte'?' selected':'')+'>mind.</option><option value="lte"'+(fd==='lte'?' selected':'')+'>max.</option></select>';
+        html+='<input type="number" id="es-marge" value="'+fv+'" step="10" min="0" placeholder="—" style="flex:1;min-width:0;padding:5px 8px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font-size:14px;font-weight:700;text-align:center">';
+        html+='<span style="font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0">€</span>';
+        html+='</div></div>';
+      })();
+      html+='</div>';
+
+      html+='<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px" onclick="saveEmpZiele()"><i class="ti ti-check"></i> Ziele speichern</button>';
+      html+='</div>'; // close KPI card
+
+      html+='<div class="card" style="border-top:2px solid var(--amber)">'
+      html+='<div class="card-title" style="color:var(--amber-dark)"><i class="ti ti-user-off"></i> Mitarbeiter deaktivieren</div>'
+      html+='<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Deaktivierte Mitarbeiter werden in der Sidebar und Teamübersicht ausgeblendet. Alle Daten bleiben vollständig erhalten und können jederzeit wiederhergestellt werden.</p>'
+      html+='<button class="btn btn-sm" style="background:var(--amber-bg);color:var(--amber-dark);border-color:var(--amber)" onclick="mitarbeiterDeaktivieren()"><i class="ti ti-user-off"></i> '+emp.name+' deaktivieren</button>'
+      html+='</div>';
   }
 
   tc2.innerHTML=html;
@@ -2259,7 +2301,7 @@ function renderTab(){
       var vals=data.map(function(d){return d[m.f]||0;});
       var empObj=employees.find(function(x){return x.id===selectedEmp;});
       var empT=empTargets(empObj||{});
-      var tMap={crOEM:'crOEM',crTeilweise:'crTeilweise',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes',optPerH:'optPerH'};
+      var tMap={crOEM:'crOEM',crTeilweise:'crTeilweise',crYes:'crYes',crSuperYes:'crSuperYes',crMegaYes:'crMegaYes',optPerH:'optPerH',aktivitaeten:'aktivitaeten',convOEM:'convOEM',optGesamt:'optGesamt',margeGesamt:'margeGesamt'};
       var tk=tMap[perfMetric];
       var target=tk&&empT[tk]?empT[tk].val:null;
 
@@ -2278,7 +2320,7 @@ function renderTab(){
 
       // Feste Y-Achsen-Skalen
       var yScales={
-        aktivitaeten:{min:0,max:50,step:10},
+        aktivitaeten:{min:0,max:300,step:50},
         convOEM:     {min:0,max:50,step:10},
         optGesamt:   {min:0,max:50,step:10},
         crOEM:       {min:0,max:100,step:20},
@@ -2866,18 +2908,13 @@ function saveEmpZiele(){
   var emp=employees.find(function(e){return e.id===selectedEmp;});
   if(!emp)return;
   if(!emp.targets)emp.targets={};
-  emp.targets.crOEM=parseFloat(document.getElementById('es-crOEM').value)||55;
-  emp.targets.crOEMDir=document.getElementById('es-d-crOEM').value;
-  emp.targets.crTW=parseFloat(document.getElementById('es-crTW').value)||25;
-  emp.targets.crTWDir=document.getElementById('es-d-crTW').value;
-  emp.targets.crSuperYes=parseFloat(document.getElementById('es-crSY').value)||12;
-  emp.targets.crSYDir=document.getElementById('es-d-crSY').value;
-  emp.targets.crMegaYes=parseFloat(document.getElementById('es-crMY').value)||8;
-  emp.targets.crMYDir=document.getElementById('es-d-crMY').value;
-  emp.targets.optPerH=parseFloat(document.getElementById('es-opt').value)||2.0;
-  emp.targets.optPerHDir=document.getElementById('es-d-opt').value;
-  emp.targets.optPerDay=parseFloat(document.getElementById('es-optDay').value)||16;
-  emp.targets.optPerDayDir=document.getElementById('es-d-optDay').value;
+  [{id:'crOEM',rk:'crOEM',dk:'crOEMDir'},{id:'crTW',rk:'crTW',dk:'crTWDir'},{id:'crYes',rk:'crYes',dk:'crYesDir'},{id:'crSY',rk:'crSuperYes',dk:'crSYDir'},{id:'crMY',rk:'crMegaYes',dk:'crMYDir'},{id:'convOEM',rk:'convOEM',dk:'convOEMDir'},{id:'opt',rk:'optPerH',dk:'optPerHDir'},{id:'optDay',rk:'optGesamt',dk:'optGesamtDir'},{id:'aktiv',rk:'aktivitaeten',dk:'aktivDir'},{id:'marge',rk:'margeGesamt',dk:'margeDir'}].forEach(function(f){
+    var el=document.getElementById('es-'+f.id);
+    var dl=document.getElementById('es-d-'+f.id);
+    if(el&&el.value!=='')emp.targets[f.rk]=parseFloat(el.value);
+    else delete emp.targets[f.rk];
+    if(dl)emp.targets[f.dk]=dl.value;
+  });
   lsSave();
   alert('Ziele gespeichert für '+emp.name+'.');
   renderTab();
